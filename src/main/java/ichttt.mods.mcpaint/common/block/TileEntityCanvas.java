@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 
 public class TileEntityCanvas extends TileEntity {
     //DO NOT CHANGE - USED FOR NBT
-    public static final int CANVAS_PIXEL_COUNT = 120;
+    public static final int CANVAS_PIXEL_COUNT = 112;
     private int[][] pictureData = null;
     private byte scaleFactor;
 
@@ -57,6 +57,7 @@ public class TileEntityCanvas extends TileEntity {
             }
         }
     }
+
     @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.readFromNBT(tag);

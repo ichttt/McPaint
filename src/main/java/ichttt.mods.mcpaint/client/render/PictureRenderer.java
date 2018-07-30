@@ -38,19 +38,19 @@ public class PictureRenderer {
                 int color = picture[x][y];
                 //background is already white, we can skip it
                 if (color == WHITE) continue;
-                double left = ingameX + ((x * scaleFactor) / 128F);
-                double top = ingameY + ((y * scaleFactor) / 128F);
+                double left = 1 + ingameX - (((2 + x) * scaleFactor) / 128F);
+                double top = 1 + ingameY - (((2 + y) * scaleFactor) / 128F);
                 double right = left + (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
                 //See drawRect(int left, int top, int right, int bottom, int color
-                float f3 = (float) (color >> 24 & 255) / 255.0F;
-                float f = (float) (color >> 16 & 255) / 255.0F;
-                float f1 = (float) (color >> 8 & 255) / 255.0F;
-                float f2 = (float) (color & 255) / 255.0F;
-                builder.pos(left, top, ingameZ).color(f, f1, f2, f3).endVertex();
-                builder.pos(right, top, ingameZ).color(f, f1, f2, f3).endVertex();
-                builder.pos(right, bottom, ingameZ).color(f, f1, f2, f3).endVertex();
-                builder.pos(left, bottom, ingameZ).color(f, f1, f2, f3).endVertex();
+                float a = (float) (color >> 24 & 255) / 255.0F;
+                float r = (float) (color >> 16 & 255) / 255.0F;
+                float g = (float) (color >> 8 & 255) / 255.0F;
+                float b = (float) (color & 255) / 255.0F;
+                builder.pos(left, top, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(right, top, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(right, bottom, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(left, bottom, ingameZ).color(r, g, b, a).endVertex();
             }
         }
     }

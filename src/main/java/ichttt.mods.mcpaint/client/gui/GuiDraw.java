@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.client.gui;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.EnumPaintColor;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.networking.MessageDrawComplete;
 import net.minecraft.client.gui.GuiButton;
@@ -22,8 +23,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class GuiDraw extends GuiScreen {
-    private static final int PICTURE_START_LEFT = 10;
-    private static final int PICTURE_START_TOP = 13;
+    private static final int PICTURE_START_LEFT = 14;
+    private static final int PICTURE_START_TOP = 17;
     private static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     public static final int xSize = 176;
     public static final int ySize = 166;
@@ -125,6 +126,7 @@ public class GuiDraw extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.scaleFactor, this.picture));
+            mc.world.setBlockState(pos, mc.world.getBlockState(pos).withProperty(BlockCanvas.PAINTED, true));
             ((TileEntityCanvas) mc.world.getTileEntity(pos)).storeData(this.scaleFactor, this.picture);
             mc.displayGuiScreen(null);
         }
