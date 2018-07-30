@@ -1,4 +1,4 @@
-package ichttt.mods.mcpaint.client.gui;
+package ichttt.mods.mcpaint.client;
 
 import java.awt.*;
 
