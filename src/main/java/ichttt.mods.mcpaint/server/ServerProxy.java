@@ -1,4 +1,7 @@
-package ichttt.mods.mcpaint;
+package ichttt.mods.mcpaint.server;
+
+import ichttt.mods.mcpaint.IProxy;
+import ichttt.mods.mcpaint.MCPaint;
 
 public class ServerProxy implements IProxy {
     @Override

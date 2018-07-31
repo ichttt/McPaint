@@ -1,11 +1,7 @@
 package ichttt.mods.mcpaint.common.block;
 
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
-
-import javax.annotation.Nullable;
 
 public class TileEntityCanvas extends TileEntity {
     //DO NOT CHANGE - USED FOR NBT
