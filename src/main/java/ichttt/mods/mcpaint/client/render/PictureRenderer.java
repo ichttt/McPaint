@@ -36,10 +36,8 @@ public class PictureRenderer {
             int[] yPos = picture[x];
             for (int y = 0; y < yPos.length; y++) {
                 int color = picture[x][y];
-                //background is already white, we can skip it
-                if (color == WHITE) continue;
-                double left = 1 + ingameX - (((2 + x) * scaleFactor) / 128F);
-                double top = 1 + ingameY - (((2 + y) * scaleFactor) / 128F);
+                double left = 1 + ingameX - (((3 + x) * scaleFactor) / 128F);
+                double top = 1 + ingameY - (((3 + y) * scaleFactor) / 128F);
                 double right = left + (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
                 //See drawRect(int left, int top, int right, int bottom, int color

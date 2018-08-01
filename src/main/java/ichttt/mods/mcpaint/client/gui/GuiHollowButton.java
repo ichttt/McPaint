@@ -16,7 +16,7 @@ public class GuiHollowButton extends GuiButton {
     public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
         this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
-        if (mc.gameSettings.showDebugInfo || this.hovered) {
+        if (this.hovered) {
             this.drawVerticalLine(this.x - 1, this.y - 1, this.y + this.height, this.color);
             this.drawVerticalLine(this.x + this.width, this.y - 1, this.y + this.height, this.color);
             this.drawHorizontalLine(this.x - 1, this.x + this.width, this.y - 1, this.color);

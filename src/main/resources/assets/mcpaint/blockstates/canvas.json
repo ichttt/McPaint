@@ -1,6 +1,6 @@
 {
   "variants": {
     "painted=false": { "model": "mcpaint:canvas" },
-    "painted=true": { "model": "mcpaint:canvas" }
+    "painted=true": { "model": "mcpaint:canvas_painted" }
   }
 }

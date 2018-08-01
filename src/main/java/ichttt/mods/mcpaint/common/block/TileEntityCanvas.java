@@ -55,6 +55,11 @@ public class TileEntityCanvas extends TileEntity {
     }
 
     @Override
+    public boolean hasFastRenderer() {
+        return true;
+    }
+
+    @Override
     public void handleUpdateTag(NBTTagCompound tag) {
         this.readFromNBT(tag);
     }

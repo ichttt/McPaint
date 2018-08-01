@@ -19,7 +19,9 @@ import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 public class GuiDraw extends GuiScreen {
@@ -28,6 +30,8 @@ public class GuiDraw extends GuiScreen {
     private static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     public static final int xSize = 176;
     public static final int ySize = 166;
+    public static final int toolXSize = 80;
+    public static final int toolYSize = 95;
 
     private final byte scaleFactor;
     private final int[][] picture;
@@ -37,6 +41,8 @@ public class GuiDraw extends GuiScreen {
     private int guiLeft;
     private int guiTop;
     private boolean clickStartedInPicture = false;
+    private final List<GuiButtonTextToggle> textToggleList = new ArrayList<>();
+    private EnumDrawType activeDrawType;
 
     public GuiDraw(byte scaleFactor, BlockPos pos) {
         this.pos = Objects.requireNonNull(pos);
@@ -48,9 +54,13 @@ public class GuiDraw extends GuiScreen {
 
     @Override
     public void initGui() {
+        this.textToggleList.clear();
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
+        GuiButton fill = new GuiButtonTextToggle(-3, this.guiLeft + xSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
+        GuiButton pencil = new GuiButtonTextToggle(-2, this.guiLeft + xSize + 3, this.guiTop + 5, 36, 20, "Pencil", EnumDrawType.PENCIL);
         GuiButton done = new GuiButton(-1, this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done"));
+
         GuiHollowButton black = new GuiHollowButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB());
         GuiHollowButton white = new GuiHollowButton(1, this.guiLeft + 137 + 18, this.guiTop + 9, 16, 16, Color.BLUE.getRGB());
         GuiHollowButton gray = new GuiHollowButton(2, this.guiLeft + 137, this.guiTop + 9 + 18, 16, 16, Color.BLUE.getRGB());
@@ -64,6 +74,9 @@ public class GuiDraw extends GuiScreen {
         GuiHollowButton darkBlue = new GuiHollowButton(9, this.guiLeft + 137 + 18, this.guiTop + 9 + 72, 16, 16, Color.BLACK.getRGB());
         GuiHollowButton purple = new GuiHollowButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
         GuiHollowButton pink = new GuiHollowButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
+
+        this.buttonList.add(fill);
+        this.buttonList.add(pencil);
         this.buttonList.add(done);
         this.buttonList.add(black);
         this.buttonList.add(white);
@@ -77,13 +90,19 @@ public class GuiDraw extends GuiScreen {
         this.buttonList.add(darkBlue);
         this.buttonList.add(purple);
         this.buttonList.add(pink);
+        for (GuiButton button : this.buttonList) {
+            if (button instanceof GuiButtonTextToggle) {
+                this.textToggleList.add((GuiButtonTextToggle) button);
+            }
+        }
+        this.actionPerformed(pencil);
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-//        this.initGui();
         mc.getTextureManager().bindTexture(BACKGROUND);
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
+        this.drawTexturedModalRect(this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         super.drawScreen(mouseX, mouseY, partialTicks);
         if (color != null) {
             drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, color.RGB);
@@ -132,6 +151,14 @@ public class GuiDraw extends GuiScreen {
         }
         if (button.id >= 0)
             color = EnumPaintColor.VALUES[button.id];
+        else {
+            for (GuiButtonTextToggle toggleButton : this.textToggleList) {
+                boolean toggled = toggleButton.id == button.id;
+                toggleButton.toggled = toggled;
+                if (toggled)
+                    this.activeDrawType = toggleButton.type;
+            }
+        }
     }
 
     private boolean handleMouse(int mouseX, int mouseY, int mouseButton) {
@@ -142,7 +169,7 @@ public class GuiDraw extends GuiScreen {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
             if (pixelPosX < picture.length && pixelPosY < picture.length && this.color != null) {
-                picture[pixelPosX][pixelPosY] = this.color.RGB;
+                this.activeDrawType.draw(this.picture, this.color.RGB, pixelPosX, pixelPosY);
                 return true;
             }
         }

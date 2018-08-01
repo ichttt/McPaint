@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.common.block;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
@@ -10,6 +11,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
@@ -19,7 +21,7 @@ import net.minecraft.world.World;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockCanvas extends Block {
+public class BlockCanvas extends BlockDirectional {
     public static final PropertyBool PAINTED = PropertyBool.create("painted");
 
     public BlockCanvas() {
@@ -29,20 +31,13 @@ public class BlockCanvas extends Block {
 
     @Override
     public boolean hasTileEntity(IBlockState state) {
-        return true;
+        return state.getValue(PAINTED);
     }
 
     @Nullable
     @Override
     public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state) {
         return new TileEntityCanvas();
-    }
-
-    @SuppressWarnings("deprecation")
-    @Nonnull
-    @Override
-    public EnumBlockRenderType getRenderType(IBlockState state) {
-        return state.getValue(PAINTED) ? EnumBlockRenderType.ENTITYBLOCK_ANIMATED : EnumBlockRenderType.MODEL;
     }
 
     @Override
@@ -58,6 +53,17 @@ public class BlockCanvas extends Block {
         return new BlockStateContainer(this, PAINTED);
     }
 
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+       return BlockRenderLayer.CUTOUT_MIPPED;
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return !state.getValue(PAINTED);
+    }
+
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
@@ -70,8 +76,6 @@ public class BlockCanvas extends Block {
             throw new RuntimeException("Unknown meta value " + meta);
         }
     }
-
-
 
     @Override
     public int getMetaFromState(IBlockState state) {
