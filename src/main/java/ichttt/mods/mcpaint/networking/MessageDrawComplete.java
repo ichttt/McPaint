@@ -78,7 +78,7 @@ public class MessageDrawComplete implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + message.pos + " has been selected by player " + handler.player.getName() + " - Block invalid");
                     return;
                 }
-                handler.player.world.setBlockState(message.pos, state.withProperty(BlockCanvas.PAINTED, true));
+//                handler.player.world.setBlockState(message.pos, state.withProperty(BlockCanvas.PAINTED, true));
 
                 TileEntity te = handler.player.world.getTileEntity(message.pos);
                 if (!(te instanceof TileEntityCanvas)) {

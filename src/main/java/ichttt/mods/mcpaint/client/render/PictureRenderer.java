@@ -36,8 +36,8 @@ public class PictureRenderer {
             int[] yPos = picture[x];
             for (int y = 0; y < yPos.length; y++) {
                 int color = picture[x][y];
-                double left = 1 + ingameX - (((3 + x) * scaleFactor) / 128F);
-                double top = 1 + ingameY - (((3 + y) * scaleFactor) / 128F);
+                double left = 1 + ingameX - ((x * scaleFactor) / 128F) - 1F / 16F - scaleFactor / 128F;
+                double top = 1 + ingameY - ((y * scaleFactor) / 128F) - 1F / 16F - scaleFactor / 128F;
                 double right = left + (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
                 //See drawRect(int left, int top, int right, int bottom, int color

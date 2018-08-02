@@ -17,6 +17,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.client.MinecraftForgeClient;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -42,9 +43,16 @@ public class BlockCanvas extends BlockDirectional {
 
     @Override
     public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (world.isRemote)
-            Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 4, pos));
-        return super.onBlockActivated(world, pos, state, player, hand, facing, hitX, hitY, hitZ);
+        world.setBlockState(pos, state.withProperty(BlockCanvas.PAINTED, true));
+        if (world.isRemote) {
+            TileEntity tileEntity = world.getTileEntity(pos);
+            if (tileEntity instanceof TileEntityCanvas && ((TileEntityCanvas) tileEntity).hasData()) {
+                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((TileEntityCanvas) tileEntity));
+            } else {
+                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 8, pos));
+            }
+        }
+        return true;
     }
 
     @Nonnull
@@ -53,6 +61,7 @@ public class BlockCanvas extends BlockDirectional {
         return new BlockStateContainer(this, PAINTED);
     }
 
+    @Nonnull
     @Override
     public BlockRenderLayer getRenderLayer() {
        return BlockRenderLayer.CUTOUT_MIPPED;

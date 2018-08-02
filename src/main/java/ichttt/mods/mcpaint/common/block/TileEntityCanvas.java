@@ -1,5 +1,7 @@
 package ichttt.mods.mcpaint.common.block;
 
+import ichttt.mods.mcpaint.client.gui.GuiDraw;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 
