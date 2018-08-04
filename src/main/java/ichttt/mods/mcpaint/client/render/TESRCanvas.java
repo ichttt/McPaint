@@ -27,8 +27,10 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
     public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
         renderBlock(x, y, z, te, buffer);
 
-        if (te.hasData()) {
+        if (te.paint.hasPaintData()) {
+            GlStateManager.shadeModel(GL11.GL_SMOOTH);
             renderPicture(x, y, z, te);
+            GlStateManager.shadeModel(GL11.GL_FLAT);
         }
     }
 
@@ -46,7 +48,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
         //Render picture
-        PictureRenderer.renderInGame(x, y, z, te.getScaleFactor(), builder, te.getPicture());
+        PictureRenderer.renderInGame(x, y, z, te.paint.getScaleFactor(), builder, te.paint.getPictureData());
         tessellator.draw();
 
         //GL cleanup
@@ -58,7 +60,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
     private void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder) {
         //Render block
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
-        IBlockState state = te.hasData() ? HAS_DATA : HAS_NO_DATA;
+        IBlockState state = te.paint.hasPaintData() ? HAS_DATA : HAS_NO_DATA;
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
         dispatcher.renderBlock(state, pos, te.getWorld(), builder);

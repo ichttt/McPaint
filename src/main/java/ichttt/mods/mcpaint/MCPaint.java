@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint;
 
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawComplete;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.init.Items;
@@ -9,6 +10,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
+import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -32,6 +34,9 @@ public class MCPaint {
     @SidedProxy(clientSide = "ichttt.mods.mcpaint.client.ClientProxy", serverSide = "ichttt.mods.mcpaint.server.ServerProxy")
     public static IProxy proxy;
 
+    @Mod.Instance
+    public static MCPaint instance;
+
     public static CreativeTabs creativeTab;
     public static SimpleNetworkWrapper NETWORKING = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
 
@@ -47,9 +52,14 @@ public class MCPaint {
         };
 
         MinecraftForge.EVENT_BUS.register(EventHandler.class);
-        NETWORKING.registerMessage(MessageDrawComplete.Handler.class, MessageDrawComplete.class, 1, Side.SERVER);
         proxy.preInit();
         checkEarlyExit();
+    }
+
+    @Mod.EventHandler
+    public void init(FMLInitializationEvent event) {
+        NETWORKING.registerMessage(MessageDrawComplete.Handler.class, MessageDrawComplete.class, 1, Side.SERVER);
+        CapabilityPaintable.register();
     }
 
 

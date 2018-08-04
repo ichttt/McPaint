@@ -46,8 +46,8 @@ public class BlockCanvas extends BlockDirectional {
         world.setBlockState(pos, state.withProperty(BlockCanvas.PAINTED, true));
         if (world.isRemote) {
             TileEntity tileEntity = world.getTileEntity(pos);
-            if (tileEntity instanceof TileEntityCanvas && ((TileEntityCanvas) tileEntity).hasData()) {
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((TileEntityCanvas) tileEntity));
+            if (tileEntity instanceof TileEntityCanvas && ((TileEntityCanvas) tileEntity).paint.hasPaintData()) {
+                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(((TileEntityCanvas) tileEntity).paint, tileEntity.getPos()));
             } else {
                 Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 8, pos));
             }

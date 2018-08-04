@@ -3,8 +3,8 @@ package ichttt.mods.mcpaint.client.gui;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.EnumPaintColor;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
-import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawComplete;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
@@ -52,20 +52,20 @@ public class GuiDraw extends GuiScreen {
     private boolean hasSizeWindow;
     private boolean synced = false;
 
-    public GuiDraw(TileEntityCanvas canvas) {
+    public GuiDraw(IPaintable canvas, BlockPos pos) {
         Objects.requireNonNull(canvas);
-        if (!canvas.hasData())
+        if (!canvas.hasPaintData())
             throw new IllegalArgumentException("No data in canvas");
-        this.pos = canvas.getPos();
+        this.pos = pos;
         this.scaleFactor = canvas.getScaleFactor();
-        this.picture = canvas.getPicture();
+        this.picture = canvas.getPictureData();
         this.synced = true;
     }
 
     public GuiDraw(byte scaleFactor, BlockPos pos) {
         this.pos = Objects.requireNonNull(pos);
         this.scaleFactor = scaleFactor;
-        this.picture = new int[TileEntityCanvas.CANVAS_PIXEL_COUNT / scaleFactor][TileEntityCanvas.CANVAS_PIXEL_COUNT / scaleFactor];
+        this.picture = new int[112 / scaleFactor][112 / scaleFactor];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, Color.WHITE.getRGB());
     }
@@ -173,7 +173,9 @@ public class GuiDraw extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) mc.world.getTileEntity(pos)).storeData(this.scaleFactor, this.picture);
+            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData((short) 14, (short) 14, this.scaleFactor, this.picture);
+//            EntityCanvas canvas = new EntityCanvas(mc.world);
+
             mc.displayGuiScreen(null);
         } else if (button.id == -2) {
             this.toolSize--;
@@ -207,7 +209,7 @@ public class GuiDraw extends GuiScreen {
         if (!this.synced) {
             TileEntity tileEntity = Minecraft.getMinecraft().world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityCanvas) {
-                ((TileEntityCanvas) tileEntity).storeData(this.scaleFactor ,this.picture);
+                ((TileEntityCanvas) tileEntity).paint.setData((short) 14, (short) 14, this.scaleFactor ,this.picture);
                 this.synced = true;
             }
         }
