@@ -1,8 +1,0 @@
-{
-  "parent": "block/orientable",
-  "textures": {
-    "top": "mcpaint:blocks/canvas",
-    "front": "mcpaint:blocks/cutout_canvas",
-    "side": "mcpaint:blocks/canvas"
-  }
-}

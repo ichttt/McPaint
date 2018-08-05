@@ -4,9 +4,11 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
+import net.minecraft.block.BlockDirectional;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
@@ -15,6 +17,7 @@ import java.util.Objects;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     public final IPaintable paint = new Paint(this);
+    private ResourceLocation backgroundBlock;
 
     @Nonnull
     @Override
@@ -35,7 +38,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void handleUpdateTag(NBTTagCompound tag) {
+    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
         this.readFromNBT(tag);
     }
 
@@ -60,6 +63,10 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
-        return pixelCountX == 14 && pixelCountY == 14;
+        return pixelCountX == 112 && pixelCountY == 112;
+    }
+
+    public EnumFacing getFacing() {
+        return this.world.getBlockState(this.pos).getValue(BlockDirectional.FACING);
     }
 }

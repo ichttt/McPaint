@@ -173,7 +173,7 @@ public class GuiDraw extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData((short) 14, (short) 14, this.scaleFactor, this.picture);
+            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData((short) 112, (short) 112, this.scaleFactor, this.picture);
 //            EntityCanvas canvas = new EntityCanvas(mc.world);
 
             mc.displayGuiScreen(null);
@@ -209,7 +209,7 @@ public class GuiDraw extends GuiScreen {
         if (!this.synced) {
             TileEntity tileEntity = Minecraft.getMinecraft().world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityCanvas) {
-                ((TileEntityCanvas) tileEntity).paint.setData((short) 14, (short) 14, this.scaleFactor ,this.picture);
+                ((TileEntityCanvas) tileEntity).paint.setData((short) 112, (short) 112, this.scaleFactor ,this.picture);
                 this.synced = true;
             }
         }

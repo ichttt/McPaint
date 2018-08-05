@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.networking;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -83,7 +84,8 @@ public class MessageDrawComplete implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + message.pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).paint.setData((short) 14, (short) 14, message.scale, message.data);
+                ((TileEntityCanvas) te).paint.setData((short) 112, (short) 112, message.scale, message.data);
+                te.markDirty();
             });
             return null;
         }

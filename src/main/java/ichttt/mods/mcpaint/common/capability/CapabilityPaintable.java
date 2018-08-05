@@ -50,7 +50,7 @@ public class CapabilityPaintable {
     }
 
     public static void readFromNBT(IPaintable instance, NBTTagCompound compound) {
-        if (!compound.hasKey("pixel", Constants.NBT.TAG_SHORT))
+        if (!compound.hasKey("scale", Constants.NBT.TAG_BYTE))
             return;
         short pixelCountX = compound.getShort("pixelX");
         short pixelCountY = compound.getShort("pixelY");

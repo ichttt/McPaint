@@ -36,7 +36,7 @@ public class PictureRenderer {
             int[] yPos = picture[x];
             for (int y = 0; y < yPos.length; y++) {
                 int color = picture[x][y];
-                double left = 1 + ingameX - ((x * scaleFactor) / 128F) - 1F / 16F - scaleFactor / 128F;
+                double left = ingameX - ((x * scaleFactor) / 128F) - 1F / 16F - scaleFactor / 128F;
                 double top = 1 + ingameY - ((y * scaleFactor) / 128F) - 1F / 16F - scaleFactor / 128F;
                 double right = left + (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
@@ -45,10 +45,10 @@ public class PictureRenderer {
                 float r = (float) (color >> 16 & 255) / 255.0F;
                 float g = (float) (color >> 8 & 255) / 255.0F;
                 float b = (float) (color & 255) / 255.0F;
-                builder.pos(left, top, ingameZ).color(r, g, b, a).endVertex();
-                builder.pos(right, top, ingameZ).color(r, g, b, a).endVertex();
-                builder.pos(right, bottom, ingameZ).color(r, g, b, a).endVertex();
                 builder.pos(left, bottom, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(right, bottom, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(right, top, ingameZ).color(r, g, b, a).endVertex();
+                builder.pos(left, top, ingameZ).color(r, g, b, a).endVertex();
             }
         }
     }
