@@ -1,8 +1,8 @@
 package ichttt.mods.mcpaint.networking;
 
+import com.google.common.primitives.Shorts;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.EventHandler;
-import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -47,8 +47,7 @@ public class MessageDrawComplete implements IMessage {
     public void toBytes(ByteBuf buf) {
         buf.writeLong(pos.toLong());
         buf.writeByte(scale);
-        if (data.length > Short.MAX_VALUE) throw new RuntimeException("Too large array: " + data.length);
-        buf.writeShort(data.length);
+        buf.writeShort(Shorts.checkedCast(data.length));
         for (short i = 0; i < data.length; i++) {
             int[] subarray = data[i];
             if (subarray.length != data.length) throw new RuntimeException("Wrong length: " + subarray.length + " needs to be " + data.length);
@@ -74,7 +73,7 @@ public class MessageDrawComplete implements IMessage {
                 }
 
                 IBlockState state = handler.player.world.getBlockState(message.pos);
-                if (state.getBlock() != EventHandler.block) {
+                if (state.getBlock() != EventHandler.CANVAS) {
                     MCPaint.LOGGER.warn("Invalid block at pos " + message.pos + " has been selected by player " + handler.player.getName() + " - Block invalid");
                     return;
                 }
@@ -84,7 +83,7 @@ public class MessageDrawComplete implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + message.pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).paint.setData((short) 112, (short) 112, message.scale, message.data);
+                ((TileEntityCanvas) te).paint.setData(message.scale, message.data);
                 te.markDirty();
             });
             return null;

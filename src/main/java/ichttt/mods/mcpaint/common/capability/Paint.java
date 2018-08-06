@@ -1,5 +1,7 @@
 package ichttt.mods.mcpaint.common.capability;
 
+import com.google.common.primitives.Shorts;
+
 public class Paint implements IPaintable {
     private static final IPaintValidator TRUE_VALIDATOR = (pixelCountX, pixelCountY) -> true;
 
@@ -23,7 +25,9 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void setData(short pixelCountX, short pixelCountY, byte scaleFactor, int[][] pictureData) {
+    public void setData(byte scaleFactor, int[][] pictureData) {
+        short pixelCountX = Shorts.checkedCast(pictureData.length * scaleFactor);
+        short pixelCountY = Shorts.checkedCast(pictureData[0].length * scaleFactor);
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
             throw new IllegalArgumentException("Invalid pixel count: x:" + pixelCountX + " y:" + pixelCountY);
         this.pixelCountX = pixelCountX;

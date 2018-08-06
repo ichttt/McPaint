@@ -5,7 +5,9 @@ import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.block.BlockDirectional;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
@@ -17,18 +19,20 @@ import java.util.Objects;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     public final IPaintable paint = new Paint(this);
-    private ResourceLocation backgroundBlock;
+    private IBlockState containedState;
 
     @Nonnull
     @Override
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        NBTTagCompound compound = super.writeToNBT(tag);
-        return CapabilityPaintable.writeToNBT(this.paint, compound);
+        tag = super.writeToNBT(tag);
+        NBTUtil.writeBlockState(tag, containedState);
+        return CapabilityPaintable.writeToNBT(this.paint, tag);
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
+        this.containedState = NBTUtil.readBlockState(tag);
         CapabilityPaintable.readFromNBT(this.paint, tag);
     }
 
@@ -68,5 +72,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     public EnumFacing getFacing() {
         return this.world.getBlockState(this.pos).getValue(BlockDirectional.FACING);
+    }
+
+    public void setContainedBlockstate(IBlockState state) {
+        this.containedState = state;
+        this.markDirty();
+    }
+
+    public IBlockState getContainedState() {
+        return this.containedState;
     }
 }

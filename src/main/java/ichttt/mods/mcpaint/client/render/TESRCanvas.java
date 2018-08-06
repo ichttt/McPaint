@@ -30,7 +30,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         int[][] picture = new int[7][7];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, Color.WHITE.getRGB());
-        DEFAULT_PAINT.setData((short) 7, (short) 7, (byte) 16, picture);
+        DEFAULT_PAINT.setData((byte) 16, picture);
     }
 
     //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
@@ -107,7 +107,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
     private static void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder) {
         //Render block
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
-        IBlockState state = Blocks.LAPIS_BLOCK.getDefaultState();
+        IBlockState state = te.getContainedState();
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
         dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true);

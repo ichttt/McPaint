@@ -61,6 +61,6 @@ public class CapabilityPaintable {
         for (int i = 0; i < (arraySize); i++) {
             pictureData[i] = pictureInfo.getIntArray("" + i);
         }
-        instance.setData(pixelCountX, pixelCountY, scaleFactor, pictureData);
+        instance.setData(scaleFactor, pictureData);
     }
 }

@@ -42,19 +42,6 @@ public class BlockCanvas extends BlockDirectional {
         return new TileEntityCanvas();
     }
 
-    @Override
-    public boolean onBlockActivated(World world, BlockPos pos, IBlockState state, EntityPlayer player, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
-        if (world.isRemote) {
-            TileEntity tileEntity = world.getTileEntity(pos);
-            if (tileEntity instanceof TileEntityCanvas && ((TileEntityCanvas) tileEntity).paint.hasPaintData()) {
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(((TileEntityCanvas) tileEntity).paint, tileEntity.getPos()));
-            } else {
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos));
-            }
-        }
-        return true;
-    }
-
     @Nonnull
     @Override
     public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand)

@@ -123,8 +123,13 @@ public class GuiDraw extends GuiScreen {
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
         mc.getTextureManager().bindTexture(BACKGROUND);
+        //main
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
+        //color
         this.drawTexturedModalRect(this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        //tools
+        this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        //size
         if (this.hasSizeWindow) {
             this.drawTexturedModalRect(this.guiLeft + xSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
             drawCenteredString(this.fontRenderer, toolSize + "", this.guiLeft + xSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
@@ -173,7 +178,7 @@ public class GuiDraw extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData((short) 112, (short) 112, this.scaleFactor, this.picture);
+            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData(this.scaleFactor, this.picture);
 //            EntityCanvas canvas = new EntityCanvas(mc.world);
 
             mc.displayGuiScreen(null);
@@ -209,7 +214,7 @@ public class GuiDraw extends GuiScreen {
         if (!this.synced) {
             TileEntity tileEntity = Minecraft.getMinecraft().world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityCanvas) {
-                ((TileEntityCanvas) tileEntity).paint.setData((short) 112, (short) 112, this.scaleFactor ,this.picture);
+                ((TileEntityCanvas) tileEntity).paint.setData(this.scaleFactor, this.picture);
                 this.synced = true;
             }
         }
