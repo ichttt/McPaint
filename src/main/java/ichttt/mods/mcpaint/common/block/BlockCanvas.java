@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.common.block;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
@@ -21,11 +22,10 @@ import net.minecraft.world.World;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockCanvas extends BlockDirectional {
+public class BlockCanvas extends Block {
 
     public BlockCanvas() {
         super(Material.WOOD);
-        this.setDefaultState(this.blockState.getBaseState().withProperty(BlockDirectional.FACING, EnumFacing.NORTH));
         setHardness(1F);
         setCreativeTab(CreativeTabs.DECORATIONS);
         setResistance(5F);
@@ -43,36 +43,11 @@ public class BlockCanvas extends BlockDirectional {
         return new TileEntityCanvas();
     }
 
-    @Nonnull
-    @Override
-    public IBlockState getStateForPlacement(@Nonnull World world, @Nonnull BlockPos pos, @Nonnull EnumFacing facing, float hitX, float hitY, float hitZ, int meta, @Nonnull EntityLivingBase placer, EnumHand hand)
-    {
-        return this.getDefaultState().withProperty(FACING, placer.getHorizontalFacing());
-    }
-
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
         return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
-    }
-
-    @Nonnull
-    @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, BlockDirectional.FACING);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        return this.getDefaultState().withProperty(BlockDirectional.FACING, EnumFacing.byIndex(meta));
-    }
-
-    @Override
-    public int getMetaFromState(IBlockState state) {
-        return state.getValue(BlockDirectional.FACING).getIndex();
     }
 
     //Delegating methods

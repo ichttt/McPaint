@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
@@ -40,6 +41,7 @@ public class GuiDraw extends GuiScreen {
     private final byte scaleFactor;
     private final int[][] picture;
     private final BlockPos pos;
+    private final EnumFacing facing;
 
     private EnumPaintColor color = null;
     private int guiLeft;
@@ -52,18 +54,20 @@ public class GuiDraw extends GuiScreen {
     private boolean hasSizeWindow;
     private boolean synced = false;
 
-    public GuiDraw(IPaintable canvas, BlockPos pos) {
+    public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing) {
         Objects.requireNonNull(canvas);
         if (!canvas.hasPaintData())
             throw new IllegalArgumentException("No data in canvas");
         this.pos = pos;
+        this.facing = facing;
         this.scaleFactor = canvas.getScaleFactor();
         this.picture = canvas.getPictureData();
         this.synced = true;
     }
 
-    public GuiDraw(byte scaleFactor, BlockPos pos) {
+    public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing) {
         this.pos = Objects.requireNonNull(pos);
+        this.facing = facing;
         this.scaleFactor = scaleFactor;
         this.picture = new int[112 / scaleFactor][112 / scaleFactor];
         for (int[] tileArray : picture)
@@ -177,8 +181,8 @@ public class GuiDraw extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
-            MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) mc.world.getTileEntity(pos)).paint.setData(this.scaleFactor, this.picture);
+            MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.facing, this.scaleFactor, this.picture));
+            ((TileEntityCanvas) mc.world.getTileEntity(pos)).getPaintFor(facing).setData(this.scaleFactor, this.picture);
 //            EntityCanvas canvas = new EntityCanvas(mc.world);
 
             mc.displayGuiScreen(null);
@@ -214,7 +218,7 @@ public class GuiDraw extends GuiScreen {
         if (!this.synced) {
             TileEntity tileEntity = Minecraft.getMinecraft().world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityCanvas) {
-                ((TileEntityCanvas) tileEntity).paint.setData(this.scaleFactor, this.picture);
+                ((TileEntityCanvas) tileEntity).getPaintFor(facing).setData(this.scaleFactor, this.picture);
                 this.synced = true;
             }
         }

@@ -9,6 +9,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
@@ -17,6 +18,7 @@ import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
 public class MessageDrawComplete implements IMessage {
     private BlockPos pos;
+    private EnumFacing facing;
     private byte scale;
     private int[][] data;
 
@@ -24,8 +26,9 @@ public class MessageDrawComplete implements IMessage {
 
     }
 
-    public MessageDrawComplete(BlockPos pos, byte scale, int[][] data) {
+    public MessageDrawComplete(BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
         this.pos = pos;
+        this.facing = facing;
         this.scale = scale;
         this.data = data;
     }
@@ -34,11 +37,12 @@ public class MessageDrawComplete implements IMessage {
     public void fromBytes(ByteBuf buf) {
         this.pos = BlockPos.fromLong(buf.readLong());
         this.scale = buf.readByte();
+        this.facing = EnumFacing.byIndex(buf.readByte());
         short max = buf.readShort();
         this.data = new int[max][max];
         for (int i = 0; i < max; i++) {
             for (int j = 0; j < max; j++) {
-                data[i][j] = buf.readInt();
+                data[i][j] = buf.readMedium();
             }
         }
     }
@@ -47,12 +51,13 @@ public class MessageDrawComplete implements IMessage {
     public void toBytes(ByteBuf buf) {
         buf.writeLong(pos.toLong());
         buf.writeByte(scale);
+        buf.writeByte(facing.getIndex());
         buf.writeShort(Shorts.checkedCast(data.length));
         for (short i = 0; i < data.length; i++) {
             int[] subarray = data[i];
             if (subarray.length != data.length) throw new RuntimeException("Wrong length: " + subarray.length + " needs to be " + data.length);
             for (int value : subarray) {
-                buf.writeInt(value);
+                buf.writeMedium(value);
             }
         }
     }
@@ -83,7 +88,7 @@ public class MessageDrawComplete implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + message.pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).paint.setData(message.scale, message.data);
+                ((TileEntityCanvas) te).getPaintFor(message.facing).setData(message.scale, message.data);
                 te.markDirty();
             });
             return null;

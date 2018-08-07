@@ -38,16 +38,21 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
     public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
         renderBlock(x, y, z, te, buffer);
 
-        renderPicture(x, y, z, te);
+        int light = te.getWorld().getCombinedLight(te.getPos(), 0);
+        for (EnumFacing facing : EnumFacing.VALUES) {
+            if (te.hasPaintFor(facing))
+                renderPicture(x, y, z, te.getPaintFor(facing), facing, light);
+        }
     }
 
-    private static void renderPicture(double x, double y, double z, TileEntityCanvas te) {
+    private static void renderPicture(double x, double y, double z, IPaintable paint, EnumFacing facing, int light) {
         //Facing setup
-        EnumFacing facing = te.getFacing();
         int xOffset = 0;
+        int yOffset = 0;
         int zOffset = 0;
         int angle = 0;
         double translationXOffset = 0D;
+        double translationYOffset = 0D;
         double translationZOffset = 0D;
         switch (facing) {
             case NORTH:
@@ -69,6 +74,16 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
                 zOffset = -1;
                 translationXOffset = 0.003D;
                 break;
+            case UP:
+                yOffset = -1;
+                translationYOffset = -0.003D;
+                break;
+            case DOWN:
+                xOffset = 1;
+                yOffset = -1;
+                zOffset = 1;
+                translationYOffset = 0.003D;
+                break;
         }
 
         //GL setup
@@ -77,10 +92,9 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         GlStateManager.disableLighting();
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
         GlStateManager.pushMatrix();
-        GlStateManager.translate(x + translationXOffset, y, z + translationZOffset);
-        int i = te.getWorld().getCombinedLight(te.getPos(), 0);
-        int j = i % 65536;
-        int k = i / 65536;
+        GlStateManager.translate(x + translationXOffset, y + translationYOffset, z + translationZOffset);
+        int j = light % 65536;
+        int k = light / 65536;
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
 
         //VertexBuffer setup
@@ -89,12 +103,15 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
 
         //Render picture
-        if (te.paint.hasPaintData())
-            PictureRenderer.renderInGame(xOffset, 0, zOffset, te.paint.getScaleFactor(), builder, te.paint.getPictureData());
-        else
-            PictureRenderer.renderInGame(xOffset, 0, zOffset, DEFAULT_PAINT.getScaleFactor(), builder, DEFAULT_PAINT.getPictureData());
+        PictureRenderer.renderInGame(xOffset, yOffset, zOffset, paint.getScaleFactor(), builder, paint.getPictureData());
+
         if (angle != 0)
-            GlStateManager.rotate(angle, 0, 1, 0);
+                GlStateManager.rotate(angle, 0, 1, 0);
+        else if (facing.getAxis().isVertical()) {
+            GlStateManager.rotate(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotate(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+        }
+
         tessellator.draw();
         GlStateManager.popMatrix();
 

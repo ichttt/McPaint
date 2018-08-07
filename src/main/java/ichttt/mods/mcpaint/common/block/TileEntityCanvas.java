@@ -15,10 +15,12 @@ import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
-    public final IPaintable paint = new Paint(this);
+    private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
     private IBlockState containedState;
 
     @Nonnull
@@ -26,14 +28,24 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     public NBTTagCompound writeToNBT(NBTTagCompound tag) {
         tag = super.writeToNBT(tag);
         NBTUtil.writeBlockState(tag, containedState);
-        return CapabilityPaintable.writeToNBT(this.paint, tag);
+        NBTTagCompound faces = new NBTTagCompound();
+        for (Map.Entry<EnumFacing, IPaintable> entry : this.facingToPaintMap.entrySet()) {
+            faces.setTag(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
+        }
+        tag.setTag("faces", faces);
+        return tag;
     }
 
     @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.containedState = NBTUtil.readBlockState(tag);
-        CapabilityPaintable.readFromNBT(this.paint, tag);
+        NBTTagCompound faces = tag.getCompoundTag("faces");
+        for (String key : faces.getKeySet()) {
+            Paint paint = new Paint(this);
+            CapabilityPaintable.readFromNBT(paint, faces.getCompoundTag(key));
+            this.facingToPaintMap.put(EnumFacing.byName(key), paint);
+        }
     }
 
     @Override
@@ -56,7 +68,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityPaintable.PAINTABLE)
-            return CapabilityPaintable.PAINTABLE.cast(paint);
+            return CapabilityPaintable.PAINTABLE.cast(getPaintFor(facing));
         return super.getCapability(capability, facing);
     }
 
@@ -70,10 +82,6 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return pixelCountX == 112 && pixelCountY == 112;
     }
 
-    public EnumFacing getFacing() {
-        return this.world.getBlockState(this.pos).getValue(BlockDirectional.FACING);
-    }
-
     public void setContainedBlockstate(IBlockState state) {
         this.containedState = state;
         this.markDirty();
@@ -81,5 +89,16 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     public IBlockState getContainedState() {
         return this.containedState;
+    }
+
+    public IPaintable getPaintFor(EnumFacing facing) {
+        return facingToPaintMap.computeIfAbsent(facing, face -> new Paint(this));
+    }
+
+    public boolean hasPaintFor(EnumFacing facing) {
+        IPaintable paint = facingToPaintMap.get(facing);
+        if (paint == null)
+            return false;
+        return paint.hasPaintData();
     }
 }

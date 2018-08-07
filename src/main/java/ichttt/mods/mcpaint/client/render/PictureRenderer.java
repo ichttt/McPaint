@@ -19,7 +19,7 @@ public class PictureRenderer {
                 double right = left + scaleFactor;
                 double bottom = top + scaleFactor;
                 //See drawRect(int left, int top, int right, int bottom, int color
-                float f3 = (float) (color >> 24 & 255) / 255.0F;
+                float f3 = 1F;//(float) (color >> 24 & 255) / 255.0F; alpha is always 1
                 float f = (float) (color >> 16 & 255) / 255.0F;
                 float f1 = (float) (color >> 8 & 255) / 255.0F;
                 float f2 = (float) (color & 255) / 255.0F;
@@ -41,7 +41,7 @@ public class PictureRenderer {
                 double right = left + (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
                 //See drawRect(int left, int top, int right, int bottom, int color
-                float a = (float) (color >> 24 & 255) / 255.0F;
+                float a = 1F;//(float) (color >> 24 & 255) / 255.0F; alpha is always 1
                 float r = (float) (color >> 16 & 255) / 255.0F;
                 float g = (float) (color >> 8 & 255) / 255.0F;
                 float b = (float) (color & 255) / 255.0F;
