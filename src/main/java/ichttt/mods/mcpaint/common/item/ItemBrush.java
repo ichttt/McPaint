@@ -30,10 +30,10 @@ public class ItemBrush extends Item {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             if (canvas.hasPaintFor(facing)) {
                 if (world.isRemote)
-                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(canvas.getPaintFor(facing), canvas.getPos(), facing));
+                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(canvas.getPaintFor(facing), canvas.getPos(), facing, canvas.getContainedState()));
             } else {
                 if (world.isRemote)
-                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing));
+                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing, state));
             }
             return EnumActionResult.SUCCESS;
         }
@@ -44,7 +44,7 @@ public class ItemBrush extends Item {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setContainedBlockstate(state);
             if (world.isRemote) {
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing));
+                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing, state));
             }
             return EnumActionResult.SUCCESS;
         }

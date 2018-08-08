@@ -4,20 +4,17 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
-import net.minecraft.block.BlockDirectional;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.EnumMap;
 import java.util.Map;
-import java.util.Objects;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
@@ -79,7 +76,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
-        return pixelCountX == 112 && pixelCountY == 112;
+        return pixelCountX == 128 && pixelCountY == 128;
     }
 
     public void setContainedBlockstate(IBlockState state) {
@@ -100,5 +97,10 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         if (paint == null)
             return false;
         return paint.hasPaintData();
+    }
+
+    @Override
+    public double getMaxRenderDistanceSquared() { //128 for block, paint is limited in TE to 96
+        return 128D * 128D;
     }
 }

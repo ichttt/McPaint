@@ -6,18 +6,26 @@ import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawComplete;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.color.BlockColors;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraft.util.MinecraftError;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.client.model.pipeline.BlockInfo;
+import net.minecraftforge.client.model.pipeline.LightUtil;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -28,8 +36,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class GuiDraw extends GuiScreen {
-    private static final int PICTURE_START_LEFT = 14;
-    private static final int PICTURE_START_TOP = 17;
+    private static final int PICTURE_START_LEFT = 6;
+    private static final int PICTURE_START_TOP = 9;
     private static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     public static final int xSize = 176;
     public static final int ySize = 166;
@@ -42,6 +50,7 @@ public class GuiDraw extends GuiScreen {
     private final int[][] picture;
     private final BlockPos pos;
     private final EnumFacing facing;
+    private final IBlockState state;
 
     private EnumPaintColor color = null;
     private int guiLeft;
@@ -54,24 +63,26 @@ public class GuiDraw extends GuiScreen {
     private boolean hasSizeWindow;
     private boolean synced = false;
 
-    public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing) {
+    public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas);
         if (!canvas.hasPaintData())
             throw new IllegalArgumentException("No data in canvas");
         this.pos = pos;
         this.facing = facing;
+        this.state = state;
         this.scaleFactor = canvas.getScaleFactor();
         this.picture = canvas.getPictureData();
         this.synced = true;
     }
 
-    public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing) {
+    public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
+        this.state = state;
         this.scaleFactor = scaleFactor;
-        this.picture = new int[112 / scaleFactor][112 / scaleFactor];
+        this.picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
-            Arrays.fill(tileArray, Color.WHITE.getRGB());
+            Arrays.fill(tileArray, new Color(255, 255,255, 0).getRGB());
     }
 
     @Override
@@ -139,21 +150,66 @@ public class GuiDraw extends GuiScreen {
             drawCenteredString(this.fontRenderer, toolSize + "", this.guiLeft + xSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
+
+        Tessellator tessellator = Tessellator.getInstance();
+        BufferBuilder buffer = tessellator.getBuffer();
+
+        //Background block
+        BakedQuad quad = mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0).get(0);
+        TextureAtlasSprite sprite = quad.getSprite();
+        GlStateManager.pushMatrix();
+        mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+        GlStateManager.translate(0, 0, -1);
+        //See BlockModelRenderer
+        if (quad.hasTintIndex()) {
+            System.out.println("TINTING");
+            int k = mc.getBlockColors().colorMultiplier(state, mc.world, pos, quad.getTintIndex());
+
+            float f = (float)(k >> 16 & 255) / 255.0F;
+            float f1 = (float)(k >> 8 & 255) / 255.0F;
+            float f2 = (float)(k & 255) / 255.0F;
+            if(quad.shouldApplyDiffuseLighting())
+            {
+                float diffuse = LightUtil.diffuseLight(quad.getFace());
+                f *= diffuse;
+                f1 *= diffuse;
+                f2 *= diffuse;
+            }
+            GlStateManager.color(f2, f1, f);
+        }
+        this.drawTexturedModalRect(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, sprite, 128, 128);
+        GlStateManager.popMatrix();
+
         super.drawScreen(mouseX, mouseY, partialTicks);
 
         if (color != null) {
             drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, color.RGB);
         }
 
+        int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
+        int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
+        boolean drawSelect = this.color != null && isInWindow(offsetMouseX, offsetMouseY);
+        int orig = 0;
+        if (drawSelect) {
+            int pixelPosX = offsetMouseX / this.scaleFactor;
+            int pixelPosY = offsetMouseY / this.scaleFactor;
+            orig = picture[pixelPosX][pixelPosY];
+            picture[pixelPosX][pixelPosY] = color.RGB;
+        }
+
         //draw picture
         //we batch everything together to increase the performance
-        Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder builder = tessellator.getBuffer();
-        builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, builder, picture);
+        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, picture);
         GlStateManager.disableTexture2D();
         tessellator.draw();
         GlStateManager.enableTexture2D();
+
+        if (drawSelect) {
+            int pixelPosX = offsetMouseX / this.scaleFactor;
+            int pixelPosY = offsetMouseY / this.scaleFactor;
+            picture[pixelPosX][pixelPosY] = orig;
+        }
     }
 
     @Override
@@ -183,8 +239,6 @@ public class GuiDraw extends GuiScreen {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.facing, this.scaleFactor, this.picture));
             ((TileEntityCanvas) mc.world.getTileEntity(pos)).getPaintFor(facing).setData(this.scaleFactor, this.picture);
-//            EntityCanvas canvas = new EntityCanvas(mc.world);
-
             mc.displayGuiScreen(null);
         } else if (button.id == -2) {
             this.toolSize--;
@@ -228,7 +282,7 @@ public class GuiDraw extends GuiScreen {
         if (mouseButton != 0) return false;
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
-        if (offsetMouseX >= 0 && offsetMouseX < (picture.length * this.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (picture.length * this.scaleFactor)) {
+        if (isInWindow(offsetMouseX, offsetMouseY)) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
             if (pixelPosX < picture.length && pixelPosY < picture.length && this.color != null) {
@@ -237,6 +291,10 @@ public class GuiDraw extends GuiScreen {
             }
         }
         return false;
+    }
+
+    private boolean isInWindow(int offsetMouseX, int offsetMouseY) {
+        return offsetMouseX >= 0 && offsetMouseX < (picture.length * this.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (picture.length * this.scaleFactor);
     }
 
     private void handleSizeChanged() {

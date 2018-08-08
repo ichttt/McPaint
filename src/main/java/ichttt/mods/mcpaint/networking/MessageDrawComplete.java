@@ -42,7 +42,7 @@ public class MessageDrawComplete implements IMessage {
         this.data = new int[max][max];
         for (int i = 0; i < max; i++) {
             for (int j = 0; j < max; j++) {
-                data[i][j] = buf.readMedium();
+                data[i][j] = buf.readInt();
             }
         }
     }
@@ -57,7 +57,7 @@ public class MessageDrawComplete implements IMessage {
             int[] subarray = data[i];
             if (subarray.length != data.length) throw new RuntimeException("Wrong length: " + subarray.length + " needs to be " + data.length);
             for (int value : subarray) {
-                buf.writeMedium(value);
+                buf.writeInt(value);
             }
         }
     }
