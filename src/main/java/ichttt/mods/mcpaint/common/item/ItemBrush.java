@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.common.item;
 
+import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
@@ -30,21 +31,21 @@ public class ItemBrush extends Item {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             if (canvas.hasPaintFor(facing)) {
                 if (world.isRemote)
-                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(canvas.getPaintFor(facing), canvas.getPos(), facing, canvas.getContainedState()));
+                    MCPaint.proxy.showGuiDraw(canvas.getPaintFor(facing), canvas.getPos(), facing, canvas.getContainedState());
             } else {
                 if (world.isRemote)
-                    Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing, state));
+                    MCPaint.proxy.showGuiDraw(pos, facing, canvas.getContainedState());
             }
             return EnumActionResult.SUCCESS;
         }
 
-        if (state.isFullBlock() && state.isFullCube() && state.isNormalCube() && state.isOpaqueCube() && !state.isTranslucent() && state.isBlockNormalCube() &&
+        if (state.isFullBlock() && state.isFullCube() && state.isNormalCube() && state.isOpaqueCube() && state.isBlockNormalCube() &&
                 state.getRenderType() == EnumBlockRenderType.MODEL && !block.hasTileEntity(state)) {
             world.setBlockState(pos, EventHandler.CANVAS.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, 0, player, hand));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setContainedBlockstate(state);
             if (world.isRemote) {
-                Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing, state));
+                MCPaint.proxy.showGuiDraw(pos, facing, state);
             }
             return EnumActionResult.SUCCESS;
         }
