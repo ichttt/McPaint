@@ -25,6 +25,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import org.apache.commons.lang3.ArrayUtils;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -36,9 +37,9 @@ import java.util.Objects;
 
 public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder, GuiSlider.FormatHelper {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
+    public static final int ZERO_ALPHA = new Color(255, 255,255, 0).getRGB();
     private static final int PICTURE_START_LEFT = 6;
     private static final int PICTURE_START_TOP = 9;
-    private static final int ZERO_ALPHA = new Color(255, 255,255, 0).getRGB();
     private static final int xSize = 176;
     private static final int ySize = 166;
     private static final int toolXSize = 80;
@@ -47,12 +48,12 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private static final int sizeYSize = 34;
 
     private final byte scaleFactor;
-    private final int[][] picture;
     private final BlockPos pos;
     private final EnumFacing facing;
     private final IBlockState state;
 
-    private Color color = null;
+    public int[][] picture;
+    public Color color = null;
     private int guiLeft;
     private int guiTop;
     private boolean clickStartedInPicture = false;
@@ -93,6 +94,9 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.textToggleList.clear();
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
+
+        GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, "Picker", EnumDrawType.PICK_COLOR);
+        GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, "Eraser", EnumDrawType.ERASER);
         GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
         GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20, "Pencil", EnumDrawType.PENCIL);
         this.moreSize = new GuiButton(-3, this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">");
@@ -122,6 +126,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, "alpha", 0, 255, 0, this);
         this.alphaSlider.width = 74;
 
+        addButton(pickColor);
+        addButton(erase);
         addButton(fill);
         addButton(pencil);
         addButton(done);
@@ -198,13 +204,16 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
 
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
-        boolean drawSelect = this.color != null && isInWindow(offsetMouseX, offsetMouseY);
-        int orig = 0;
+        //TODO clean this up, implement strg+z
+        boolean drawSelect = this.color != null && isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
+        int orig[][] = this.picture;
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
-            orig = this.picture[pixelPosX][pixelPosY];
-            this.picture[pixelPosX][pixelPosY] = this.color.getRGB();
+            this.picture = new int[this.picture.length][];
+            for (int i = 0; i < orig.length; i++)
+                this.picture[i] = orig[i].clone();
+            this.activeDrawType.draw(this, pixelPosX, pixelPosY, this.toolSize);
         }
 
         //draw picture
@@ -219,9 +228,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         GlStateManager.disableBlend();
 
         if (drawSelect) {
-            int pixelPosX = offsetMouseX / this.scaleFactor;
-            int pixelPosY = offsetMouseY / this.scaleFactor;
-            this.picture[pixelPosX][pixelPosY] = orig;
+            this.picture = orig;
         }
     }
 
@@ -313,7 +320,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
             if (pixelPosX < picture.length && pixelPosY < picture.length && this.color != null) {
-                this.activeDrawType.draw(this.picture, this.color.getRGB(), pixelPosX, pixelPosY, this.toolSize);
+                this.activeDrawType.draw(this, pixelPosX, pixelPosY, this.toolSize);
                 return true;
             }
         }
