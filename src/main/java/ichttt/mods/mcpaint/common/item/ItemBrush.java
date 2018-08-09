@@ -1,12 +1,10 @@
 package ichttt.mods.mcpaint.common.item;
 
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumActionResult;

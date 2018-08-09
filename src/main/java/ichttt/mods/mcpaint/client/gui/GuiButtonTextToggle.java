@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
 
 public class GuiButtonTextToggle extends GuiButton {
@@ -17,7 +18,7 @@ public class GuiButtonTextToggle extends GuiButton {
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    public void drawButton(@Nonnull Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             //GuiHollowButton
             if (toggled) {

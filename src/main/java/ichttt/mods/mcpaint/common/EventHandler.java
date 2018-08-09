@@ -6,13 +6,10 @@ import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.item.ItemBrush;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemBlock;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-
-import java.util.Objects;
 
 public class EventHandler {
     public static final Item BRUSH = new ItemBrush().setRegistryName(new ResourceLocation(MCPaint.MODID, "brush"));

@@ -34,23 +34,11 @@ public class MCPaint {
     @SidedProxy(clientSide = "ichttt.mods.mcpaint.client.ClientProxy", serverSide = "ichttt.mods.mcpaint.server.ServerProxy")
     public static IProxy proxy;
 
-    @Mod.Instance
-    public static MCPaint instance;
-
-    public static CreativeTabs creativeTab;
-    public static SimpleNetworkWrapper NETWORKING = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
+    public static final SimpleNetworkWrapper NETWORKING = NetworkRegistry.INSTANCE.newSimpleChannel(MODID);
 
     @Mod.EventHandler
     public void preInit(FMLPreInitializationEvent event) {
         LOGGER.info("{} version {} starting", NAME, VERSION);
-        creativeTab = new CreativeTabs(MCPaint.MODID) {
-            @Nonnull
-            @Override
-            public ItemStack createIcon() {
-                return new ItemStack(Items.BREAD); //TODO
-            }
-        };
-
         MinecraftForge.EVENT_BUS.register(EventHandler.class);
         proxy.preInit();
         checkEarlyExit();
@@ -60,6 +48,7 @@ public class MCPaint {
     public void init(FMLInitializationEvent event) {
         NETWORKING.registerMessage(MessageDrawComplete.Handler.class, MessageDrawComplete.class, 1, Side.SERVER);
         CapabilityPaintable.register();
+        checkEarlyExit();
     }
 
 

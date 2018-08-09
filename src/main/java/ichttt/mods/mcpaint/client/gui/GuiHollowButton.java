@@ -3,6 +3,8 @@ package ichttt.mods.mcpaint.client.gui;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 
+import javax.annotation.Nonnull;
+
 public class GuiHollowButton extends GuiButton {
     private final int color;
 
@@ -13,7 +15,7 @@ public class GuiHollowButton extends GuiButton {
     }
 
     @Override
-    public void drawButton(Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    public void drawButton(@Nonnull Minecraft mc, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
         this.hovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
         if (this.hovered) {

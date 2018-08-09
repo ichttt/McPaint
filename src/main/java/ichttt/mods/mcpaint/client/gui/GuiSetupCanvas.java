@@ -10,7 +10,6 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 import java.awt.Color;
-import java.io.IOException;
 
 public class GuiSetupCanvas extends GuiScreen {
     private static final ResourceLocation BACKGROUND = GuiDraw.BACKGROUND;
@@ -63,7 +62,7 @@ public class GuiSetupCanvas extends GuiScreen {
     }
 
     @Override
-    protected void actionPerformed(GuiButton button) throws IOException {
+    protected void actionPerformed(GuiButton button) {
         switch (button.id) {
             case 0:
                 mc.displayGuiScreen(null);

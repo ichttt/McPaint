@@ -53,9 +53,9 @@ public class MessageDrawComplete implements IMessage {
         buf.writeByte(scale);
         buf.writeByte(facing.getIndex());
         buf.writeShort(Shorts.checkedCast(data.length));
-        for (short i = 0; i < data.length; i++) {
-            int[] subarray = data[i];
-            if (subarray.length != data.length) throw new RuntimeException("Wrong length: " + subarray.length + " needs to be " + data.length);
+        for (int[] subarray : data) {
+            if (subarray.length != data.length)
+                throw new RuntimeException("Wrong length: " + subarray.length + " needs to be " + data.length);
             for (int value : subarray) {
                 buf.writeInt(value);
             }

@@ -2,8 +2,6 @@ package ichttt.mods.mcpaint.client.render;
 
 import net.minecraft.client.renderer.BufferBuilder;
 
-import java.awt.*;
-
 public class PictureRenderer {
     public static void renderInGui(double leftOffset, double topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
         for (int x = 0; x < picture.length; x++) {

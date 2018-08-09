@@ -227,7 +227,7 @@ public class GuiDraw extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.facing, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) mc.world.getTileEntity(pos)).getPaintFor(facing).setData(this.scaleFactor, this.picture);
+            ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing).setData(this.scaleFactor, this.picture);
             mc.displayGuiScreen(null);
         } else if (button.id == -2) {
             this.toolSize--;
