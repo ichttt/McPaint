@@ -5,6 +5,7 @@ import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
 import net.minecraft.util.EnumActionResult;
@@ -19,6 +20,12 @@ import java.util.Objects;
 
 public class ItemBrush extends Item {
 
+    public ItemBrush() {
+        setCreativeTab(CreativeTabs.DECORATIONS);
+        setMaxStackSize(1);
+        setMaxDamage(32);
+    }
+
     @Nonnull
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
@@ -26,6 +33,7 @@ public class ItemBrush extends Item {
         IBlockState state = world.getBlockState(pos);
         Block block = state.getBlock();
         if (state.getBlock() == EventHandler.CANVAS) {
+            player.getHeldItem(hand).damageItem(1, player);
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             if (canvas.hasPaintFor(facing)) {
                 if (world.isRemote)
@@ -39,6 +47,7 @@ public class ItemBrush extends Item {
 
         if (state.isFullBlock() && state.isFullCube() && state.isNormalCube() && state.isOpaqueCube() && state.isBlockNormalCube() &&
                 state.getRenderType() == EnumBlockRenderType.MODEL && !block.hasTileEntity(state)) {
+            player.getHeldItem(hand).damageItem(1, player);
             world.setBlockState(pos, EventHandler.CANVAS.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, 0, player, hand));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setContainedBlockstate(state);
