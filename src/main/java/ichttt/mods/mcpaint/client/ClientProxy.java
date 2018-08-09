@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.client;
 import ichttt.mods.mcpaint.IProxy;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
+import ichttt.mods.mcpaint.client.gui.GuiSetupCanvas;
 import ichttt.mods.mcpaint.client.render.TESRCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -28,6 +29,6 @@ public class ClientProxy implements IProxy {
 
     @Override
     public void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiDraw((byte) 2, pos, facing, state));
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 16, 16));
     }
 }

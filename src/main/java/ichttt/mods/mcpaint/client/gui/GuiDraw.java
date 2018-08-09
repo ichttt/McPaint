@@ -34,7 +34,7 @@ import java.util.Objects;
 public class GuiDraw extends GuiScreen {
     private static final int PICTURE_START_LEFT = 6;
     private static final int PICTURE_START_TOP = 9;
-    private static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
+    public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     public static final int xSize = 176;
     public static final int ySize = 166;
     public static final int toolXSize = 80;
