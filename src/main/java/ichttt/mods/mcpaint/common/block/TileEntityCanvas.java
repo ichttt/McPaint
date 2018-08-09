@@ -34,6 +34,11 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
+    public boolean shouldRenderInPass(int pass) {
+        return pass == 0 || pass == 1;
+    }
+
+    @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.containedState = NBTUtil.readBlockState(tag);

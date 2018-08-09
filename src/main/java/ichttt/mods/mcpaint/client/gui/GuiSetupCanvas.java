@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
@@ -24,6 +25,7 @@ public class GuiSetupCanvas extends GuiScreen {
     private final int baseX;
     private final int baseY;
 
+    private boolean handled = false;
     private GuiButton moreSize;
     private GuiButton lessSize;
     private int currentMulti;
@@ -36,7 +38,7 @@ public class GuiSetupCanvas extends GuiScreen {
         this.state = state;
         this.baseX = baseX;
         this.baseY = baseY;
-        this.currentMulti = 2;
+        this.currentMulti = 1;
     }
 
     @Override
@@ -65,6 +67,7 @@ public class GuiSetupCanvas extends GuiScreen {
     protected void actionPerformed(GuiButton button) {
         switch (button.id) {
             case 0:
+                handled = true;
                 mc.displayGuiScreen(null);
                 mc.displayGuiScreen(new GuiDraw((byte) (8 / this.currentMulti), pos, facing, state));
                 break;
@@ -78,6 +81,13 @@ public class GuiSetupCanvas extends GuiScreen {
                 break;
             default:
                 MCPaint.LOGGER.warn("Unknown button id: " + button.id + " with button " + button);
+        }
+    }
+
+    @Override
+    public void onGuiClosed() {
+        if (!handled) {
+            MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
         }
     }
 

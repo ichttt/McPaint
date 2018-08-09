@@ -9,6 +9,7 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
@@ -36,6 +37,11 @@ public class BlockCanvas extends Block {
     @Override
     public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state) {
         return new TileEntityCanvas();
+    }
+
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.TRANSLUCENT;
     }
 
     @SuppressWarnings("deprecation")

@@ -2,10 +2,12 @@ package ichttt.mods.mcpaint;
 
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
-import ichttt.mods.mcpaint.networking.MessageDrawComplete;
-import net.minecraft.creativetab.CreativeTabs;
-import net.minecraft.init.Items;
-import net.minecraft.item.ItemStack;
+import ichttt.mods.mcpaint.networking.MessageDrawAbort;
+import ichttt.mods.mcpaint.networking.MessagePaintData;
+import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.Mod;
@@ -17,8 +19,6 @@ import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
 import net.minecraftforge.fml.relauncher.Side;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-
-import javax.annotation.Nonnull;
 
 @Mod(modid = MCPaint.MODID,
         name = MCPaint.NAME,
@@ -46,7 +46,8 @@ public class MCPaint {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        NETWORKING.registerMessage(MessageDrawComplete.Handler.class, MessageDrawComplete.class, 1, Side.SERVER);
+        NETWORKING.registerMessage(MessagePaintData.Handler.class, MessagePaintData.class, 1, Side.SERVER);
+        NETWORKING.registerMessage(MessageDrawAbort.Handler.class, MessageDrawAbort.class, 2, Side.SERVER);
         CapabilityPaintable.register();
         checkEarlyExit();
     }
@@ -57,5 +58,18 @@ public class MCPaint {
             LOGGER.info("Early exit requested by user - terminating minecraft");
             FMLCommonHandler.instance().exitJava(0, false);
         }
+    }
+
+    public static boolean isPosInvalid(NetHandlerPlayServer handler, BlockPos pos) {
+        if (!handler.player.world.isBlockLoaded(pos)) {
+            handler.disconnect(new TextComponentString("Trying to write to unloaded block"));
+            return true;
+        }
+
+        if (handler.player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(handler.player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()) + 5)) {
+            MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is writing to out of reach block!");
+            return true;
+        }
+        return false;
     }
 }

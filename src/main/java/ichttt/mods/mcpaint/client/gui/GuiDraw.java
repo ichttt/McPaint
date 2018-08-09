@@ -5,11 +5,14 @@ import ichttt.mods.mcpaint.client.EnumPaintColor;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import ichttt.mods.mcpaint.networking.MessageDrawComplete;
+import ichttt.mods.mcpaint.networking.MessageDrawAbort;
+import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.GuiSlider;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -31,16 +34,17 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
-public class GuiDraw extends GuiScreen {
+public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder, GuiSlider.FormatHelper {
+    public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     private static final int PICTURE_START_LEFT = 6;
     private static final int PICTURE_START_TOP = 9;
-    public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
-    public static final int xSize = 176;
-    public static final int ySize = 166;
-    public static final int toolXSize = 80;
-    public static final int toolYSize = 95;
-    public static final int sizeXSize = toolXSize;
-    public static final int sizeYSize = 34;
+    private static final int ZERO_ALPHA = new Color(255, 255,255, 0).getRGB();
+    private static final int xSize = 176;
+    private static final int ySize = 166;
+    private static final int toolXSize = 80;
+    private static final int toolYSize = 95;
+    private static final int sizeXSize = toolXSize;
+    private static final int sizeYSize = 34;
 
     private final byte scaleFactor;
     private final int[][] picture;
@@ -48,7 +52,7 @@ public class GuiDraw extends GuiScreen {
     private final EnumFacing facing;
     private final IBlockState state;
 
-    private EnumPaintColor color = null;
+    private Color color = null;
     private int guiLeft;
     private int guiTop;
     private boolean clickStartedInPicture = false;
@@ -56,8 +60,10 @@ public class GuiDraw extends GuiScreen {
     private EnumDrawType activeDrawType;
     private int toolSize = 1;
     private GuiButton lessSize, moreSize;
+    private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
     private boolean synced = false;
+    private boolean handled = false;
 
     public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas);
@@ -78,7 +84,7 @@ public class GuiDraw extends GuiScreen {
         this.scaleFactor = scaleFactor;
         this.picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
-            Arrays.fill(tileArray, new Color(255, 255,255, 0).getRGB());
+            Arrays.fill(tileArray, ZERO_ALPHA);
     }
 
     @Override
@@ -87,10 +93,10 @@ public class GuiDraw extends GuiScreen {
         this.textToggleList.clear();
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft + xSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
-        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft + xSize + 3, this.guiTop + 5, 36, 20, "Pencil", EnumDrawType.PENCIL);
-        this.moreSize = new GuiButton(-3, this.guiLeft + xSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">");
-        this.lessSize = new GuiButton(-2, this.guiLeft + xSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<");
+        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
+        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20, "Pencil", EnumDrawType.PENCIL);
+        this.moreSize = new GuiButton(-3, this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">");
+        this.lessSize = new GuiButton(-2, this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<");
         GuiButton done = new GuiButton(-1, this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done"));
 
         GuiHollowButton black = new GuiHollowButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB());
@@ -107,6 +113,15 @@ public class GuiDraw extends GuiScreen {
         GuiHollowButton purple = new GuiHollowButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
         GuiHollowButton pink = new GuiHollowButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
 
+        this.redSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 4, "red", 0, 255, 0, this);
+        this.redSlider.width = 74;
+        this.greenSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 26, "green", 0, 255, 0, this);
+        this.greenSlider.width = 74;
+        this.blueSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 48, "blue", 0, 255, 0, this);
+        this.blueSlider.width = 74;
+        this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, "alpha", 0, 255, 0, this);
+        this.alphaSlider.width = 74;
+
         addButton(fill);
         addButton(pencil);
         addButton(done);
@@ -122,6 +137,10 @@ public class GuiDraw extends GuiScreen {
         addButton(darkBlue);
         addButton(purple);
         addButton(pink);
+        addButton(this.redSlider);
+        addButton(this.greenSlider);
+        addButton(this.blueSlider);
+        addButton(this.alphaSlider);
         for (GuiButton button : this.buttonList) {
             if (button instanceof GuiButtonTextToggle) {
                 this.textToggleList.add((GuiButtonTextToggle) button);
@@ -129,6 +148,7 @@ public class GuiDraw extends GuiScreen {
         }
         this.actionPerformed(pencil);
         this.actionPerformed(this.lessSize);
+        this.actionPerformed(black);
     }
 
     @Override
@@ -142,8 +162,8 @@ public class GuiDraw extends GuiScreen {
         this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //size
         if (this.hasSizeWindow) {
-            this.drawTexturedModalRect(this.guiLeft + xSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
-            drawCenteredString(this.fontRenderer, toolSize + "", this.guiLeft + xSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
+            this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
+            drawCenteredString(this.fontRenderer, toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
 
@@ -151,12 +171,12 @@ public class GuiDraw extends GuiScreen {
         BufferBuilder buffer = tessellator.getBuffer();
 
         //Background block
-        List<BakedQuad> quads = mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0);
+        List<BakedQuad> quads = this.mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0);
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.getSprite();
             GlStateManager.pushMatrix();
-            mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-            GlStateManager.translate(0, 0, -1);
+            this.mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            this.zLevel = -1F;
             //See BlockModelRenderer
             if (quad.hasTintIndex()) {
                 int color = mc.getBlockColors().colorMultiplier(state, mc.world, pos, quad.getTintIndex());
@@ -166,13 +186,14 @@ public class GuiDraw extends GuiScreen {
                 GlStateManager.color(red, green, blue);
             }
             this.drawTexturedModalRect(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, sprite, 128, 128);
+            this.zLevel = 0F;
             GlStateManager.popMatrix();
         }
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
-        if (color != null) {
-            drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, color.RGB);
+        if (this.color != null) {
+            drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, color.getRGB());
         }
 
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
@@ -182,22 +203,25 @@ public class GuiDraw extends GuiScreen {
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
-            orig = picture[pixelPosX][pixelPosY];
-            picture[pixelPosX][pixelPosY] = color.RGB;
+            orig = this.picture[pixelPosX][pixelPosY];
+            this.picture[pixelPosX][pixelPosY] = this.color.getRGB();
         }
 
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, picture);
+        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, this.picture);
         GlStateManager.disableTexture2D();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         tessellator.draw();
         GlStateManager.enableTexture2D();
+        GlStateManager.disableBlend();
 
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
-            picture[pixelPosX][pixelPosY] = orig;
+            this.picture[pixelPosX][pixelPosY] = orig;
         }
     }
 
@@ -226,18 +250,25 @@ public class GuiDraw extends GuiScreen {
     @Override
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
-            MCPaint.NETWORKING.sendToServer(new MessageDrawComplete(this.pos, this.facing, this.scaleFactor, this.picture));
-            ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing).setData(this.scaleFactor, this.picture);
-            mc.displayGuiScreen(null);
+            if (Arrays.stream(picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
+                this.handled = true;
+                MCPaint.NETWORKING.sendToServer(new MessagePaintData(this.pos, this.facing, this.scaleFactor, this.picture));
+                ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing).setData(this.scaleFactor, this.picture);
+            }
+            this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
             this.toolSize--;
             handleSizeChanged();
         } else if (button.id == -3) {
             this.toolSize++;
             handleSizeChanged();
-        } else if (button.id >= 0) {
-            color = EnumPaintColor.VALUES[button.id];
-        } else {
+        } else if (button.id >= 0 && button.id < 100) {
+            this.color = EnumPaintColor.VALUES[button.id].color;
+            this.redSlider.setSliderValue(this.color.getRed(), false);
+            this.blueSlider.setSliderValue(this.color.getBlue(), false);
+            this.greenSlider.setSliderValue(this.color.getGreen(), false);
+            this.alphaSlider.setSliderValue(this.color.getAlpha(), false);
+        } else if (button.id < 100){
             for (GuiButtonTextToggle toggleButton : this.textToggleList) {
                 boolean toggled = toggleButton.id == button.id;
                 toggleButton.toggled = toggled;
@@ -267,6 +298,13 @@ public class GuiDraw extends GuiScreen {
         }
     }
 
+    @Override
+    public void onGuiClosed() {
+        if (!handled) {
+            MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
+        }
+    }
+
     private boolean handleMouse(int mouseX, int mouseY, int mouseButton) {
         if (mouseButton != 0) return false;
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
@@ -275,7 +313,7 @@ public class GuiDraw extends GuiScreen {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
             if (pixelPosX < picture.length && pixelPosY < picture.length && this.color != null) {
-                this.activeDrawType.draw(this.picture, this.color.RGB, pixelPosX, pixelPosY, this.toolSize);
+                this.activeDrawType.draw(this.picture, this.color.getRGB(), pixelPosX, pixelPosY, this.toolSize);
                 return true;
             }
         }
@@ -299,5 +337,24 @@ public class GuiDraw extends GuiScreen {
         } else {
             this.lessSize.enabled = true;
         }
+    }
+
+    @Override
+    public void setEntryValue(int id, boolean value) {}
+
+    @Override
+    public void setEntryValue(int id, float value) {
+        this.color = new Color(Math.round(this.redSlider.getSliderValue()),
+                Math.round(this.blueSlider.getSliderValue()),
+                Math.round(this.greenSlider.getSliderValue()),
+                Math.round(this.alphaSlider.getSliderValue()));
+    }
+
+    @Override
+    public void setEntryValue(int id, String value) {}
+
+    @Override
+    public String getText(int id, String name, float value) {
+        return name + ":" + Math.round(value);
     }
 }

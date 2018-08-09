@@ -1,6 +1,6 @@
 package ichttt.mods.mcpaint.client;
 
-import java.awt.*;
+import java.awt.Color;
 
 public enum EnumPaintColor {
     BLACK(Color.BLACK),
@@ -17,9 +17,9 @@ public enum EnumPaintColor {
     PINK(new Color(255, 0, 220));
 
     public static final EnumPaintColor[] VALUES = values();
-    public final int RGB;
+    public final Color color;
 
     EnumPaintColor(Color color) {
-        this.RGB = color.getRGB();
+        this.color = color;
     }
 }

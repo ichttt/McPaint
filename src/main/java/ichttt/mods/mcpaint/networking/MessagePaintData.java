@@ -16,17 +16,17 @@ import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
 import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
 import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
 
-public class MessageDrawComplete implements IMessage {
+public class MessagePaintData implements IMessage {
     private BlockPos pos;
     private EnumFacing facing;
     private byte scale;
     private int[][] data;
 
-    public MessageDrawComplete() {
+    public MessagePaintData() {
 
     }
 
-    public MessageDrawComplete(BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+    public MessagePaintData(BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
         this.pos = pos;
         this.facing = facing;
         this.scale = scale;
@@ -62,20 +62,13 @@ public class MessageDrawComplete implements IMessage {
         }
     }
 
-    public static class Handler implements IMessageHandler<MessageDrawComplete, IMessage> {
+    public static class Handler implements IMessageHandler<MessagePaintData, IMessage> {
 
         @Override
-        public IMessage onMessage(MessageDrawComplete message, MessageContext ctx) {
+        public IMessage onMessage(MessagePaintData message, MessageContext ctx) {
             NetHandlerPlayServer handler = ctx.getServerHandler();
             handler.player.server.addScheduledTask(() ->{
-                if (!handler.player.world.isBlockLoaded(message.pos)) {
-                    handler.disconnect(new TextComponentString("Trying to write to unloaded block"));
-                    return;
-                }
-
-                if (handler.player.getDistance(message.pos.getX(), message.pos.getY(), message.pos.getZ()) > (Math.round(handler.player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()) + 5)) {
-                    MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is writing to out of reach block!");
-                }
+                if (MCPaint.isPosInvalid(handler, message.pos)) return;
 
                 IBlockState state = handler.player.world.getBlockState(message.pos);
                 if (state.getBlock() != EventHandler.CANVAS) {
