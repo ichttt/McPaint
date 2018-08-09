@@ -14,18 +14,14 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.color.BlockColors;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.MinecraftError;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.client.model.pipeline.BlockInfo;
-import net.minecraftforge.client.model.pipeline.LightUtil;
 import org.lwjgl.opengl.GL11;
 
 import java.awt.*;
@@ -155,30 +151,23 @@ public class GuiDraw extends GuiScreen {
         BufferBuilder buffer = tessellator.getBuffer();
 
         //Background block
-        BakedQuad quad = mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0).get(0);
-        TextureAtlasSprite sprite = quad.getSprite();
-        GlStateManager.pushMatrix();
-        mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
-        GlStateManager.translate(0, 0, -1);
-        //See BlockModelRenderer
-        if (quad.hasTintIndex()) {
-            System.out.println("TINTING");
-            int k = mc.getBlockColors().colorMultiplier(state, mc.world, pos, quad.getTintIndex());
-
-            float f = (float)(k >> 16 & 255) / 255.0F;
-            float f1 = (float)(k >> 8 & 255) / 255.0F;
-            float f2 = (float)(k & 255) / 255.0F;
-            if(quad.shouldApplyDiffuseLighting())
-            {
-                float diffuse = LightUtil.diffuseLight(quad.getFace());
-                f *= diffuse;
-                f1 *= diffuse;
-                f2 *= diffuse;
+        List<BakedQuad> quads = mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0);
+        for (BakedQuad quad : quads) {
+            TextureAtlasSprite sprite = quad.getSprite();
+            GlStateManager.pushMatrix();
+            mc.getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            GlStateManager.translate(0, 0, -1);
+            //See BlockModelRenderer
+            if (quad.hasTintIndex()) {
+                int color = mc.getBlockColors().colorMultiplier(state, mc.world, pos, quad.getTintIndex());
+                float red = (float) (color >> 16 & 255) / 255.0F;
+                float green = (float) (color >> 8 & 255) / 255.0F;
+                float blue = (float) (color & 255) / 255.0F;
+                GlStateManager.color(red, green, blue);
             }
-            GlStateManager.color(f2, f1, f);
+            this.drawTexturedModalRect(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, sprite, 128, 128);
+            GlStateManager.popMatrix();
         }
-        this.drawTexturedModalRect(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, sprite, 128, 128);
-        GlStateManager.popMatrix();
 
         super.drawScreen(mouseX, mouseY, partialTicks);
 
