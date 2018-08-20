@@ -10,6 +10,7 @@ public class Paint implements IPaintable {
     private short pixelCountX;
     private short pixelCountY;
     private final IPaintValidator validator;
+    private boolean isSlowRenderer = true;
 
     public Paint() {
         this(TRUE_VALIDATOR);
@@ -25,7 +26,7 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void setData(byte scaleFactor, int[][] pictureData) {
+    public void setData(byte scaleFactor, int[][] pictureData, boolean slowRenderer) {
         short pixelCountX = Shorts.checkedCast(pictureData.length * scaleFactor);
         short pixelCountY = Shorts.checkedCast(pictureData[0].length * scaleFactor);
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
@@ -34,6 +35,7 @@ public class Paint implements IPaintable {
         this.pixelCountY = pixelCountY;
         this.scaleFactor = scaleFactor;
         this.pictureData = pictureData;
+        this.isSlowRenderer = slowRenderer;
     }
 
     @Override
@@ -58,6 +60,11 @@ public class Paint implements IPaintable {
 
     @Override
     public final boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
-        return validator.isValidPixelCount(pixelCountX, pixelCountY);
+        return this.validator.isValidPixelCount(pixelCountX, pixelCountY);
+    }
+
+    @Override
+    public boolean isSlowRenderer() {
+        return this.isSlowRenderer;
     }
 }

@@ -76,6 +76,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.scaleFactor = canvas.getScaleFactor();
         this.picture = canvas.getPictureData();
         this.synced = true;
+        canvas.setData(this.scaleFactor, this.picture, true);
     }
 
     public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
@@ -260,7 +261,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             if (Arrays.stream(picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.handled = true;
                 MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.picture);
-                ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing).setData(this.scaleFactor, this.picture);
+                IPaintable paintable = ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing);
+                paintable.setData(this.scaleFactor, this.picture, false);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -299,7 +301,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (!this.synced) {
             TileEntity tileEntity = Minecraft.getMinecraft().world.getTileEntity(pos);
             if (tileEntity instanceof TileEntityCanvas) {
-                ((TileEntityCanvas) tileEntity).getPaintFor(facing).setData(this.scaleFactor, this.picture);
+                ((TileEntityCanvas) tileEntity).getPaintFor(facing).setData(this.scaleFactor, this.picture, true);
                 this.synced = true;
             }
         }
@@ -352,8 +354,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     @Override
     public void setEntryValue(int id, float value) {
         this.color = new Color(Math.round(this.redSlider.getSliderValue()),
-                Math.round(this.blueSlider.getSliderValue()),
                 Math.round(this.greenSlider.getSliderValue()),
+                Math.round(this.blueSlider.getSliderValue()),
                 Math.round(this.alphaSlider.getSliderValue()));
     }
 

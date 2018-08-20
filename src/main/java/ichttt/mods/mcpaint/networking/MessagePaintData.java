@@ -150,7 +150,7 @@ public class MessagePaintData implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).getPaintFor(facing).setData(scale, data);
+                ((TileEntityCanvas) te).getPaintFor(facing).setData(scale, data, false);
                 te.markDirty();
             });
         }
