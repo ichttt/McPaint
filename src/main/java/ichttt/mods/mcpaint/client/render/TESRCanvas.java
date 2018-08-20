@@ -103,7 +103,6 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             translationZOffset *= 2D;
         }
         if (playerDistSq > 4096D) { //64
-            System.out.println("64");
             translationXOffset *= 2D;
             translationYOffset *= 2D;
             translationZOffset *= 2D;

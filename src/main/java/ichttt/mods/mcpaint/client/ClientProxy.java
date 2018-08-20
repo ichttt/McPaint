@@ -29,6 +29,6 @@ public class ClientProxy implements IProxy {
 
     @Override
     public void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 16, 16));
+        Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
     }
 }

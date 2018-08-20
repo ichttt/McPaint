@@ -1,10 +1,5 @@
 {
   "variants": {
-    "facing=up": { "model": "mcpaint:canvas" },
-    "facing=down": { "model": "mcpaint:canvas" },
-    "facing=north": { "model": "mcpaint:canvas" },
-    "facing=west": { "model": "mcpaint:canvas" },
-    "facing=south": { "model": "mcpaint:canvas" },
-    "facing=east": { "model": "mcpaint:canvas" }
+    "normal": { "model": "coal_ore" }
   }
 }

@@ -259,7 +259,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (button.id == -1) {
             if (Arrays.stream(picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.handled = true;
-                MCPaint.NETWORKING.sendToServer(new MessagePaintData(this.pos, this.facing, this.scaleFactor, this.picture));
+                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.picture);
                 ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing).setData(this.scaleFactor, this.picture);
             }
             this.mc.displayGuiScreen(null);

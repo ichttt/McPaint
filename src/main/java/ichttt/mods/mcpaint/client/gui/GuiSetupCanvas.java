@@ -17,7 +17,7 @@ public class GuiSetupCanvas extends GuiScreen {
     private static final int yOffset = 166;
     private static final int xSize = 106;
     private static final int ySize = 79;
-    private static final int MAX_MULTIPLIER = 4; // 8 will cause a too large CPacket
+    private static final int MAX_MULTIPLIER = 16;
 
     private final BlockPos pos;
     private final EnumFacing facing;
@@ -38,7 +38,7 @@ public class GuiSetupCanvas extends GuiScreen {
         this.state = state;
         this.baseX = baseX;
         this.baseY = baseY;
-        this.currentMulti = 1;
+        this.currentMulti = 2;
     }
 
     @Override
@@ -50,12 +50,11 @@ public class GuiSetupCanvas extends GuiScreen {
         addButton(new GuiButton(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")));
         addButton(this.lessSize);
         addButton(this.moreSize);
+        handleSizeChanged();
     }
 
     @Override
     public void drawScreen(int mouseX, int mouseY, float partialTicks) {
-        this.buttonList.clear();
-        this.initGui();
         mc.getTextureManager().bindTexture(BACKGROUND);
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
         this.drawCenteredString(mc.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
@@ -69,7 +68,7 @@ public class GuiSetupCanvas extends GuiScreen {
             case 0:
                 handled = true;
                 mc.displayGuiScreen(null);
-                mc.displayGuiScreen(new GuiDraw((byte) (8 / this.currentMulti), pos, facing, state));
+                mc.displayGuiScreen(new GuiDraw((byte) (16 / this.currentMulti), pos, facing, state));
                 break;
             case 1:
                 this.currentMulti /= 2;
