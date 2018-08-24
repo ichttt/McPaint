@@ -111,8 +111,8 @@ public class PictureCacheBuilder {
                                 List<List<PixelInfo>> possibleLists = prevLists.stream()
                                         .filter(pixelInfos -> pixelListToInitalSize.get(pixelInfos) == size)
                                         .filter(pixelInfos -> pixelInfos.stream()
-                                                .allMatch(pixelInfo -> currentList.stream()
-                                                        .anyMatch(currentPixelInfo -> currentPixelInfo.isNeighbourY(pixelInfo))))
+                                                .allMatch(pixelInfo -> currentList.stream() //TODO without the neighbourY thing there are much more rects, but with it there are some incorrect lists
+                                                        .anyMatch(currentPixelInfo -> currentPixelInfo.isNeighbourX(pixelInfo) || (!currentPixelInfo.isNeighbourY(pixelInfo) && pixelInfos.size() != pixelListToInitalSize.get(pixelInfos)))))
                                         .collect(Collectors.toList());
                                 if (possibleLists.size() > 1) {
                                     MCPaint.LOGGER.error("{} lists were found while mapping rows that have neighbours, it should only be max 1!", possibleLists.size());
@@ -123,7 +123,7 @@ public class PictureCacheBuilder {
                                         finalDrawLists.add(currentList);
                                 } else {
                                     List<PixelInfo> prevList = possibleLists.get(0);
-                                    currentList.addAll(prevList);
+                                    currentList.addAll(0, prevList);
                                     finalDrawLists.remove(prevList);
                                     if (!finalDrawLists.contains(currentList))
                                         finalDrawLists.add(currentList);

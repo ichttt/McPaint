@@ -21,13 +21,13 @@ public class RenderCache {
             .expireAfterAccess(30L, TimeUnit.SECONDS)
             .build();
 
-    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, 4, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
+    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, 3, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
         private AtomicInteger count = new AtomicInteger(1);
 
         @Override
         public Thread newThread(@Nonnull Runnable runnable) {
             Thread thread = new Thread(runnable, "MCPaint Picture Optimizer Thread-" + count.getAndIncrement());
-            MCPaint.LOGGER.info("Starting " + thread.getName());
+            MCPaint.LOGGER.debug("Starting " + thread.getName());
             thread.setDaemon(true);
             return thread;
         }
@@ -48,5 +48,14 @@ public class RenderCache {
 
     public static void uncache(IPaintable paintable) {
         PAINT_CACHE.invalidate(paintable);
+    }
+
+    public static void clear() {
+        PAINT_CACHE.invalidateAll();
+        PAINT_CACHE.cleanUp();
+    }
+
+    public static void scheduleCleanup() {
+        POOL_EXECUTOR.execute(PAINT_CACHE::cleanUp);
     }
 }
