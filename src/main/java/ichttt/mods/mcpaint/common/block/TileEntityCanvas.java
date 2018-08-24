@@ -1,5 +1,9 @@
 package ichttt.mods.mcpaint.common.block;
 
+import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
+import ichttt.mods.mcpaint.client.render.pixelbatch.RenderCache;
+import ichttt.mods.mcpaint.client.render.pixelbatch.SimpleCallback;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -10,6 +14,8 @@ import net.minecraft.nbt.NBTUtil;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.fml.relauncher.Side;
+import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,6 +25,7 @@ import java.util.Map;
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
     private IBlockState containedState;
+    private final Map<EnumFacing, Object> bufferMap = new EnumMap<>(EnumFacing.class);
 
     @Nonnull
     @Override
@@ -104,8 +111,55 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return paint.hasPaintData();
     }
 
+    @SideOnly(Side.CLIENT)
+    public CachedBufferBuilder getBuffer(EnumFacing facing) {
+        Object obj = bufferMap.get(facing);
+        if (obj instanceof CachedBufferBuilder)
+            return (CachedBufferBuilder) obj;
+        else if (obj instanceof IOptimisationCallback) { //already waiting
+            return null;
+        } else if (obj != null) {
+            MCPaint.LOGGER.error("Unknown object " + obj);
+            return null;
+        } else {
+            SimpleCallback callback = new SimpleCallback() {
+                @Override
+                public void provideFinishedBuffer(CachedBufferBuilder builder) {
+                    if (this.isInvalid()) return;
+                    RenderCache.cache(getPaintFor(facing), builder);
+                    bufferMap.put(facing, builder);
+                }
+            };
+            bufferMap.put(facing, callback);
+            RenderCache.getOrRequest(facingToPaintMap.get(facing), callback);
+            return null;
+        }
+    }
+
+    @SideOnly(Side.CLIENT)
+    public void invalidateBuffers() {
+        for (Map.Entry<EnumFacing, Object> entry : bufferMap.entrySet()) {
+            Object obj = entry.getValue();
+            if (obj instanceof SimpleCallback) {
+                ((SimpleCallback) obj).invalidate();
+            } else if (obj instanceof CachedBufferBuilder) {
+                RenderCache.cache(getPaintFor(entry.getKey()), (CachedBufferBuilder) obj);
+            }
+        }
+        bufferMap.clear();
+    }
+
     @Override
     public double getMaxRenderDistanceSquared() { //128 for block, paint is limited in TE to 96
         return 128D * 128D;
+    }
+
+    public void invalidateBuffer(EnumFacing facing) {
+        Object obj = bufferMap.remove(facing);
+        if (obj instanceof SimpleCallback) {
+            ((SimpleCallback) obj).invalidate();
+        } else if (obj instanceof CachedBufferBuilder) {
+            RenderCache.uncache(getPaintFor(facing));
+        }
     }
 }

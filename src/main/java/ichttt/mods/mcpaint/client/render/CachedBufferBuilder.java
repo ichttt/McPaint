@@ -4,6 +4,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 
 public class CachedBufferBuilder extends BufferBuilder {
     private boolean building = true;
+    private int size = -1;
     public CachedBufferBuilder(int bufferSizeIn) {
         super(bufferSizeIn);
     }
@@ -32,5 +33,11 @@ public class CachedBufferBuilder extends BufferBuilder {
     public void finishBuilding() {
         building = false;
         this.byteBuffer = this.byteBuffer.compact();
+        this.size = this.byteBuffer.position();
+    }
+
+    public int getSize() {
+        if (size == -1) throw new IllegalStateException("In building pass!");
+        return size;
     }
 }

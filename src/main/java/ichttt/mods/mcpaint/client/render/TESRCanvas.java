@@ -14,18 +14,9 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.MinecraftForgeClient;
-import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
-import java.nio.ByteBuffer;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
-
 public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
-    private final Map<int[][], BufferBuilder> cachedImages = new IdentityHashMap<>();
-
     //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
     @Override
     public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
@@ -35,18 +26,18 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
 
         if (MinecraftForgeClient.getRenderPass() == 1) {
             double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
-            if (playerDistSq < 9216D) { // 96 blocks render dist for paint, 128 for block. Paint is much slower so that makes sense
+            if (playerDistSq < 9216D) { // 96 blocks render dist for paint, 128 for block. Paint is slower so that makes sense
                 int light = te.getWorld().getCombinedLight(te.getPos(), 0);
                 for (EnumFacing facing : EnumFacing.VALUES) {
-                    if (te.hasPaintFor(facing)) renderPicture(x, y, z, te.getPaintFor(facing), facing, light, playerDistSq);
+                    if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
                 }
             } else {
-                this.cachedImages.clear();
+                te.invalidateBuffers(); //We stay in the global cache for a little longer
             }
         }
     }
 
-    private void renderPicture(double x, double y, double z, IPaintable paint, EnumFacing facing, int light, double playerDistSq) {
+    private static void renderPicture(double x, double y, double z, TileEntityCanvas te, EnumFacing facing, int light, double playerDistSq) {
         //Facing setup
         int xOffset = 0;
         int yOffset = 0;
@@ -140,26 +131,26 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         }
 
         GlStateManager.translate(xOffset, yOffset, zOffset);
+        IPaintable paint = te.getPaintFor(facing);
         //Render picture
-        if (paint.isSlowRenderer()) {
-            this.cachedImages.remove(paint.getPictureData());
+        boolean slow = paint.isSlowRenderer();
+        if (slow) {
+            te.invalidateBuffer(facing);
+        } else {
+            BufferBuilder builder = te.getBuffer(facing);
+            if (builder == null)
+                slow = true;
+            else
+                Tessellator.getInstance().vboUploader.draw(builder);
+        }
+        if (slow) {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder builder = tessellator.getBuffer();
             builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
             PictureRenderer.renderInGame(paint.getScaleFactor(), builder, paint.getPictureData());
             tessellator.draw();
-        } else {
-            BufferBuilder builder = this.cachedImages.get(paint.getPictureData());
-            if (builder == null) { //TODO limit this. We cannot allocate unlimited space...
-                CachedBufferBuilder cachedBufferBuilder = new CachedBufferBuilder(1097152);
-                cachedBufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-                PictureRenderer.renderInGame(paint.getScaleFactor(), cachedBufferBuilder, paint.getPictureData());
-                cachedBufferBuilder.finishBuilding();
-                this.cachedImages.put(paint.getPictureData(), cachedBufferBuilder);
-                builder = cachedBufferBuilder;
-            }
-            Tessellator.getInstance().vboUploader.draw(builder);
         }
+
         GlStateManager.disableBlend();
         GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
