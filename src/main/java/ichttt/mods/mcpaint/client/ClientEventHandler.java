@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client;
 
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.client.render.pixelbatch.RenderCache;
+import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.EventHandler;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.ModelResourceLocation;
@@ -11,7 +11,6 @@ import net.minecraftforge.client.model.ModelLoader;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public class ClientEventHandler {
 

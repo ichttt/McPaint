@@ -2,8 +2,8 @@ package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
-import ichttt.mods.mcpaint.client.render.pixelbatch.RenderCache;
-import ichttt.mods.mcpaint.client.render.pixelbatch.SimpleCallback;
+import ichttt.mods.mcpaint.client.render.batch.RenderCache;
+import ichttt.mods.mcpaint.client.render.batch.SimpleCallback;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
