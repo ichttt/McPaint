@@ -19,8 +19,6 @@ import java.util.stream.Collectors;
 
 public class PictureCacheBuilder {
 
-    //This is awful
-    //It's probably way too complicated and slow, but better than no optimisation
     public static void batch(int[][] picture, byte scaleFactor, IOptimisationCallback callback) {
         if (picture == null) throw new IllegalArgumentException("No paint data");
         int pixelsToDraw = 0;
@@ -63,6 +61,9 @@ public class PictureCacheBuilder {
                     }
                 }
             }
+
+            if (callback.isInvalid()) return;
+            //Now sort into rects
             List<PixelRect> rects = new ArrayList<>();
             for (PixelLine line : lines) {
                 boolean added = false;
@@ -95,7 +96,7 @@ public class PictureCacheBuilder {
         }
         MCPaint.LOGGER.info("Merged {} pixels in picture to {} rectangles to draw", pixelsToDraw, finalDrawLists.size());
         //Start filling a buffer
-        CachedBufferBuilder cachedBufferBuilder = new CachedBufferBuilder(262144);
+        CachedBufferBuilder cachedBufferBuilder = new CachedBufferBuilder(finalDrawLists.size() * 16 + 4);
         cachedBufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
         for (List<PixelInfo> infos : finalDrawLists) {
             int left = infos.get(0).x;
@@ -118,6 +119,7 @@ public class PictureCacheBuilder {
         }
         cachedBufferBuilder.finishBuilding();
         callback.provideFinishedBuffer(cachedBufferBuilder);
+        MCPaint.LOGGER.info("Taking {} of memory", cachedBufferBuilder.getSize());
     }
 
     public static CachedBufferBuilder buildSimple(IPaintable paint) {
