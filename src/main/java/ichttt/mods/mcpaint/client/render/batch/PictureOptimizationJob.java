@@ -1,7 +1,11 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
+import com.google.common.base.Stopwatch;
+import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.common.block.IOptimisationCallback;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
+
+import java.util.concurrent.TimeUnit;
 
 public class PictureOptimizationJob implements Runnable {
     private final IPaintable paintable;

@@ -138,10 +138,12 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             te.invalidateBuffer(facing);
         } else {
             BufferBuilder builder = te.getBuffer(facing);
-            if (builder == null)
-                slow = true;
-            else
+            if (builder == null) {
+                if (playerDistSq < (88D * 88D))
+                    slow = true;
+            } else {
                 Tessellator.getInstance().vboUploader.draw(builder);
+            }
         }
         if (slow) {
             Tessellator tessellator = Tessellator.getInstance();

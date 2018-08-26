@@ -1,8 +1,5 @@
 package ichttt.mods.mcpaint.client.render.batch.pixel;
 
-import ichttt.mods.mcpaint.client.render.batch.pixel.PixelInfo;
-import ichttt.mods.mcpaint.client.render.batch.pixel.PixelLine;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,8 +10,16 @@ public class PixelRect {
         lines.add(first);
     }
 
+    public boolean canAdd(PixelLine line) {
+        for (PixelLine line1 : lines) {
+            if (line1.isNeighbour(line))
+                return true;
+        }
+        return false;
+    }
+
     public boolean addLine(PixelLine line) {
-        if (lines.stream().anyMatch(line1 -> line1.isNeighbour(line))) {
+        if (canAdd(line)) {
             lines.add(line);
             return true;
         }

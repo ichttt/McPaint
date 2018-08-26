@@ -43,7 +43,11 @@ public class PictureCacheBuilder {
             List<PixelLine> lines = new ArrayList<>();
             //Make lines
             for (PixelInfo currentPixel : pixels) {
-                List<PixelLine> neighbours = lines.stream().filter(pixelLine -> pixelLine.canAdd(currentPixel)).collect(Collectors.toList());
+                List<PixelLine> neighbours = new ArrayList<>();
+                for (PixelLine line : lines) {
+                    if (line.canAdd(currentPixel))
+                        neighbours.add(line);
+                }
                 if (neighbours.isEmpty()) {
                     lines.add(new PixelLine(currentPixel));
                 } else if (neighbours.size() == 1) {
@@ -126,6 +130,7 @@ public class PictureCacheBuilder {
         CachedBufferBuilder buffer = new CachedBufferBuilder(262144);
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
         PictureRenderer.renderInGame(paint.getScaleFactor(), buffer, paint.getPictureData());
+        buffer.finishBuilding();
         return buffer;
     }
 }

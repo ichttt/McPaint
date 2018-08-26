@@ -21,7 +21,7 @@ public class RenderCache {
             .expireAfterAccess(30L, TimeUnit.SECONDS)
             .build();
 
-    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(2, 4, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
+    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors() >= 8 ? 4 : 2, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
         private AtomicInteger count = new AtomicInteger(1);
 
         @Override
@@ -32,9 +32,6 @@ public class RenderCache {
             return thread;
         }
     });
-    static {
-        POOL_EXECUTOR.allowCoreThreadTimeOut(true);
-    }
 
     public static void getOrRequest(IPaintable paintable, IOptimisationCallback callback) {
         CachedBufferBuilder builder = PAINT_CACHE.getIfPresent(paintable);
@@ -46,7 +43,8 @@ public class RenderCache {
     }
 
     public static void cache(IPaintable paintable, CachedBufferBuilder obj) {
-        PAINT_CACHE.put(paintable, obj);
+        if (false)
+            PAINT_CACHE.put(paintable, obj);
     }
 
     public static void uncache(IPaintable paintable) {

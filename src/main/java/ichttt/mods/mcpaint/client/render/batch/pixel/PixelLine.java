@@ -13,7 +13,11 @@ public class PixelLine implements Iterable<PixelInfo> {
     }
 
     public boolean canAdd(PixelInfo info) {
-        return pixelInfos.stream().anyMatch(info1 -> info1.isNeighbourX(info));
+        for (PixelInfo info1 : pixelInfos) {
+            if (info1.isNeighbourX(info))
+                return true;
+        }
+        return false;
     }
 
     public void add(PixelInfo info) {

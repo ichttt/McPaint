@@ -11,10 +11,6 @@ public class PixelInfo {
         this.color = color;
     }
 
-//    public boolean isNeighbour(PixelInfo info) {
-//        return isNeighbourX(info) || isNeighbourY(info);
-//    }
-
     public boolean isNeighbourX(PixelInfo info) {
         return Math.abs(info.x - this.x) == 1 && info.y == this.y;
     }
