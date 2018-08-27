@@ -1,30 +1,38 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import javax.annotation.Nonnull;
 import java.awt.Color;
 import java.util.Arrays;
 
 public enum EnumDrawType {
     PENCIL(true) {
+        @Nonnull
         @Override
-        public void draw(GuiDraw gui, int pixelX, int pixelY, int size) {
-            drawInSize(gui.picture, gui.color.getRGB(), pixelX, pixelY, size);
+        public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
+            drawInSize(picture, color.getRGB(), pixelX, pixelY, size);
+            return color;
         }
     }, FILL(false) {
+        @Nonnull
         @Override
-        public void draw(GuiDraw gui, int pixelX, int pixelY, int size) {
-            for (int[] subArray : gui.picture) {
-                Arrays.fill(subArray, gui.color.getRGB());
+        public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
+            for (int[] subArray : picture) {
+                Arrays.fill(subArray, color.getRGB());
             }
+            return color;
         }
     }, ERASER(true) {
+        @Nonnull
         @Override
-        public void draw(GuiDraw gui, int pixelX, int pixelY, int size) {
-            drawInSize(gui.picture, GuiDraw.ZERO_ALPHA, pixelX, pixelY, size);
+        public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
+            drawInSize(picture, GuiDraw.ZERO_ALPHA, pixelX, pixelY, size);
+            return color;
         }
     }, PICK_COLOR(false) {
+        @Nonnull
         @Override
-        public void draw(GuiDraw gui, int pixelX, int pixelY, int size) {
-            gui.color = new Color(gui.picture[pixelX][pixelY]);
+        public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
+            return new Color(picture[pixelX][pixelY], true);
         }
     };
 
@@ -47,7 +55,8 @@ public enum EnumDrawType {
 
     public final boolean hasSizeRegulator;
 
-    public abstract void draw(GuiDraw gui, int pixelX, int pixelY, int size);
+    @Nonnull
+    public abstract Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size);
 
     EnumDrawType(boolean hasSizeRegulator) {
         this.hasSizeRegulator = hasSizeRegulator;

@@ -31,4 +31,12 @@ public class ClientProxy implements IProxy {
     public void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
     }
+
+    public static int[][] copyOf(int[][] array) {
+        int[][] copy = new int[array.length][];
+        for (int i = 0; i < array.length; i++) {
+            copy[i] = array[i].clone();
+        }
+        return copy;
+    }
 }

@@ -1,4 +1,4 @@
-package ichttt.mods.mcpaint.client;
+package ichttt.mods.mcpaint.client.gui;
 
 import java.awt.Color;
 

@@ -43,8 +43,7 @@ public class RenderCache {
     }
 
     public static void cache(IPaintable paintable, CachedBufferBuilder obj) {
-        if (false)
-            PAINT_CACHE.put(paintable, obj);
+        PAINT_CACHE.put(paintable, obj);
     }
 
     public static void uncache(IPaintable paintable) {
