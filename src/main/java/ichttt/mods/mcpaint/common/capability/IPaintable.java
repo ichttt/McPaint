@@ -12,7 +12,5 @@ public interface IPaintable extends IPaintValidator {
 
     short getPixelCountY();
 
-    void setData(byte scaleFactor, int[][] pictureData, boolean slowRenderer);
-
-    boolean isSlowRenderer();
+    void setData(byte scaleFactor, int[][] pictureData);
 }

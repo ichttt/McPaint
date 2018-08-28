@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.render;
 
+import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
@@ -133,10 +134,8 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         GlStateManager.translate(xOffset, yOffset, zOffset);
         IPaintable paint = te.getPaintFor(facing);
         //Render picture
-        boolean slow = paint.isSlowRenderer();
-        if (slow) {
-            te.invalidateBuffer(facing);
-        } else {
+        boolean slow = false; //TODO config
+        if (!slow) {
             BufferBuilder builder = te.getBuffer(facing);
             if (builder == null) {
                 if (playerDistSq < (88D * 88D))
@@ -166,6 +165,8 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         //Render block
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         IBlockState state = te.getContainedState();
+        if (state == null)
+            state = EventHandler.CANVAS.getDefaultState();
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
         dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true);

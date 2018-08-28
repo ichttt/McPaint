@@ -22,6 +22,7 @@ public class ItemBrush extends Item {
 
     public ItemBrush() {
         setCreativeTab(CreativeTabs.DECORATIONS);
+        setTranslationKey("mcpaint.brush");
         setMaxStackSize(1);
         setMaxDamage(32);
     }
@@ -51,6 +52,7 @@ public class ItemBrush extends Item {
             world.setBlockState(pos, EventHandler.CANVAS.getStateForPlacement(world, pos, facing, hitX, hitY, hitZ, 0, player, hand));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setContainedBlockstate(state);
+            canvas.markDirty();
             if (world.isRemote) {
                 MCPaint.proxy.showGuiDraw(pos, facing, state);
             }

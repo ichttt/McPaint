@@ -11,6 +11,8 @@ import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
@@ -71,6 +73,12 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public NBTTagCompound getUpdateTag() {
         return this.writeToNBT(new NBTTagCompound());
+    }
+
+    @Nullable
+    @Override
+    public SPacketUpdateTileEntity getUpdatePacket() {
+        return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
     }
 
     @Nullable
@@ -152,6 +160,12 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public double getMaxRenderDistanceSquared() { //128 for block, paint is limited in TE to 96
         return 128D * 128D;
+    }
+
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.readFromNBT(pkt.getNbtCompound());
+        invalidateBuffers();
     }
 
     public void invalidateBuffer(EnumFacing facing) {

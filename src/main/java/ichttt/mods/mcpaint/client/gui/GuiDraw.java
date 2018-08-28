@@ -8,7 +8,6 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
@@ -21,11 +20,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -53,9 +50,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private final BlockPos pos;
     private final EnumFacing facing;
     private final IBlockState state;
-    private final LinkedList<PictureState> actionList = new LinkedList<>();
+    private final LinkedList<PictureState> statesForUndo = new LinkedList<>();
+    private final LinkedList<PictureState> statesForRedo = new LinkedList<>();
 
     private Color color = Color.BLACK;
+    private PictureState paintingState;
     private PictureState currentState;
     private int guiLeft;
     private int guiTop;
@@ -63,10 +62,12 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private final List<GuiButtonTextToggle> textToggleList = new ArrayList<>();
     private EnumDrawType activeDrawType;
     private int toolSize = 1;
+    private GuiButton undo, redo;
     private GuiButton lessSize, moreSize;
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
     private boolean handled = false;
+    private IPaintable paintable;
 
     public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas);
@@ -76,8 +77,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.facing = facing;
         this.state = state;
         this.scaleFactor = canvas.getScaleFactor();
-        updatePictureState(new PictureState(canvas.getPictureData()));
-        canvas.setData(this.scaleFactor, this.currentState.picture, true);
+        this.currentState = new PictureState(canvas.getPictureData());
+        this.paintable = canvas;
     }
 
     public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
@@ -88,7 +89,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         int[][] picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, ZERO_ALPHA);
-        updatePictureState(new PictureState(picture));
+        this.currentState = new PictureState(picture);
     }
 
     @Override
@@ -98,6 +99,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
+        this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 25, 36, 20, "redo");
+        this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 25, 36, 20, "undo");
         GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, "Picker", EnumDrawType.PICK_COLOR);
         GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, "Eraser", EnumDrawType.ERASER);
         GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
@@ -129,6 +132,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, "alpha", 0, 255, 0, this);
         this.alphaSlider.width = 74;
 
+        addButton(redo);
+        addButton(undo);
         addButton(pickColor);
         addButton(erase);
         addButton(fill);
@@ -155,9 +160,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 this.textToggleList.add((GuiButtonTextToggle) button);
             }
         }
+        //trigger defaults
         this.actionPerformed(pencil);
         this.actionPerformed(this.lessSize);
         this.actionPerformed(black);
+        this.actionPerformed(this.undo);
     }
 
     @Override
@@ -203,22 +210,21 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
 
         drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.color.getRGB());
 
-        //TODO make previews work again
-//        int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
-//        int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
-//        boolean drawSelect = isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
-//        int toPaint[][] = this.currentState.picture;
-//        if (drawSelect) {
-//            int pixelPosX = offsetMouseX / this.scaleFactor;
-//            int pixelPosY = offsetMouseY / this.scaleFactor;
-//            this.picture = ClientProxy.copyOf(orig);
-//            this.activeDrawType.draw(this, pixelPosX, pixelPosY, this.toolSize);
-//        }
+        int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
+        int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
+        boolean drawSelect = isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
+        int toDraw[][] = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
+        if (drawSelect) {
+            int pixelPosX = offsetMouseX / this.scaleFactor;
+            int pixelPosY = offsetMouseY / this.scaleFactor;
+            toDraw = ClientProxy.copyOf(toDraw);
+            this.activeDrawType.draw(toDraw, color, pixelPosX, pixelPosY, this.toolSize);
+        }
 
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, this.currentState.picture);
+        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, toDraw);
         GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -251,17 +257,19 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     protected void mouseReleased(int mouseX, int mouseY, int state) {
         super.mouseReleased(mouseX, mouseY, state);
         this.clickStartedInPicture = false;
-        this.updatePictureState(new PictureState(this.currentState));
+        if (this.paintingState != null) {
+            this.newPictureState(this.paintingState);
+            this.paintingState = null;
+        }
     }
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
         if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && keyCode == 44) {
-            if (this.actionList.size() > 1) {
-                //TODO fix remove not working first time
-                PictureState state = this.actionList.removeLast();
-                updatePictureState(state);
-            }
+            if (Keyboard.isKeyDown(Keyboard.KEY_LSHIFT))
+                redo();
+            else
+                undo();
             return;
         }
         super.keyTyped(typedChar, keyCode);
@@ -272,9 +280,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (button.id == -1) {
             if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.handled = true;
-                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture);
-                IPaintable paintable = ((TileEntityCanvas) Objects.requireNonNull(mc.world.getTileEntity(pos))).getPaintFor(facing);
-                paintable.setData(this.scaleFactor, this.currentState.picture, false);
+                TileEntityCanvas canvas = Objects.requireNonNull((TileEntityCanvas) mc.world.getTileEntity(this.pos));
+                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture, messagePaintData -> MCPaint.NETWORKING.sendToServer(messagePaintData));
+                IPaintable paintable = canvas.getPaintFor(this.facing);
+                paintable.setData(this.scaleFactor, this.currentState.picture);
+                canvas.invalidateBuffer(this.facing);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -283,6 +293,10 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         } else if (button.id == -3) {
             this.toolSize++;
             handleSizeChanged();
+        } else if(button.id == -8) {
+            undo();
+        } else if (button.id == -9) {
+            redo();
         } else if (button.id >= 0 && button.id < 100) {
             this.color = EnumPaintColor.VALUES[button.id].color;
             this.redSlider.setSliderValue(this.color.getRed(), false);
@@ -315,12 +329,36 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         }
     }
 
-    public void updatePictureState(PictureState state) {
+    private void newPictureState(PictureState state) {
+        if (state.isSame(this.currentState)) return;
+        this.statesForRedo.clear();
+        this.statesForUndo.add(this.currentState);
         this.currentState = state;
-        this.actionList.add(this.currentState);
-        if (this.actionList.size() > 20) {
-            this.actionList.removeFirst();
+        if (this.statesForUndo.size() > 20) {
+            this.statesForUndo.removeFirst();
         }
+        updateUndoRedoButton();
+    }
+
+    private void undo() {
+        if (this.statesForUndo.size() > 0) {
+            this.statesForRedo.add(this.currentState);
+            this.currentState = this.statesForUndo.removeLast();
+        }
+        updateUndoRedoButton();
+    }
+
+    private void redo() {
+        if (this.statesForRedo.size() > 0) {
+            this.statesForUndo.add(this.currentState);
+            this.currentState = this.statesForRedo.removeLast();
+        }
+        updateUndoRedoButton();
+    }
+
+    private void updateUndoRedoButton() {
+        this.undo.enabled = !this.statesForUndo.isEmpty();
+        this.redo.enabled = !this.statesForRedo.isEmpty();
     }
 
     private boolean handleMouse(int mouseX, int mouseY, int mouseButton) {
@@ -330,8 +368,10 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (isInWindow(offsetMouseX, offsetMouseY)) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
-            if (pixelPosX < this.currentState.picture.length && pixelPosY < this.currentState.picture.length && this.color != null) {
-                this.color = this.activeDrawType.draw(this.currentState.picture, this.color, pixelPosX, pixelPosY, this.toolSize);
+            if (this.paintingState == null)
+                this.paintingState = new PictureState(this.currentState);
+            if (pixelPosX < this.paintingState.picture.length && pixelPosY < this.paintingState.picture.length && this.color != null) {
+                this.color = this.activeDrawType.draw(this.paintingState.picture, this.color, pixelPosX, pixelPosY, this.toolSize);
                 this.redSlider.setSliderValue(this.color.getRed(), false);
                 this.blueSlider.setSliderValue(this.color.getBlue(), false);
                 this.greenSlider.setSliderValue(this.color.getGreen(), false);

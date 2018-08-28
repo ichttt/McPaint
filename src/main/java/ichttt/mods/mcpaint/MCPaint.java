@@ -46,8 +46,9 @@ public class MCPaint {
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-        NETWORKING.registerMessage(MessagePaintData.Handler.class, MessagePaintData.class, 1, Side.SERVER);
+        NETWORKING.registerMessage(MessagePaintData.ServerHandler.class, MessagePaintData.class, 1, Side.SERVER);
         NETWORKING.registerMessage(MessageDrawAbort.Handler.class, MessageDrawAbort.class, 2, Side.SERVER);
+        NETWORKING.registerMessage(MessagePaintData.ClientHandler.class, MessagePaintData.class, 3, Side.CLIENT);
         CapabilityPaintable.register();
         checkEarlyExit();
     }
@@ -62,6 +63,7 @@ public class MCPaint {
 
     public static boolean isPosInvalid(NetHandlerPlayServer handler, BlockPos pos) {
         if (!handler.player.world.isBlockLoaded(pos)) {
+            MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is trying to write to unloaded block");
             handler.disconnect(new TextComponentString("Trying to write to unloaded block"));
             return true;
         }
