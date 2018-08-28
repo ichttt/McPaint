@@ -8,6 +8,7 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
@@ -20,12 +21,15 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
+import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -280,11 +284,17 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (button.id == -1) {
             if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.handled = true;
-                TileEntityCanvas canvas = Objects.requireNonNull((TileEntityCanvas) mc.world.getTileEntity(this.pos));
-                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture, messagePaintData -> MCPaint.NETWORKING.sendToServer(messagePaintData));
+                TileEntity te = this.mc.world.getTileEntity(this.pos);
+                if (!(te instanceof TileEntityCanvas)) {
+                    MCPaint.LOGGER.error("Could not set paint! Found block " + mc.world.getBlockState(this.pos));
+                    Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
+                    return;
+                }
+                TileEntityCanvas canvas = (TileEntityCanvas) te;
+                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture, MCPaint.NETWORKING::sendToServer);
                 IPaintable paintable = canvas.getPaintFor(this.facing);
-                paintable.setData(this.scaleFactor, this.currentState.picture);
                 canvas.invalidateBuffer(this.facing);
+                paintable.setData(this.scaleFactor, this.currentState.picture);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -413,10 +423,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     }
 
     @Override
-    public void setEntryValue(int id, String value) {}
+    public void setEntryValue(int id, @Nonnull String value) {}
 
+    @Nonnull
     @Override
-    public String getText(int id, String name, float value) {
+    public String getText(int id,@Nonnull String name, float value) {
         return name + ":" + Math.round(value);
     }
 }

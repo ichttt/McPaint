@@ -1,14 +1,14 @@
 [
 {
-  "modid": "examplemod",
-  "name": "Example Mod",
-  "description": "Example placeholder mod.",
+  "modid": "mcpaint",
+  "name": "MC Paint",
+  "description": "A mod that lets you paint a bunch of blocks.",
   "version": "${version}",
   "mcversion": "${mcversion}",
   "url": "",
   "updateUrl": "",
-  "authorList": ["ExampleDude"],
-  "credits": "The Forge and FML guys, for making this example",
+  "authorList": ["ichttt"],
+  "credits": "",
   "logoFile": "",
   "screenshots": [],
   "dependencies": []

@@ -15,7 +15,6 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class PictureCacheBuilder {
 
@@ -98,7 +97,7 @@ public class PictureCacheBuilder {
             callback.optimizationFailed();
             return;
         }
-        MCPaint.LOGGER.info("Merged {} pixels in picture to {} rectangles to draw", pixelsToDraw, finalDrawLists.size());
+        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles to draw", pixelsToDraw, finalDrawLists.size());
         //Start filling a buffer
         CachedBufferBuilder cachedBufferBuilder = new CachedBufferBuilder(finalDrawLists.size() * 16 + 4);
         cachedBufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
@@ -123,7 +122,7 @@ public class PictureCacheBuilder {
         }
         cachedBufferBuilder.finishBuilding();
         callback.provideFinishedBuffer(cachedBufferBuilder);
-        MCPaint.LOGGER.info("Taking {} of memory", cachedBufferBuilder.getSize());
+        MCPaint.LOGGER.debug("Taking {} bytes of memory", cachedBufferBuilder.getSize());
     }
 
     public static CachedBufferBuilder buildSimple(IPaintable paint) {

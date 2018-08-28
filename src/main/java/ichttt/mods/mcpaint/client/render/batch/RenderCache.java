@@ -27,7 +27,7 @@ public class RenderCache {
         @Override
         public Thread newThread(@Nonnull Runnable runnable) {
             Thread thread = new Thread(runnable, "MCPaint Picture Optimizer Thread-" + count.getAndIncrement());
-            MCPaint.LOGGER.debug("Starting " + thread.getName());
+            MCPaint.LOGGER.info("Starting " + thread.getName());
             thread.setDaemon(true);
             return thread;
         }
