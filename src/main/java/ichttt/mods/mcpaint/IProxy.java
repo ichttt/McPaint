@@ -12,4 +12,6 @@ public interface IProxy {
     default void showGuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing, IBlockState state) {}
 
     default void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {}
+
+    default void onConfigReload() {}
 }

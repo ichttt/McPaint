@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.render;
 
+import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -134,7 +135,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         GlStateManager.translate(xOffset, yOffset, zOffset);
         IPaintable paint = te.getPaintFor(facing);
         //Render picture
-        boolean slow = false; //TODO config
+        boolean slow = !MCPaintConfig.optimizePictures;
         if (!slow) {
             BufferBuilder builder = te.getBuffer(facing);
             if (builder == null) {

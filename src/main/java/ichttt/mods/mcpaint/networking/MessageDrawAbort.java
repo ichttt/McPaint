@@ -1,6 +1,6 @@
 package ichttt.mods.mcpaint.networking;
 
-import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.network.NetHandlerPlayServer;
@@ -36,7 +36,7 @@ public class MessageDrawAbort implements IMessage {
         public IMessage onMessage(MessageDrawAbort message, MessageContext ctx) {
             NetHandlerPlayServer handler = ctx.getServerHandler();
             handler.player.server.addScheduledTask(() -> {
-                if (MCPaint.isPosInvalid(handler, message.pos)) return;
+                if (MCPaintUtil.isPosInvalid(handler, message.pos)) return;
 
                 TileEntity te = handler.player.world.getTileEntity(message.pos);
                 if (te instanceof TileEntityCanvas) {

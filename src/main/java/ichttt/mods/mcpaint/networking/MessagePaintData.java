@@ -5,6 +5,7 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.primitives.Shorts;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -124,9 +125,7 @@ public class MessagePaintData implements IMessage {
                             int offset = messagePaintData.data.length * (messagePaintData.part - 1);
                             for (int i = 0; i < messagePaintData.data.length; i++) {
                                 int[] subarray = messagePaintData.data[i];
-                                for (int sub = 0; sub < subarray.length; sub++) {
-                                    data[i + offset][sub] = messagePaintData.data[i][sub];
-                                }
+                                System.arraycopy(messagePaintData.data[i], 0, data[i + offset], 0, subarray.length);
                             }
                         });
                         partMap.removeAll(message.pos);
@@ -139,7 +138,7 @@ public class MessagePaintData implements IMessage {
         protected void setData(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
             NetHandlerPlayServer handler = ctx.getServerHandler();
             handler.player.server.addScheduledTask(() ->{
-                if (MCPaint.isPosInvalid(handler, pos)) return;
+                if (MCPaintUtil.isPosInvalid(handler, pos)) return;
 
                 IBlockState state = handler.player.world.getBlockState(pos);
                 if (state.getBlock() != EventHandler.CANVAS) {

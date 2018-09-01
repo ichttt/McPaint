@@ -5,6 +5,7 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.client.gui.GuiSetupCanvas;
 import ichttt.mods.mcpaint.client.render.TESRCanvas;
+import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
@@ -32,11 +33,8 @@ public class ClientProxy implements IProxy {
         Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
     }
 
-    public static int[][] copyOf(int[][] array) {
-        int[][] copy = new int[array.length][];
-        for (int i = 0; i < array.length; i++) {
-            copy[i] = array[i].clone();
-        }
-        return copy;
+    @Override
+    public void onConfigReload() {
+        RenderCache.onConfigReload();
     }
 }

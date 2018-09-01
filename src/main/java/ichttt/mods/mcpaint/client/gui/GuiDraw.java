@@ -1,8 +1,8 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.client.ClientProxy;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
@@ -221,7 +221,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.scaleFactor;
             int pixelPosY = offsetMouseY / this.scaleFactor;
-            toDraw = ClientProxy.copyOf(toDraw);
+            toDraw = MCPaintUtil.copyOf(toDraw);
             this.activeDrawType.draw(toDraw, color, pixelPosX, pixelPosY, this.toolSize);
         }
 

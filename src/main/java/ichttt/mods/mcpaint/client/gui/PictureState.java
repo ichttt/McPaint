@@ -1,6 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
-import ichttt.mods.mcpaint.client.ClientProxy;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 
 import java.util.Arrays;
 
@@ -8,7 +8,7 @@ public class PictureState {
     public final int[][] picture;
 
     public PictureState(int[][] picture) {
-        this.picture = ClientProxy.copyOf(picture);
+        this.picture = MCPaintUtil.copyOf(picture);
     }
 
     public PictureState(PictureState state) {

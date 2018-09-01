@@ -13,4 +13,12 @@ public interface IPaintable extends IPaintValidator {
     short getPixelCountY();
 
     void setData(byte scaleFactor, int[][] pictureData);
+
+    void copyFrom(IPaintable paint);
+
+    @Override
+    int hashCode();
+
+    @Override
+    boolean equals(Object other);
 }

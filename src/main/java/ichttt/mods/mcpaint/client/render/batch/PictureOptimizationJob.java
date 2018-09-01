@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
-import ichttt.mods.mcpaint.client.ClientProxy;
+import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.IOptimisationCallback;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
@@ -16,8 +17,13 @@ public class PictureOptimizationJob implements Runnable {
     @Override
     public void run() {
         if (callback.isInvalid()) return;
+        CachedBufferBuilder cached = RenderCache.getIfPresent(paintable);
+        if (cached != null) {
+            callback.provideFinishedBuffer(cached);
+            return;
+        }
         int[][] orig = paintable.getPictureData();
-        int[][] pictureData = ClientProxy.copyOf(orig);
+        int[][] pictureData = MCPaintUtil.copyOf(orig);
         byte scaleFactor = paintable.getScaleFactor();
         PictureCacheBuilder.batch(pictureData, scaleFactor, callback);
     }

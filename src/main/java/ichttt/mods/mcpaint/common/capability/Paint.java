@@ -1,6 +1,9 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import com.google.common.primitives.Shorts;
+import ichttt.mods.mcpaint.common.MCPaintUtil;
+
+import java.util.Arrays;
 
 public class Paint implements IPaintable {
     private static final IPaintValidator TRUE_VALIDATOR = (pixelCountX, pixelCountY) -> true;
@@ -59,5 +62,24 @@ public class Paint implements IPaintable {
     @Override
     public final boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
         return this.validator.isValidPixelCount(pixelCountX, pixelCountY);
+    }
+
+    @Override
+    public void copyFrom(IPaintable paint) {
+        this.setData(paint.getScaleFactor(), MCPaintUtil.copyOf(paint.getPictureData()));
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.deepHashCode(pictureData);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Paint) {
+            Paint paint = (Paint) obj;
+            return Arrays.deepEquals(paint.pictureData, this.pictureData);
+        }
+        return false;
     }
 }
