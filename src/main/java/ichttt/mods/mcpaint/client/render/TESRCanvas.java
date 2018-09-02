@@ -51,30 +51,31 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         double translationZOffset = 0D;
         switch (facing) {
             case NORTH:
-                angle = 180;
-                zOffset = -1;
+                angle = 0;
+                zOffset = 1;
                 translationZOffset = 0.0015D;
                 break;
             case EAST:
-                angle = 90;
+                angle = 270;
                 translationXOffset = -0.0015D;
                 break;
             case SOUTH:
-                xOffset = 1;
+                angle = 180;
+                xOffset = -1;
                 translationZOffset = -0.0015D;
                 break;
             case WEST:
-                angle = 270;
-                xOffset = 1;
-                zOffset = -1;
+                angle = 90;
+                xOffset = -1;
+                zOffset = 1;
                 translationXOffset = 0.0015D;
                 break;
             case UP:
+                xOffset = -1;
                 yOffset = -1;
                 translationYOffset = -0.0015D;
                 break;
             case DOWN:
-                xOffset = 1;
                 yOffset = -1;
                 zOffset = 1;
                 translationYOffset = 0.0015D;
@@ -115,24 +116,22 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         //GL setup
         GlStateManager.pushMatrix();
         GlStateManager.disableTexture2D();
-        GlStateManager.disableCull();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
-        GlStateManager.translate(x + translationXOffset, y + translationYOffset, z + translationZOffset);
+        GlStateManager.translate(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
         OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
 
         if (angle != 0)
-                GlStateManager.rotate(angle, 0, 1, 0);
+            GlStateManager.rotate(angle, 0, 1, 0);
         else if (facing.getAxis().isVertical()) {
             GlStateManager.rotate(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
             GlStateManager.rotate(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
         }
 
-        GlStateManager.translate(xOffset, yOffset, zOffset);
         IPaintable paint = te.getPaintFor(facing);
         //Render picture
         boolean slow = !MCPaintConfig.optimizePictures;
@@ -154,7 +153,6 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         }
 
         GlStateManager.disableBlend();
-        GlStateManager.enableCull();
         GlStateManager.enableTexture2D();
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();

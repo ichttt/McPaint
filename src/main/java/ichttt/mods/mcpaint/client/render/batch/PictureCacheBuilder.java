@@ -114,9 +114,9 @@ public class PictureCacheBuilder {
                 top = Math.min(top, info.y);
                 bottom = Math.max(bottom, info.y);
             }
-            double leftDraw = 0 - (((left) * scaleFactor) / 128F);
+            double leftDraw = (((left) * scaleFactor) / 128F);
             double topDraw = 1 - (((top) * scaleFactor) / 128F);
-            double rightDraw = 0 - (((right + 1) * scaleFactor) / 128F);
+            double rightDraw = (((right + 1) * scaleFactor) / 128F);
             double bottomDraw = 1 - (((bottom + 1) * scaleFactor) / 128F);
             PictureRenderer.drawToBuffer(color, cachedBufferBuilder, leftDraw, topDraw, rightDraw, bottomDraw);
         }

@@ -22,9 +22,9 @@ public class PictureRenderer {
             int[] yPos = picture[x];
             for (int y = 0; y < yPos.length; y++) {
                 int color = picture[x][y];
-                double left = 0 - ((x * scaleFactor) / 128F) - scaleFactor / 128F;
+                double left = ((x * scaleFactor) / 128F) + scaleFactor / 128F;
                 double top = 1 - ((y * scaleFactor) / 128F) - scaleFactor / 128F;
-                double right = left + (scaleFactor / 128F);
+                double right = left - (scaleFactor / 128F);
                 double bottom = top + (scaleFactor / 128F);
                 drawToBuffer(color, builder, left, top, right, bottom);
             }
