@@ -44,4 +44,11 @@ public class ClientProxy implements IProxy {
     public void onConfigReload() {
         RenderCache.onConfigReload();
     }
+
+    @Override
+    public void invalidateCache(IPaintable paint, TileEntityCanvas canvas, EnumFacing facing) {
+        RenderCache.uncache(paint);
+        if (canvas != null)
+            canvas.invalidateBuffer(facing);
+    }
 }

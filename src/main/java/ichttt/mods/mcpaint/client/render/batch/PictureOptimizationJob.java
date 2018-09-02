@@ -22,8 +22,7 @@ public class PictureOptimizationJob implements Runnable {
             callback.provideFinishedBuffer(cached);
             return;
         }
-        int[][] orig = paintable.getPictureData();
-        int[][] pictureData = MCPaintUtil.copyOf(orig);
+        int[][] pictureData = MCPaintUtil.copyOf(paintable.getPictureData());
         byte scaleFactor = paintable.getScaleFactor();
         PictureCacheBuilder.batch(pictureData, scaleFactor, callback);
     }

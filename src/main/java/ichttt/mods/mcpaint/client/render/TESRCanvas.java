@@ -61,22 +61,22 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
                 break;
             case SOUTH:
                 angle = 180;
-                xOffset = -1;
+                xOffset = 1;
                 translationZOffset = -0.0015D;
                 break;
             case WEST:
                 angle = 90;
-                xOffset = -1;
+                xOffset = 1;
                 zOffset = 1;
                 translationXOffset = 0.0015D;
                 break;
             case UP:
-                xOffset = -1;
-                yOffset = -1;
+                xOffset = 1;
+                zOffset = 1;
                 translationYOffset = -0.0015D;
                 break;
             case DOWN:
-                yOffset = -1;
+                yOffset = 1;
                 zOffset = 1;
                 translationYOffset = 0.0015D;
                 break;

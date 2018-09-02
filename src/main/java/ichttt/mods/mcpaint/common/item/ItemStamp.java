@@ -39,8 +39,7 @@ public class ItemStamp extends ItemBrush {
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     if (canvas.hasPaintFor(facing)) {
-                        paint.copyFrom(canvas.getPaintFor(facing));
-                        System.out.println("COPY");
+                        paint.copyFrom(canvas.getPaintFor(facing), canvas, facing);
                         return EnumActionResult.SUCCESS;
                     }
                 }
@@ -51,6 +50,6 @@ public class ItemStamp extends ItemBrush {
 
     @Override
     protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, EnumFacing facing, IBlockState state) {
-        canvas.getPaintFor(facing).copyFrom(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null));
+        canvas.getPaintFor(facing).copyFrom(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null), canvas, facing);
     }
 }

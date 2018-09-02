@@ -39,7 +39,8 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<ItemStack> event) {
-        event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
+        if (event.getObject().getItem() == STAMP)
+            event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
     }
 
     @SubscribeEvent

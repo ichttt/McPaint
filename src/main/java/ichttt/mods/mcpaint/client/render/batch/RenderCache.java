@@ -44,7 +44,9 @@ public class RenderCache {
     }
 
     public static CachedBufferBuilder getIfPresent(IPaintable paintable) {
-        return PAINT_CACHE.getIfPresent(paintable);
+        CachedBufferBuilder bufferBuilder = PAINT_CACHE.getIfPresent(paintable);
+        if (bufferBuilder != null) System.out.println("cache hit!");
+        return bufferBuilder;
     }
 
     public static void cache(IPaintable paintable, CachedBufferBuilder obj) {
@@ -68,8 +70,6 @@ public class RenderCache {
 
     public static void onConfigReload() {
         POOL_EXECUTOR.allowCoreThreadTimeOut(!MCPaintConfig.optimizePictures);
-        if (!MCPaintConfig.optimizePictures) {
-            clear();
-        }
+        clear();
     }
 }

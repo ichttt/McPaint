@@ -293,8 +293,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 TileEntityCanvas canvas = (TileEntityCanvas) te;
                 MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture, MCPaint.NETWORKING::sendToServer);
                 IPaintable paintable = canvas.getPaintFor(this.facing);
-                canvas.invalidateBuffer(this.facing);
-                paintable.setData(this.scaleFactor, this.currentState.picture);
+                paintable.setData(this.scaleFactor, this.currentState.picture, canvas, this.facing);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {

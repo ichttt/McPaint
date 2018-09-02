@@ -1,8 +1,12 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import com.google.common.primitives.Shorts;
+import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
+import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import net.minecraft.util.EnumFacing;
 
+import javax.annotation.Nullable;
 import java.util.Arrays;
 
 public class Paint implements IPaintable {
@@ -13,6 +17,7 @@ public class Paint implements IPaintable {
     private short pixelCountX;
     private short pixelCountY;
     private final IPaintValidator validator;
+    private int hashCode = 0;
 
     public Paint() {
         this(TRUE_VALIDATOR);
@@ -28,15 +33,17 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void setData(byte scaleFactor, int[][] pictureData) {
+    public void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
         short pixelCountX = Shorts.checkedCast(pictureData.length * scaleFactor);
         short pixelCountY = Shorts.checkedCast(pictureData[0].length * scaleFactor);
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
             throw new IllegalArgumentException("Invalid pixel count: x:" + pixelCountX + " y:" + pixelCountY);
+        MCPaint.proxy.invalidateCache(this, canvas, facing);
         this.pixelCountX = pixelCountX;
         this.pixelCountY = pixelCountY;
         this.scaleFactor = scaleFactor;
         this.pictureData = pictureData;
+        this.hashCode = 0;
     }
 
     @Override
@@ -65,17 +72,21 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void copyFrom(IPaintable paint) {
-        this.setData(paint.getScaleFactor(), MCPaintUtil.copyOf(paint.getPictureData()));
+    public void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
+        this.setData(paint.getScaleFactor(), MCPaintUtil.copyOf(paint.getPictureData()), canvas, facing);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.deepHashCode(pictureData);
+        if (this.hashCode == 0)
+            this.hashCode = Arrays.deepHashCode(this.pictureData);
+        return this.hashCode;
     }
 
     @Override
     public boolean equals(Object obj) {
+        if (obj == this)
+            return true;
         if (obj instanceof Paint) {
             Paint paint = (Paint) obj;
             return Arrays.deepEquals(paint.pictureData, this.pictureData);

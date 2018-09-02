@@ -151,7 +151,8 @@ public class MessagePaintData implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).getPaintFor(facing).setData(scale, data);
+                TileEntityCanvas canvas = (TileEntityCanvas) te;
+                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
                 NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
 //                handler.sendPacket(te.getUpdatePacket());
@@ -176,8 +177,8 @@ public class MessagePaintData implements IMessage {
                     MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
                     return;
                 }
-                ((TileEntityCanvas) te).invalidateBuffer(facing);
-                ((TileEntityCanvas) te).getPaintFor(facing).setData(scale, data);
+                TileEntityCanvas canvas = (TileEntityCanvas) te;
+                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
             });
         }
