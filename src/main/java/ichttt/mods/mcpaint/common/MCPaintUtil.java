@@ -1,8 +1,14 @@
 package ichttt.mods.mcpaint.common;
 
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import ichttt.mods.mcpaint.common.capability.IPaintable;
+import ichttt.mods.mcpaint.networking.MessagePaintData;
+import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 
@@ -27,5 +33,17 @@ public class MCPaintUtil {
             copy[i] = array[i].clone();
         }
         return copy;
+    }
+
+    public static void uploadPictureToServer(TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture) {
+        if (!(te instanceof TileEntityCanvas)) {
+            MCPaint.LOGGER.error("Could not set paint! Found block " + te.getBlockType());
+            Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
+            return;
+        }
+        TileEntityCanvas canvas = (TileEntityCanvas) te;
+        MessagePaintData.createAndSend(te.getPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
+        IPaintable paintable = canvas.getPaintFor(facing);
+        paintable.setData(scaleFactor, picture, canvas, facing);
     }
 }

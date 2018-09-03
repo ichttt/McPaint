@@ -1,14 +1,12 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import com.google.common.base.Preconditions;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
-import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
@@ -21,11 +19,9 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
@@ -50,7 +46,6 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private static final int sizeXSize = toolXSize;
     private static final int sizeYSize = 34;
 
-    private final byte scaleFactor;
     private final BlockPos pos;
     private final EnumFacing facing;
     private final IBlockState state;
@@ -71,29 +66,26 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
     private boolean handled = false;
-    private IPaintable paintable;
 
-    public GuiDraw(IPaintable canvas, BlockPos pos, EnumFacing facing, IBlockState state) {
-        Objects.requireNonNull(canvas);
-        if (!canvas.hasPaintData())
-            throw new IllegalArgumentException("No data in canvas");
+    public GuiDraw(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, EnumFacing facing, IBlockState state) {
+        Objects.requireNonNull(canvas, "Canvas is null");
+        Preconditions.checkArgument(canvas.hasPaintData(), "No data in canvas");
         this.pos = pos;
         this.facing = facing;
         this.state = state;
-        this.scaleFactor = canvas.getScaleFactor();
-        this.currentState = new PictureState(canvas.getPictureData());
-        this.paintable = canvas;
+        this.currentState = new PictureState(canvas);
+        for (IPaintable paint : prevImages)
+            this.statesForUndo.add(new PictureState(paint));
     }
 
-    public GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
+    protected GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
         this.state = state;
-        this.scaleFactor = scaleFactor;
         int[][] picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, ZERO_ALPHA);
-        this.currentState = new PictureState(picture);
+        this.currentState = new PictureState(picture, scaleFactor);
     }
 
     @Override
@@ -168,7 +160,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.actionPerformed(pencil);
         this.actionPerformed(this.lessSize);
         this.actionPerformed(black);
-        this.actionPerformed(this.undo);
+        this.actionPerformed(this.redo);
     }
 
     @Override
@@ -219,8 +211,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         boolean drawSelect = isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
         int toDraw[][] = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
         if (drawSelect) {
-            int pixelPosX = offsetMouseX / this.scaleFactor;
-            int pixelPosY = offsetMouseY / this.scaleFactor;
+            int pixelPosX = offsetMouseX / this.currentState.scaleFactor;
+            int pixelPosY = offsetMouseY / this.currentState.scaleFactor;
             toDraw = MCPaintUtil.copyOf(toDraw);
             this.activeDrawType.draw(toDraw, color, pixelPosX, pixelPosY, this.toolSize);
         }
@@ -228,7 +220,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.scaleFactor, buffer, toDraw);
+        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.currentState.scaleFactor, buffer, toDraw);
         GlStateManager.disableTexture2D();
         GlStateManager.enableBlend();
         GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -284,16 +276,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (button.id == -1) {
             if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.handled = true;
-                TileEntity te = this.mc.world.getTileEntity(this.pos);
-                if (!(te instanceof TileEntityCanvas)) {
-                    MCPaint.LOGGER.error("Could not set paint! Found block " + mc.world.getBlockState(this.pos));
-                    Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
-                    return;
-                }
-                TileEntityCanvas canvas = (TileEntityCanvas) te;
-                MessagePaintData.createAndSend(this.pos, this.facing, this.scaleFactor, this.currentState.picture, MCPaint.NETWORKING::sendToServer);
-                IPaintable paintable = canvas.getPaintFor(this.facing);
-                paintable.setData(this.scaleFactor, this.currentState.picture, canvas, this.facing);
+                MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -375,8 +358,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
         if (isInWindow(offsetMouseX, offsetMouseY)) {
-            int pixelPosX = offsetMouseX / this.scaleFactor;
-            int pixelPosY = offsetMouseY / this.scaleFactor;
+            int pixelPosX = offsetMouseX / this.currentState.scaleFactor;
+            int pixelPosY = offsetMouseY / this.currentState.scaleFactor;
             if (this.paintingState == null)
                 this.paintingState = new PictureState(this.currentState);
             if (pixelPosX < this.paintingState.picture.length && pixelPosY < this.paintingState.picture.length && this.color != null) {
@@ -392,7 +375,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     }
 
     private boolean isInWindow(int offsetMouseX, int offsetMouseY) {
-        return offsetMouseX >= 0 && offsetMouseX < (this.currentState.picture.length * this.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (this.currentState.picture.length * this.scaleFactor);
+        return offsetMouseX >= 0 && offsetMouseX < (this.currentState.picture.length * this.currentState.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (this.currentState.picture.length * this.currentState.scaleFactor);
     }
 
     private void handleSizeChanged() {

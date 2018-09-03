@@ -1,1 +1,5 @@
 item.mcpaint.brush.name=Pinsel
+item.mcpaint.stamp.name=Stempel
+
+mcpaint.tooltip.stamp.paint=Schleich-klick in die Luft zum löschen
+mcpaint.tooltip.stamp.nopaint=Schleich-klick auf Block mit Farbe zum kopieren

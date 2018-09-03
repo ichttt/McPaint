@@ -34,7 +34,7 @@ public class RenderCache {
     });
 
     public static void getOrRequest(IPaintable paintable, IOptimisationCallback callback) {
-        if (!MCPaintConfig.optimizePictures) return;
+        if (!MCPaintConfig.CLIENT.optimizePictures) return;
         CachedBufferBuilder builder = getIfPresent(paintable);
         if (builder != null) {
             callback.provideFinishedBuffer(builder);
@@ -44,13 +44,11 @@ public class RenderCache {
     }
 
     public static CachedBufferBuilder getIfPresent(IPaintable paintable) {
-        CachedBufferBuilder bufferBuilder = PAINT_CACHE.getIfPresent(paintable);
-        if (bufferBuilder != null) System.out.println("cache hit!");
-        return bufferBuilder;
+        return PAINT_CACHE.getIfPresent(paintable);
     }
 
     public static void cache(IPaintable paintable, CachedBufferBuilder obj) {
-        if (MCPaintConfig.optimizePictures)
+        if (MCPaintConfig.CLIENT.optimizePictures)
             PAINT_CACHE.put(paintable, obj);
     }
 
@@ -64,12 +62,12 @@ public class RenderCache {
     }
 
     public static void scheduleCleanup() {
-        if (MCPaintConfig.optimizePictures)
+        if (MCPaintConfig.CLIENT.optimizePictures)
             POOL_EXECUTOR.execute(PAINT_CACHE::cleanUp);
     }
 
     public static void onConfigReload() {
-        POOL_EXECUTOR.allowCoreThreadTimeOut(!MCPaintConfig.optimizePictures);
+        POOL_EXECUTOR.allowCoreThreadTimeOut(!MCPaintConfig.CLIENT.optimizePictures);
         clear();
     }
 }

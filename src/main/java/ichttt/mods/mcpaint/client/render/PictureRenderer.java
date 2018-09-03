@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.GlStateManager;
 
 public class PictureRenderer {
     public static void renderInGui(double leftOffset, double topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
@@ -29,6 +30,22 @@ public class PictureRenderer {
                 drawToBuffer(color, builder, left, top, right, bottom);
             }
         }
+    }
+
+    public static void setWorldGLState() {
+        GlStateManager.pushMatrix();
+        GlStateManager.disableTexture2D();
+        GlStateManager.disableLighting();
+        GlStateManager.enableBlend();
+        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+    }
+
+    public static void resetWorldGLState() {
+        GlStateManager.disableBlend();
+        GlStateManager.enableTexture2D();
+        GlStateManager.enableLighting();
+        GlStateManager.popMatrix();
     }
 
     public static boolean drawToBuffer(int color, BufferBuilder builder, double left, double top, double right, double bottom) {

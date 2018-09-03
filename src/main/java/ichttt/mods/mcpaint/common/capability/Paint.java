@@ -34,8 +34,8 @@ public class Paint implements IPaintable {
 
     @Override
     public void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
-        short pixelCountX = Shorts.checkedCast(pictureData.length * scaleFactor);
-        short pixelCountY = Shorts.checkedCast(pictureData[0].length * scaleFactor);
+        short pixelCountX = Shorts.checkedCast(pictureData == null ? 0 : (pictureData.length * scaleFactor));
+        short pixelCountY = Shorts.checkedCast(pictureData == null ? 0 : (pictureData[0].length * scaleFactor));
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
             throw new IllegalArgumentException("Invalid pixel count: x:" + pixelCountX + " y:" + pixelCountY);
         MCPaint.proxy.invalidateCache(this, canvas, facing);
@@ -92,5 +92,10 @@ public class Paint implements IPaintable {
             return Arrays.deepEquals(paint.pictureData, this.pictureData);
         }
         return false;
+    }
+
+    @Override
+    public void clear(TileEntityCanvas canvas, EnumFacing facing) {
+        setData((byte) 0, null, canvas, facing);
     }
 }

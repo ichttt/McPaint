@@ -114,12 +114,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         }
 
         //GL setup
-        GlStateManager.pushMatrix();
-        GlStateManager.disableTexture2D();
-        GlStateManager.disableLighting();
-        GlStateManager.enableBlend();
-        GlStateManager.tryBlendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
+        PictureRenderer.setWorldGLState();
         GlStateManager.translate(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
@@ -134,7 +129,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
 
         IPaintable paint = te.getPaintFor(facing);
         //Render picture
-        boolean slow = !MCPaintConfig.optimizePictures;
+        boolean slow = !MCPaintConfig.CLIENT.optimizePictures;
         if (!slow) {
             BufferBuilder builder = te.getBuffer(facing);
             if (builder == null) {
@@ -152,10 +147,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             tessellator.draw();
         }
 
-        GlStateManager.disableBlend();
-        GlStateManager.enableTexture2D();
-        GlStateManager.enableLighting();
-        GlStateManager.popMatrix();
+        PictureRenderer.resetWorldGLState();
 
         //GL cleanup
     }

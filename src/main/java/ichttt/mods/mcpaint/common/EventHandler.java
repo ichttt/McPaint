@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.common;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.CapabilityProvider;
 import ichttt.mods.mcpaint.common.item.ItemBrush;
 import ichttt.mods.mcpaint.common.item.ItemStamp;
@@ -14,10 +15,13 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
+
+import java.util.Objects;
 
 public class EventHandler {
     public static final Item BRUSH = new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush"));
@@ -48,6 +52,14 @@ public class EventHandler {
         if (event.getModID().equals(MCPaint.MODID)) {
             ConfigManager.sync(MCPaint.MODID, Config.Type.INSTANCE);
             MCPaint.proxy.onConfigReload();
+        }
+    }
+
+    @SubscribeEvent
+    public static void onRightClick(PlayerInteractEvent.RightClickItem event) {
+        ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
+        if (event.getEntityPlayer().isSneaking() && stack.getItem() == EventHandler.STAMP) {
+            Objects.requireNonNull(stack.getCapability(CapabilityPaintable.PAINTABLE, null)).clear(null, null);
         }
     }
 }
