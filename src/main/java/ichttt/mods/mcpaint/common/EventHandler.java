@@ -10,6 +10,7 @@ import ichttt.mods.mcpaint.common.item.ItemStamp;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
@@ -60,6 +61,8 @@ public class EventHandler {
         ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
         if (event.getEntityPlayer().isSneaking() && stack.getItem() == EventHandler.STAMP) {
             Objects.requireNonNull(stack.getCapability(CapabilityPaintable.PAINTABLE, null)).clear(null, null);
+            event.setCanceled(true);
+            event.setCancellationResult(EnumActionResult.SUCCESS);
         }
     }
 }

@@ -19,11 +19,12 @@ public class CapabilityProvider implements ICapabilitySerializable<NBTTagCompoun
         return capability == CapabilityPaintable.PAINTABLE;
     }
 
+    @SuppressWarnings("unchecked")
     @Nullable
     @Override
     public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
         if (capability == CapabilityPaintable.PAINTABLE)
-            return CapabilityPaintable.PAINTABLE.cast(paint);
+            return (T) paint;
         return null;
     }
 

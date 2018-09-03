@@ -1,3 +1,17 @@
+import javax.swing.JButton
+import javax.swing.JFrame
+import javax.swing.JOptionPane
+import javax.swing.JPanel
+import javax.swing.JPasswordField
+import javax.swing.WindowConstants
+import java.awt.Dimension
+import java.awt.GridLayout
+import java.awt.event.ActionEvent
+import java.awt.event.ActionListener
+import java.awt.event.KeyEvent
+import java.awt.event.KeyListener
+import java.util.concurrent.CountDownLatch
+
 buildscript {
     repositories {
         jcenter()
@@ -11,7 +25,7 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "1.0.2"
+version = "1.1.0"
 group = "ichttt.mods.mcpaint" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "mcpaint"
 
@@ -44,7 +58,7 @@ dependencies {
     // or you may define them like so..
     //compile "some.group:artifact:version:classifier"
     //compile "some.group:artifact:version"
-      
+
     // real examples
     //compile 'com.mod-buildcraft:buildcraft:6.0.8:dev'  // adds buildcraft to the dev env
     //compile 'com.googlecode.efficient-java-matrix-library:ejml:0.24' // adds ejml to the dev env
@@ -80,4 +94,96 @@ processResources {
     from(sourceSets.main.resources.srcDirs) {
         exclude 'mcmod.info'
     }
+}
+
+
+//Check if signing is enabled when building
+if (project.gradle.startParameter.taskNames.contains("build") && (!project.hasProperty('keyStore') || !project.hasProperty('storeAlias'))) {
+    throw new IllegalArgumentException("Building without signing is not allowed. Please specify the keyStore and storeAlias property!")
+}
+
+def signPass
+task setupKeys() {
+    onlyIf {
+        project.hasProperty('keyStore')
+    }
+    if (project.hasProperty('keyStore')) {
+        def gui = new SimplePasswordQuery()
+        gui.latch.await()
+        signPass = gui.getPasswordAndDiscard()
+    }
+}
+
+task signMainJar(type: SignJar) {
+    onlyIf { // Skip the task if our secret data isn't available
+        project.hasProperty('keyStore')
+    }
+    dependsOn reobfJar
+    if (project.hasProperty('keyStore')) { // This needs to be a path to the keystore file
+        keyStore = project.keyStore
+        alias = project.storeAlias
+        storePass = signPass
+        keyPass = signPass
+        inputFile = jar.archivePath
+        outputFile = jar.archivePath
+    }
+}
+
+signMainJar.dependsOn setupKeys
+build.dependsOn signMainJar
+
+//Copied from FGLW. Therefor ignore all groovy warnings
+@SuppressWarnings("all")
+class SimplePasswordQuery implements ActionListener, KeyListener {
+    private final CountDownLatch latch = new CountDownLatch(1);
+    private final JFrame frame = new JFrame("KeySigner Password");
+    private final JPanel login = new JPanel(new GridLayout(2, 1));
+    private String password;
+    private JPasswordField field = new JPasswordField();
+
+    public SimplePasswordQuery() {
+        frame.setContentPane(login);
+        field.addKeyListener(this);
+        login.add(field);
+        JButton okBtn = new JButton("OK");
+        okBtn.addActionListener(this);
+        login.add(okBtn);
+        frame.setMinimumSize(new Dimension(320, 200));
+        frame.setVisible(true);
+        frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
+    }
+
+    public CountDownLatch getLatch() {
+        return latch;
+    }
+
+    public String getPasswordAndDiscard() {
+        String s = password;
+        frame.dispose();
+        login.removeAll();
+        password = null;
+        return s;
+    }
+
+    private void checkPW() {
+        password = new String(field.getPassword());
+        if (!password.equals(""))
+            latch.countDown();
+        else
+            JOptionPane.showMessageDialog(frame, "No password is not an option!")
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        checkPW();
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ENTER)
+            checkPW();
+    }
+
+    @Override public void keyReleased(KeyEvent e) {}
+    @Override public void keyTyped(KeyEvent e) {}
 }

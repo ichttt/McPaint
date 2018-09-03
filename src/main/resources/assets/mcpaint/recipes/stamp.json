@@ -1,9 +1,9 @@
 {
   "type": "forge:ore_shaped",
   "pattern": [
-    "WWW",
+    " P ",
     " S ",
-    " S "
+    "WWW"
   ],
   "key": {
     "W":  [
@@ -75,9 +75,13 @@
     "S": {
       "type": "forge:ore_dict",
       "ore": "stickWood"
+    },
+    "P": {
+      "type": "forge:ore_dict",
+      "ore": "plankWood"
     }
   },
   "result": {
-    "item": "mcpaint:brush"
+    "item": "mcpaint:stamp"
   }
 }

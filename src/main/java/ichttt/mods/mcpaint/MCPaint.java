@@ -25,7 +25,7 @@ import org.apache.logging.log4j.Logger;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final String NAME = "MC Paint";
-    public static final String VERSION = "1.0.1";
+    public static final String VERSION = "1.1.0";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
     @SidedProxy(clientSide = "ichttt.mods.mcpaint.client.ClientProxy", serverSide = "ichttt.mods.mcpaint.server.ServerProxy")
