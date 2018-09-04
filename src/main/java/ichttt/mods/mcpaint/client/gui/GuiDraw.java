@@ -98,12 +98,12 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 25, 36, 20, "redo");
-        this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 25, 36, 20, "undo");
-        GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, "Picker", EnumDrawType.PICK_COLOR);
-        GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, "Eraser", EnumDrawType.ERASER);
-        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, "Fill", EnumDrawType.FILL);
-        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20, "Pencil", EnumDrawType.PENCIL);
+        this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 25, 36, 20, I18n.format("mcpaint.gui.redo"));
+        this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 25, 36, 20, I18n.format("mcpaint.gui.undo"));
+        GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR);
+        GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER);
+        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL);
+        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL);
         this.moreSize = new GuiButton(-3, this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">");
         this.lessSize = new GuiButton(-2, this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<");
         GuiButton done = new GuiButton(-1, this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done"));
@@ -122,13 +122,13 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         GuiHollowButton purple = new GuiHollowButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
         GuiHollowButton pink = new GuiHollowButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
 
-        this.redSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 4, "red", 0, 255, 0, this);
+        this.redSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 4, I18n.format("mcpaint.gui.red"), 0, 255, 0, this);
         this.redSlider.width = 74;
-        this.greenSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 26, "green", 0, 255, 0, this);
+        this.greenSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 26, I18n.format("mcpaint.gui.green"), 0, 255, 0, this);
         this.greenSlider.width = 74;
-        this.blueSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 48, "blue", 0, 255, 0, this);
+        this.blueSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 48, I18n.format("mcpaint.gui.blue"), 0, 255, 0, this);
         this.blueSlider.width = 74;
-        this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, "alpha", 0, 255, 0, this);
+        this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, I18n.format("mcpaint.gui.alpha"), 0, 255, 0, this);
         this.alphaSlider.width = 74;
 
         addButton(redo);
@@ -230,10 +230,6 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         tessellator.draw();
         GlStateManager.enableTexture2D();
         GlStateManager.disableBlend();
-
-//        if (drawSelect) {
-//            this.picture = orig;
-//        }
     }
 
     @Override

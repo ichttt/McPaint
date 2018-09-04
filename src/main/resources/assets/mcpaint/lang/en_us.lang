@@ -3,3 +3,13 @@ item.mcpaint.stamp.name=Stamp
 
 mcpaint.tooltip.stamp.paint=Sneak-click on air to clear
 mcpaint.tooltip.stamp.nopaint=Sneak-click on block with paint to copy
+mcpaint.gui.pencial=Pencil
+mcpaint.gui.fill=Fill
+mcpaint.gui.eraser=Eraser
+mcpaint.gui.pick_color=Picker
+mcpaint.gui.undo=Undo
+mcpaint.gui.redo=Redo
+mcpaint.gui.red=red
+mcpaint.gui.green=green
+mcpaint.gui.blue=blue
+mcpaint.gui.alpha=alpha

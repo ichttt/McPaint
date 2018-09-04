@@ -3,3 +3,13 @@ item.mcpaint.stamp.name=Stempel
 
 mcpaint.tooltip.stamp.paint=Schleich-klick in die Luft zum löschen
 mcpaint.tooltip.stamp.nopaint=Schleich-klick auf Block mit Farbe zum kopieren
+mcpaint.gui.pencial=Stift
+mcpaint.gui.fill=Füllen
+mcpaint.gui.eraser=Radierer
+mcpaint.gui.pick_color=Farbe
+mcpaint.gui.undo=Zurück
+mcpaint.gui.redo=Vor
+mcpaint.gui.red=rot
+mcpaint.gui.green=grün
+mcpaint.gui.blue=blau
+mcpaint.gui.alpha=alpha

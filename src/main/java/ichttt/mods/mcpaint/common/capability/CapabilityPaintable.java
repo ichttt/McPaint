@@ -30,12 +30,10 @@ public class CapabilityPaintable {
     public static NBTTagCompound writeToNBT(IPaintable instance, NBTTagCompound compound) {
         if (instance.hasPaintData()) {
             short pixelCountX = instance.getPixelCountX();
-            short pixelCountY = instance.getPixelCountY();
             byte scaleFactor = instance.getScaleFactor();
             int[][] pictureData = instance.getPictureData();
 
             compound.setShort("pixelX", pixelCountX);
-            compound.setShort("pixelY", pixelCountY);
             compound.setByte("scale", scaleFactor);
 
             NBTTagCompound pictureInfo = new NBTTagCompound();
@@ -53,7 +51,6 @@ public class CapabilityPaintable {
         if (!compound.hasKey("scale", Constants.NBT.TAG_BYTE))
             return;
         short pixelCountX = compound.getShort("pixelX");
-        short pixelCountY = compound.getShort("pixelY");
         byte scaleFactor = compound.getByte("scale");
         NBTTagCompound pictureInfo = compound.getCompoundTag("picture");
         int arraySize = pixelCountX / scaleFactor;
