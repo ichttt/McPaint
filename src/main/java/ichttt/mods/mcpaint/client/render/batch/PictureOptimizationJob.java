@@ -2,7 +2,6 @@ package ichttt.mods.mcpaint.client.render.batch;
 
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
-import ichttt.mods.mcpaint.common.block.IOptimisationCallback;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 public class PictureOptimizationJob implements Runnable {

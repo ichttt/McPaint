@@ -5,7 +5,6 @@ import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
@@ -19,7 +18,6 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -71,10 +69,5 @@ public class ItemBrush extends Item {
                 MCPaint.proxy.showGuiDraw(pos, facing, canvas.getContainedState());
             }
         }
-    }
-
-    @Override
-    public void setTileEntityItemStackRenderer(@Nullable TileEntityItemStackRenderer teisr) {
-        super.setTileEntityItemStackRenderer(teisr);
     }
 }

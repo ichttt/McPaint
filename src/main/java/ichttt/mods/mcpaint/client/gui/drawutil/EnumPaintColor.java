@@ -1,6 +1,6 @@
-package ichttt.mods.mcpaint.client.gui;
+package ichttt.mods.mcpaint.client.gui.drawutil;
 
-import java.awt.Color;
+import java.awt.*;
 
 public enum EnumPaintColor {
     BLACK(Color.BLACK),

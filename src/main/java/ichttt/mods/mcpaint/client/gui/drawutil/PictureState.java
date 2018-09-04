@@ -1,4 +1,4 @@
-package ichttt.mods.mcpaint.client.gui;
+package ichttt.mods.mcpaint.client.gui.drawutil;
 
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;

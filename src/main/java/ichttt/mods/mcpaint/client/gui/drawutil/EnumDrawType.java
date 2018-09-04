@@ -1,8 +1,9 @@
-package ichttt.mods.mcpaint.client.gui;
+package ichttt.mods.mcpaint.client.gui.drawutil;
+
+import ichttt.mods.mcpaint.client.gui.GuiDraw;
 
 import javax.annotation.Nonnull;
-import java.awt.Color;
-import java.util.Arrays;
+import java.awt.*;
 
 public enum EnumDrawType {
     PENCIL(true) {
@@ -16,9 +17,10 @@ public enum EnumDrawType {
         @Nonnull
         @Override
         public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
-            for (int[] subArray : picture) {
-                Arrays.fill(subArray, color.getRGB());
-            }
+            int colorRGB = color.getRGB();
+            int originalColor = picture[pixelX][pixelY];
+            if (originalColor == colorRGB) return color;
+            EnumDrawType.fill(picture, pixelX, pixelY, colorRGB, originalColor);
             return color;
         }
     }, ERASER(true) {
@@ -50,6 +52,20 @@ public enum EnumDrawType {
                     picture[minPixelX + x][minPixelY + y] = color;
                 }
             }
+        }
+    }
+
+    private static void fill(int[][] picture, int posX, int posY, int replacement, int current) {
+        if (picture[posX][posY] == current) {
+            picture[posX][posY] = replacement;
+            if (posX > 0)
+                fill(picture, posX - 1, posY, replacement, current);
+            if (posX + 1 < picture.length)
+                fill(picture, posX + 1, posY, replacement, current);
+            if (posY > 0)
+                fill(picture, posX, posY - 1, replacement, current);
+            if (posY + 1 < picture[posX].length)
+                fill(picture, posX, posY + 1 , replacement, current);
         }
     }
 

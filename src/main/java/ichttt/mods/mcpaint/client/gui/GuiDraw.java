@@ -2,6 +2,9 @@ package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
+import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
+import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;

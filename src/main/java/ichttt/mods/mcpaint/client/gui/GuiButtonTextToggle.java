@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 

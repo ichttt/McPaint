@@ -5,7 +5,6 @@ import com.google.common.cache.CacheBuilder;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
-import ichttt.mods.mcpaint.common.block.IOptimisationCallback;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 import javax.annotation.Nonnull;

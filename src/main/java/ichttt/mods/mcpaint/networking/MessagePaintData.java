@@ -34,9 +34,7 @@ public class MessagePaintData implements IMessage {
     private byte maxParts;
     private int[][] data;
 
-    public MessagePaintData() {
-
-    }
+    public MessagePaintData() {}
 
     public static void createAndSend(BlockPos pos, EnumFacing facing, byte scale, int[][] data, Consumer<MessagePaintData> sender) {
         int length = data.length;

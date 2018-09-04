@@ -1,4 +1,4 @@
-package ichttt.mods.mcpaint.common.block;
+package ichttt.mods.mcpaint.client.render.batch;
 
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 

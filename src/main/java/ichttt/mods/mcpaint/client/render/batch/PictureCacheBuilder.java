@@ -6,7 +6,6 @@ import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelInfo;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelLine;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelRect;
-import ichttt.mods.mcpaint.common.block.IOptimisationCallback;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
