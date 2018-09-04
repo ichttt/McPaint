@@ -20,7 +20,7 @@ public enum EnumDrawType {
             int colorRGB = color.getRGB();
             int originalColor = picture[pixelX][pixelY];
             if (originalColor == colorRGB) return color;
-            EnumDrawType.fill(picture, pixelX, pixelY, colorRGB, originalColor);
+            FillImpl.floodFillImage(picture, pixelX, pixelY, colorRGB);
             return color;
         }
     }, ERASER(true) {
@@ -52,20 +52,6 @@ public enum EnumDrawType {
                     picture[minPixelX + x][minPixelY + y] = color;
                 }
             }
-        }
-    }
-
-    private static void fill(int[][] picture, int posX, int posY, int replacement, int current) {
-        if (picture[posX][posY] == current) {
-            picture[posX][posY] = replacement;
-            if (posX > 0)
-                fill(picture, posX - 1, posY, replacement, current);
-            if (posX + 1 < picture.length)
-                fill(picture, posX + 1, posY, replacement, current);
-            if (posY > 0)
-                fill(picture, posX, posY - 1, replacement, current);
-            if (posY + 1 < picture[posX].length)
-                fill(picture, posX, posY + 1 , replacement, current);
         }
     }
 
