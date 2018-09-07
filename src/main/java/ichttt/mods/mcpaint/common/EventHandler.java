@@ -27,7 +27,7 @@ import java.util.Objects;
 public class EventHandler {
     public static final Item BRUSH = new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush"));
     public static final Item STAMP = new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp"));
-    public static final Block CANVAS = new BlockCanvas().setRegistryName(new ResourceLocation(MCPaint.MODID, "canvas"));
+    public static final BlockCanvas CANVAS = new BlockCanvas(new ResourceLocation(MCPaint.MODID, "canvas"));
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {

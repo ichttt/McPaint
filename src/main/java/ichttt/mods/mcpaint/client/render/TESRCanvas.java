@@ -11,6 +11,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.OpenGlHelper;
 import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
@@ -19,16 +20,30 @@ import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 
 public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
+
+    @Override
+    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+        if (destroyStage >= 0 && MinecraftForgeClient.getRenderPass() == 0) {
+            Tessellator tessellator = Tessellator.getInstance();
+            BufferBuilder builder = tessellator.getBuffer();
+            builder.noColor();
+            builder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
+            renderBlock(x, y, z, te, builder, destroyStage);
+            Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            tessellator.draw();
+        }
+    }
+
     //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
     @Override
     public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
-        if (MinecraftForgeClient.getRenderPass() == 0) {
-            renderBlock(x, y, z, te, buffer);
+        int renderPass = MinecraftForgeClient.getRenderPass();
+        if (renderPass == 0) {
+            renderBlock(x, y, z, te, buffer, -1);
         }
-
-        if (MinecraftForgeClient.getRenderPass() == 1) {
+        else if (renderPass == 1) {
             double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
-            if (playerDistSq < 9216D) { // 96 blocks render dist for paint, 128 for block. Paint is slower so that makes sense
+            if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
                 int light = te.getWorld().getCombinedLight(te.getPos(), 0);
                 for (EnumFacing facing : EnumFacing.VALUES) {
                     if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
@@ -152,7 +167,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         //GL cleanup
     }
 
-    private static void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder) {
+    private void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder, int destroyStage) {
         //Render block
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         IBlockState state = te.getContainedState();
@@ -160,7 +175,10 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             state = EventHandler.CANVAS.getDefaultState();
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
-        dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true);
+        if (destroyStage >= 0)
+            dispatcher.renderBlockDamage(state, pos, Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/destroy_stage_" + destroyStage), te.getWorld());
+        else
+            dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true);
         builder.setTranslation(0, 0, 0);
     }
 }

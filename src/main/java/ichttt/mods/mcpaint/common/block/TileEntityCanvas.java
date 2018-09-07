@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
@@ -159,8 +160,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public double getMaxRenderDistanceSquared() { //128 for block, paint is limited in TE to 96
-        return 128D * 128D;
+    public double getMaxRenderDistanceSquared() {
+        return MCPaintConfig.CLIENT.maxRenderDistance * MCPaintConfig.CLIENT.maxRenderDistance;
     }
 
     @Override

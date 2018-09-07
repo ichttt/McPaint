@@ -42,8 +42,10 @@ public class MessagePaintData implements IMessage {
             length *= data[0].length;
         if (length > 8000) { //We need to split
             int partsAsInt = (length / 8000) + 1;
-            while (data.length % partsAsInt != 0)
+            while (data.length % partsAsInt != 0) {
                 partsAsInt++;
+                if (partsAsInt > 32) throw new RuntimeException("Hell I'm not sending " + partsAsInt + "+ packets for a single image of length " + length);
+            }
 
             if (partsAsInt > Byte.MAX_VALUE)
                 throw new IllegalArgumentException("Picture too large: " + length);
@@ -153,7 +155,6 @@ public class MessagePaintData implements IMessage {
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
                 NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
-//                handler.sendPacket(te.getUpdatePacket());
                 MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
             });
         }

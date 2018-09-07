@@ -14,5 +14,13 @@ public class MCPaintConfig {
 
         @Config.Comment("True to allow MCPaint to optimize picture draw calls in the background to improve performance in the long run")
         public boolean optimizePictures = true;
+
+        @Config.Comment("Defines how far away the underlying block should be rendered at max")
+        @Config.RangeInt(min = 64, max = 512)
+        public int maxRenderDistance = 128;
+
+        @Config.Comment("Defines how far away the paint on the block should be rendered at max")
+        @Config.RangeInt(min = 64, max = 256)
+        public int maxPaintRenderDistance = 96;
     }
 }

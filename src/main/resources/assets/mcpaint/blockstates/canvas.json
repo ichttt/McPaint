@@ -1,5 +1,9 @@
 {
+  "forge_marker": 1,
+  "defaults": {
+    "model": "minecraft:coal_ore"
+  },
   "variants": {
-    "normal": { "model": "coal_ore" }
+    "normal": [{}]
   }
 }

@@ -11,21 +11,23 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockCanvas extends Block {
-
-    public BlockCanvas() {
+    public BlockCanvas(ResourceLocation regNam) {
         super(Material.WOOD);
         setHardness(1F);
         setCreativeTab(CreativeTabs.DECORATIONS);
         setResistance(5F);
         useNeighborBrightness = true;
+        this.setRegistryName(regNam);
     }
 
     @Override
@@ -90,5 +92,43 @@ public class BlockCanvas extends Block {
             return;
         }
         super.harvestBlock(world, player, pos, state, te, stack);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public boolean hasCustomBreakingProgress(IBlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean canHarvestBlock(IBlockAccess world, BlockPos pos, EntityPlayer player) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            return canvas.getContainedState().getBlock().canHarvestBlock(world, pos, player);
+        }
+        return super.canHarvestBlock(world, pos, player);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Override
+    public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
+        //HARD AND REALLY DIRTY HACK: BE WARNED IF YOU CONTINUE READING
+        //See if we are called from ForgeHooks#canHarvestBlock
+        //if yes, return the contained state
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+            if (stackTrace.length > 2 && stackTrace[2].toString().contains("net.minecraftforge.common.ForgeHooks.canHarvestBlock")) {
+                return canvas.getContainedState();
+            }
+        }
+        return super.getActualState(state, world, pos);
+    }
+
+    @Override
+    public int getMetaFromState(IBlockState state) {
+        if (state.getBlock() != this) //Possible when harvesting (as we send the technically wrong blockstate)
+            return state.getBlock().getMetaFromState(state);
+        return super.getMetaFromState(state);
     }
 }

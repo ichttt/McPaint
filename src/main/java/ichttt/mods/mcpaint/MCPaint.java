@@ -68,7 +68,6 @@ public class MCPaint {
         }
     }
 
-
     private static void checkEarlyExit() {
         if (FMLCommonHandler.instance().isDisplayCloseRequested()) { //another early exit (forge only covers stage transition)
             LOGGER.info("Early exit requested by user - terminating minecraft");
