@@ -26,7 +26,7 @@ import org.apache.logging.log4j.Logger;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final String NAME = "MC Paint";
-    public static final String VERSION = "1.1.0";
+    public static final String VERSION = "1.1.1";
     public static final String CERTIFICATE = "7904c4e13947c8a616c5f39b26bdeba796500722";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
