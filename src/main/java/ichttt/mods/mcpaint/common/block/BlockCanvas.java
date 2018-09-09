@@ -13,6 +13,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockAccess;
 import net.minecraft.world.World;
@@ -27,7 +28,8 @@ public class BlockCanvas extends Block {
         setCreativeTab(CreativeTabs.DECORATIONS);
         setResistance(5F);
         useNeighborBrightness = true;
-        this.setRegistryName(regNam);
+        setRegistryName(regNam);
+        setTranslationKey(regNam.getNamespace() + "." + regNam.getPath());
     }
 
     @Override
@@ -79,7 +81,7 @@ public class BlockCanvas extends Block {
     public SoundType getSoundType(IBlockState state, World world, BlockPos pos, @Nullable Entity entity) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBlock().getSoundType(state, world, pos, entity);
+            return canvas.getContainedState().getBlock().getSoundType(canvas.getContainedState(), world, pos, entity);
         }
         return super.getSoundType(state, world, pos, entity);
     }
@@ -130,5 +132,16 @@ public class BlockCanvas extends Block {
         if (state.getBlock() != this) //Possible when harvesting (as we send the technically wrong blockstate)
             return state.getBlock().getMetaFromState(state);
         return super.getMetaFromState(state);
+    }
+
+    @Nonnull
+    @Override
+    public ItemStack getPickBlock(@Nonnull IBlockState state, RayTraceResult target, @Nonnull World world, @Nonnull BlockPos pos, EntityPlayer player) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            state = canvas.getContainedState();
+            return state.getBlock().getPickBlock(state, target, world, pos, player);
+        }
+        return ItemStack.EMPTY;
     }
 }

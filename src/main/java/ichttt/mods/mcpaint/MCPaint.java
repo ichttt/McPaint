@@ -10,6 +10,7 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.SidedProxy;
 import net.minecraftforge.fml.common.event.FMLFingerprintViolationEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLInterModComms;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.common.network.NetworkRegistry;
 import net.minecraftforge.fml.common.network.simpleimpl.SimpleNetworkWrapper;
@@ -50,6 +51,7 @@ public class MCPaint {
         NETWORKING.registerMessage(MessagePaintData.ClientHandler.class, MessagePaintData.class, 3, Side.CLIENT);
         CapabilityPaintable.register();
         checkEarlyExit();
+        FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "ichttt.mods.mcpaint.common.OneProbeCompat");
     }
 
     @Mod.EventHandler
