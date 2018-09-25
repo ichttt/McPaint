@@ -22,23 +22,33 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import net.minecraftforge.registries.IForgeRegistry;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
+@GameRegistry.ObjectHolder(MCPaint.MODID)
 public class EventHandler {
-    public static final Item BRUSH = new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush"));
-    public static final Item STAMP = new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp"));
-    public static final BlockCanvas CANVAS = new BlockCanvas(new ResourceLocation(MCPaint.MODID, "canvas"));
+    public static final Item BRUSH = getNull();
+    public static final Item STAMP = getNull();
+    public static final BlockCanvas CANVAS = getNull();
+
+    //Avoids warnings of a field being null because it is populated by the ObjectHolder
+    //So Nonnull despite returning null
+    @SuppressWarnings("ConstantConditions")
+    @Nonnull
+    private static <T> T getNull() {
+        return null;
+    }
 
     @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         IForgeRegistry<Item> registry = event.getRegistry();
-        registry.register(BRUSH);
-        registry.register(STAMP);
+        registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
+        registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
     }
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
-        event.getRegistry().register(CANVAS);
+        event.getRegistry().register(new BlockCanvas(new ResourceLocation(MCPaint.MODID, "canvas")));
         GameRegistry.registerTileEntity(TileEntityCanvas.class, new ResourceLocation(MCPaint.MODID, "canvas"));
     }
 

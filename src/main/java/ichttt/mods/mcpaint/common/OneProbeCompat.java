@@ -3,14 +3,7 @@ package ichttt.mods.mcpaint.common;
 import com.google.common.base.Function;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import mcjty.theoneprobe.api.IProbeConfig;
-import mcjty.theoneprobe.api.IProbeConfigProvider;
-import mcjty.theoneprobe.api.IProbeHitData;
-import mcjty.theoneprobe.api.IProbeHitEntityData;
-import mcjty.theoneprobe.api.IProbeInfo;
-import mcjty.theoneprobe.api.IProbeInfoProvider;
-import mcjty.theoneprobe.api.ITheOneProbe;
-import mcjty.theoneprobe.api.ProbeMode;
+import mcjty.theoneprobe.api.*;
 import mcjty.theoneprobe.apiimpl.providers.HarvestInfoTools;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
@@ -28,27 +21,27 @@ import java.lang.reflect.Method;
 //Hey look at this. Isn't this another big hack?
 //Should probably just ask him to provide a function to remap a blockstate
 public class OneProbeCompat implements Function<ITheOneProbe, Void>, IProbeConfigProvider, IProbeInfoProvider {
-    private static final Method method;
+    private static final Method showHarvestInfoMethod;
 
     static {
-        Method m;
+        Method method;
         try {
-            m = HarvestInfoTools.class.getDeclaredMethod("showHarvestInfo", IProbeInfo.class, World.class, BlockPos.class, Block.class, IBlockState.class, EntityPlayer.class);
-            m.setAccessible(true);
+            method = HarvestInfoTools.class.getDeclaredMethod("showHarvestInfo", IProbeInfo.class, World.class, BlockPos.class, Block.class, IBlockState.class, EntityPlayer.class);
+            method.setAccessible(true);
         } catch (ReflectiveOperationException | LinkageError e) {
             MCPaint.LOGGER.error("Couldn't hack into the one probe! Harvest info will be missing from painted blocks!", e);
-            m = null;
+            method = null;
         }
-        method = m;
+        showHarvestInfoMethod = method;
     }
 
     @Nullable
     @Override
     public Void apply(@Nullable ITheOneProbe input) {
-        if (input == null || method == null)
-            return null;
-        input.registerProvider(this);
-        input.registerProbeConfigProvider(this);
+        if (input != null && showHarvestInfoMethod == null) {
+            input.registerProvider(this);
+            input.registerProbeConfigProvider(this);
+        }
         return null;
     }
 
@@ -84,7 +77,7 @@ public class OneProbeCompat implements Function<ITheOneProbe, Void>, IProbeConfi
         IBlockState real = getReal(blockState, world, data);
         if (real != null) {
             try {
-                method.invoke(null, probeInfo, world, data.getPos(), real.getBlock(), real, player);
+                showHarvestInfoMethod.invoke(null, probeInfo, world, data.getPos(), real.getBlock(), real, player);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException("Impossible reflection failure: ", e);
             } catch (InvocationTargetException e) {

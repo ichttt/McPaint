@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client;
 
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.render.TEISRStamp;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.EventHandler;
 import net.minecraft.client.Minecraft;
@@ -18,6 +19,8 @@ public class ClientEventHandler {
     public static void registerModels(ModelRegistryEvent event) {
         ModelLoader.setCustomModelResourceLocation(EventHandler.BRUSH, 0, new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, "brush"), "inventory"));
         ModelLoader.setCustomModelResourceLocation(EventHandler.STAMP, 0, new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, "stamp"), "inventory"));
+        EventHandler.STAMP.setTileEntityItemStackRenderer(TEISRStamp.INSTANCE);
+        EventHandler.STAMP.addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
     }
 
     @SubscribeEvent

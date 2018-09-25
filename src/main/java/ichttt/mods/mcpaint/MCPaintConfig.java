@@ -23,4 +23,7 @@ public class MCPaintConfig {
         @Config.RangeInt(min = 64, max = 256)
         public int maxPaintRenderDistance = 96;
     }
+
+    @Config.Comment("Enables additional OneProbe compat if the mod is loaded. If you notice errors or log spam, disable this")
+    public static boolean enableOneProbeCompat = true;
 }

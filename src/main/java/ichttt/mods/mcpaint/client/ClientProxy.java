@@ -4,16 +4,13 @@ import ichttt.mods.mcpaint.IProxy;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.client.gui.GuiSetupCanvas;
-import ichttt.mods.mcpaint.client.render.TEISRStamp;
 import ichttt.mods.mcpaint.client.render.TESRCanvas;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
-import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
@@ -26,8 +23,6 @@ public class ClientProxy implements IProxy {
         MCPaint.LOGGER.debug("Loading ClientProxy");
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCanvas.class, new TESRCanvas());
         MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);
-        EventHandler.STAMP.setTileEntityItemStackRenderer(TEISRStamp.INSTANCE);
-        EventHandler.STAMP.addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
     }
 
     @Override

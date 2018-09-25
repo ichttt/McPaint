@@ -35,6 +35,14 @@ public class MCPaintUtil {
         return copy;
     }
 
+    public static boolean[][] copyOf(boolean[][] array) {
+        boolean[][] copy = new boolean[array.length][];
+        for (int i = 0; i < array.length; i++) {
+            copy[i] = array[i].clone();
+        }
+        return copy;
+    }
+
     public static void uploadPictureToServer(TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture) {
         if (!(te instanceof TileEntityCanvas)) {
             MCPaint.LOGGER.error("Could not set paint! Found block " + te.getBlockType());
