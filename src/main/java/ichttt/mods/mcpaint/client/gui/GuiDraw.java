@@ -31,11 +31,8 @@ import org.lwjgl.opengl.GL11;
 import javax.annotation.Nonnull;
 import java.awt.*;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 
 public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder, GuiSlider.FormatHelper {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
@@ -64,6 +61,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private final List<GuiButtonTextToggle> textToggleList = new ArrayList<>();
     private EnumDrawType activeDrawType;
     private int toolSize = 1;
+    private GuiButton rotateRight, rotateLeft;
     private GuiButton undo, redo;
     private GuiButton lessSize, moreSize;
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
@@ -98,8 +96,10 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 25, 36, 20, I18n.format("mcpaint.gui.redo"));
-        this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 25, 36, 20, I18n.format("mcpaint.gui.undo"));
+        this.rotateRight = new GuiButton(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"));
+        this.rotateLeft = new GuiButton(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"));
+        this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo"));
+        this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo"));
         GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR);
         GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER);
         GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL);
@@ -131,6 +131,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, I18n.format("mcpaint.gui.alpha"), 0, 255, 0, this);
         this.alphaSlider.width = 74;
 
+        addButton(rotateRight);
+        addButton(rotateLeft);
         addButton(redo);
         addButton(undo);
         addButton(pickColor);
@@ -288,6 +290,25 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             undo();
         } else if (button.id == -9) {
             redo();
+        } else if (button.id == -10) {
+            //rotate left
+            int[][] newData = new int[this.currentState.picture.length][this.currentState.picture[0].length];
+            for (int x = 0; x < this.currentState.picture.length; x++) {
+                int[] yData = this.currentState.picture[x];
+                for (int y = 0; y < yData.length; y++) {
+                    newData[y][this.currentState.picture.length - x - 1] = yData[y];
+                }
+            }
+            newPictureState(new PictureState(newData, this.currentState.scaleFactor));
+        } else if (button.id == -11) {
+            int[][] newData = new int[this.currentState.picture.length][this.currentState.picture[0].length];
+            for (int x = 0; x < this.currentState.picture.length; x++) {
+                int[] yData = this.currentState.picture[x];
+                for (int y = 0; y < yData.length; y++) {
+                    newData[yData.length - y - 1][x] = yData[y];
+                }
+            }
+            newPictureState(new PictureState(newData, this.currentState.scaleFactor));
         } else if (button.id >= 0 && button.id < 100) {
             this.color = EnumPaintColor.VALUES[button.id].color;
             this.redSlider.setSliderValue(this.color.getRed(), false);

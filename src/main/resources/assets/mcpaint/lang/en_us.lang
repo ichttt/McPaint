@@ -14,3 +14,5 @@ mcpaint.gui.red=red
 mcpaint.gui.green=green
 mcpaint.gui.blue=blue
 mcpaint.gui.alpha=alpha
+mcpaint.gui.rright=Turn R
+mcpaint.gui.rleft=Turn L
