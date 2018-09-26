@@ -93,9 +93,4 @@ public class Paint implements IPaintable {
         }
         return false;
     }
-
-    @Override
-    public void clear(TileEntityCanvas canvas, EnumFacing facing) {
-        setData((byte) 0, null, canvas, facing);
-    }
 }

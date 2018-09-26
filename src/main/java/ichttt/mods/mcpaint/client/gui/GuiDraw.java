@@ -51,6 +51,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private final IBlockState state;
     private final LinkedList<PictureState> statesForUndo = new LinkedList<>();
     private final LinkedList<PictureState> statesForRedo = new LinkedList<>();
+    private final boolean hadPaint;
 
     private Color color = Color.BLACK;
     private PictureState paintingState;
@@ -61,12 +62,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private final List<GuiButtonTextToggle> textToggleList = new ArrayList<>();
     private EnumDrawType activeDrawType;
     private int toolSize = 1;
-    private GuiButton rotateRight, rotateLeft;
     private GuiButton undo, redo;
     private GuiButton lessSize, moreSize;
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
-    private boolean handled = false;
+    private boolean noRevert = false;
 
     public GuiDraw(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas, "Canvas is null");
@@ -77,6 +77,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.currentState = new PictureState(canvas);
         for (IPaintable paint : prevImages)
             this.statesForUndo.add(new PictureState(paint));
+        hadPaint = true;
     }
 
     protected GuiDraw(byte scaleFactor, BlockPos pos, EnumFacing facing, IBlockState state) {
@@ -87,6 +88,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, ZERO_ALPHA);
         this.currentState = new PictureState(picture, scaleFactor);
+        hadPaint = false;
     }
 
     @Override
@@ -96,8 +98,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        this.rotateRight = new GuiButton(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"));
-        this.rotateLeft = new GuiButton(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"));
+        GuiButton rotateRight = new GuiButton(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"));
+        GuiButton rotateLeft = new GuiButton(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"));
         this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo"));
         this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo"));
         GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR);
@@ -276,8 +278,10 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     protected void actionPerformed(GuiButton button) {
         if (button.id == -1) {
             if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
-                this.handled = true;
+                this.noRevert = true;
                 MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture);
+            } else if (hadPaint) {
+
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -336,7 +340,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
 
     @Override
     public void onGuiClosed() {
-        if (!handled) {
+        if (!noRevert) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
         }
     }

@@ -3,6 +3,8 @@ package ichttt.mods.mcpaint.common.block;
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.properties.PropertyBool;
+import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
@@ -12,6 +14,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.Explosion;
@@ -20,8 +23,13 @@ import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class BlockCanvas extends Block {
+    public static final PropertyBool IS_FULL_BLOCK = PropertyBool.create("full_block");
+    public static final PropertyBool IS_NORMAL_CUBE = PropertyBool.create("normal_cube");
+    public static final PropertyBool IS_OPAQUE_CUBE = PropertyBool.create("opaque_cube");
+
     public BlockCanvas(ResourceLocation regNam) {
         super(Material.WOOD);
         setHardness(1F);
@@ -30,6 +38,7 @@ public class BlockCanvas extends Block {
         useNeighborBrightness = true;
         setRegistryName(regNam);
         setTranslationKey(regNam.getNamespace() + "." + regNam.getPath());
+        setDefaultState(blockState.getBaseState().withProperty(IS_FULL_BLOCK, true).withProperty(IS_NORMAL_CUBE, true).withProperty(IS_OPAQUE_CUBE, true));
     }
 
     @Override
@@ -111,6 +120,37 @@ public class BlockCanvas extends Block {
         return super.canHarvestBlock(world, pos, player);
     }
 
+    @Override
+    public void addCollisionBoxToList(IBlockState state, World world, BlockPos pos, AxisAlignedBB entityBox, List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            canvas.getContainedState().getBlock().addCollisionBoxToList(canvas.getContainedState(), world, pos, entityBox, collidingBoxes, entityIn, isActualState);
+            return;
+        }
+        super.addCollisionBoxToList(state, world, pos, entityBox, collidingBoxes, entityIn, isActualState);
+    }
+
+    @Nullable
+    @Override
+    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, IBlockAccess world, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            return canvas.getContainedState().getCollisionBoundingBox(world, pos);
+        }
+        return super.getCollisionBoundingBox(blockState, world, pos);
+    }
+
+    @Override
+    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) source.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            return canvas.getContainedState().getBoundingBox(source, pos);
+        }
+        return super.getBoundingBox(state, source, pos);
+    }
+
+
+
     @SuppressWarnings("deprecation")
     @Override
     public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
@@ -131,7 +171,32 @@ public class BlockCanvas extends Block {
     public int getMetaFromState(IBlockState state) {
         if (state.getBlock() != this) //Possible when harvesting (as we send the technically wrong blockstate)
             return state.getBlock().getMetaFromState(state);
-        return super.getMetaFromState(state);
+        //We got one bool rest...
+        int meta = 0;
+        if (!state.getValue(IS_OPAQUE_CUBE))
+            meta = meta | 4;
+        if (!state.getValue(IS_NORMAL_CUBE))
+            meta = meta | 2;
+        if (!state.getValue(IS_FULL_BLOCK))
+            meta = meta | 1;
+        return meta;
+    }
+
+    @Override
+    protected BlockStateContainer createBlockState() {
+        return new BlockStateContainer(this, IS_FULL_BLOCK, IS_NORMAL_CUBE, IS_OPAQUE_CUBE);
+    }
+
+    @Override
+    public IBlockState getStateFromMeta(int meta) {
+        IBlockState state = getDefaultState();
+        if ((meta & 4) > 0)
+            state = state.withProperty(IS_OPAQUE_CUBE, false);
+        if ((meta & 2) > 0)
+            state = state.withProperty(IS_NORMAL_CUBE, false);
+        if ((meta & 1) > 0)
+            state = state.withProperty(IS_FULL_BLOCK, false);
+        return state;
     }
 
     @Nonnull
@@ -143,5 +208,34 @@ public class BlockCanvas extends Block {
             return state.getBlock().getPickBlock(state, target, world, pos, player);
         }
         return ItemStack.EMPTY;
+    }
+
+    @Override
+    public boolean isFullBlock(IBlockState state) {
+        return state.getValue(IS_FULL_BLOCK);
+    }
+
+    @Override
+    public boolean isFullCube(IBlockState state) {
+        return state.getValue(IS_FULL_BLOCK);
+    }
+
+    @Override
+    public boolean isNormalCube(IBlockState state) {
+        return state.getValue(IS_NORMAL_CUBE);
+    }
+
+    @Override
+    public boolean isOpaqueCube(IBlockState state) {
+        return state.getValue(IS_OPAQUE_CUBE);
+    }
+
+    @Override
+    public boolean isBlockNormalCube(IBlockState state) {
+        return state.getValue(IS_FULL_BLOCK);
+    }
+
+    public IBlockState getStateFrom(IBlockState state) {
+        return getDefaultState().withProperty(IS_OPAQUE_CUBE, state.isOpaqueCube()).withProperty(IS_NORMAL_CUBE, state.isNormalCube()).withProperty(IS_FULL_BLOCK, state.isFullBlock());
     }
 }

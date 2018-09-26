@@ -33,5 +33,7 @@ public interface IPaintable extends IPaintValidator {
     @Override
     boolean equals(Object other);
 
-    void clear(@Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing);
+    default void clear(@Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
+        setData((byte) 0, null, canvas, facing);
+    }
 }

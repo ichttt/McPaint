@@ -18,18 +18,22 @@ import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.Map;
+import java.util.Set;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
     private IBlockState containedState;
     private final Map<EnumFacing, Object> bufferMap = new EnumMap<>(EnumFacing.class);
+    private final Set<EnumFacing> disallowedFaces = EnumSet.noneOf(EnumFacing.class);
 
     @Nonnull
     @Override
@@ -41,6 +45,12 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             faces.setTag(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
         }
         tag.setTag("faces", faces);
+        if (!disallowedFaces.isEmpty()) {
+            NBTTagCompound blockedFaces = new NBTTagCompound();
+            for (EnumFacing facing : EnumFacing.VALUES)
+                blockedFaces.setBoolean(facing.getName(), disallowedFaces.contains(facing));
+            tag.setTag("blocked", blockedFaces);
+        }
         return tag;
     }
 
@@ -58,6 +68,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             Paint paint = new Paint(this);
             CapabilityPaintable.readFromNBT(paint, faces.getCompoundTag(key));
             this.facingToPaintMap.put(EnumFacing.byName(key), paint);
+        }
+        disallowedFaces.clear();
+        if (tag.hasKey("blocked", Constants.NBT.TAG_COMPOUND)) {
+            NBTTagCompound blockedFaces = tag.getCompoundTag("blocked");
+            for (String key : blockedFaces.getKeySet()) {
+                if (blockedFaces.getBoolean(key))
+                    disallowedFaces.add(EnumFacing.byName(key));
+            }
         }
     }
 
@@ -101,8 +119,9 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return pixelCountX == 128 && pixelCountY == 128;
     }
 
-    public void setContainedBlockstate(IBlockState state) {
+    public void setInitialData(IBlockState state, Set<EnumFacing> disallowedFaces) {
         this.containedState = state;
+        this.disallowedFaces.addAll(disallowedFaces);
         this.markDirty();
     }
 
@@ -177,5 +196,9 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         } else if (obj instanceof CachedBufferBuilder) {
             RenderCache.uncache(getPaintFor(facing));
         }
+    }
+
+    public boolean isSideBlockedForPaint(EnumFacing facing) {
+        return disallowedFaces.contains(facing);
     }
 }

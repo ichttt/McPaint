@@ -114,7 +114,7 @@ public class MessagePaintData implements IMessage {
         @Override
         public IMessage onMessage(MessagePaintData message, MessageContext ctx) {
             if (message.maxParts == 0) //single message
-                setData(ctx, message.pos, message.facing, message.scale, message.data);
+                handleSide(ctx, message.pos, message.facing, message.scale, message.data);
             else {
                 synchronized (partMap) {
                     partMap.put(message.pos, message);
@@ -129,13 +129,17 @@ public class MessagePaintData implements IMessage {
                             }
                         });
                         partMap.removeAll(message.pos);
-                        setData(ctx, message.pos, message.facing, message.scale, data);
+                        handleSide(ctx, message.pos, message.facing, message.scale, data);
                     }
                 }
             }
             return null;
         }
-        protected void setData(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+        protected void handleSide(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+            setServerData(ctx, pos, facing, scale, data);
+        }
+
+        public static void setServerData(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
             NetHandlerPlayServer handler = ctx.getServerHandler();
             handler.player.server.addScheduledTask(() ->{
                 if (MCPaintUtil.isPosInvalid(handler, pos)) return;
@@ -155,7 +159,11 @@ public class MessagePaintData implements IMessage {
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
                 NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
-                MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
+                if (data == null) {
+                    //TODO send clear msg
+                } else {
+                    MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
+                }
             });
         }
     }
@@ -164,7 +172,7 @@ public class MessagePaintData implements IMessage {
 
         @SideOnly(Side.CLIENT)
         @Override
-        protected void setData(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+        protected void handleSide(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
             Minecraft.getMinecraft().addScheduledTask(() -> {
                 World world = Minecraft.getMinecraft().world;
                 if (!world.isBlockLoaded(pos)) {
