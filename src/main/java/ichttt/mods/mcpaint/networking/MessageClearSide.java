@@ -11,6 +11,13 @@ public class MessageClearSide implements IMessage {
     private BlockPos pos;
     private EnumFacing facing;
 
+    public MessageClearSide() {}
+
+    public MessageClearSide(BlockPos pos, EnumFacing facing) {
+        this.pos = pos;
+        this.facing = facing;
+    }
+
     @Override
     public void fromBytes(ByteBuf buf) {
         pos = BlockPos.fromLong(buf.readLong());

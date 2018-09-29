@@ -160,7 +160,7 @@ public class MessagePaintData implements IMessage {
                 te.markDirty();
                 NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
                 if (data == null) {
-                    //TODO send clear msg
+                    MCPaint.NETWORKING.sendToAllTracking(new MessageClearSide(pos, facing), point);
                 } else {
                     MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
                 }

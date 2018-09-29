@@ -8,6 +8,7 @@ import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
+import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
@@ -22,14 +23,21 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.client.resources.IResource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TextComponentString;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nonnull;
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.filechooser.FileFilter;
 import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.List;
@@ -98,6 +106,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
+        GuiButton saveImage = new GuiButton(-12, this.guiLeft + xSize, this.guiTop + 96, 80, 20, "Export");
         GuiButton rotateRight = new GuiButton(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"));
         GuiButton rotateLeft = new GuiButton(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"));
         this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo"));
@@ -133,6 +142,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, I18n.format("mcpaint.gui.alpha"), 0, 255, 0, this);
         this.alphaSlider.width = 74;
 
+        addButton(saveImage);
         addButton(rotateRight);
         addButton(rotateLeft);
         addButton(redo);
@@ -281,7 +291,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 this.noRevert = true;
                 MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture);
             } else if (hadPaint) {
-
+                MCPaint.NETWORKING.sendToServer(new MessageClearSide(this.pos, this.facing));
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
@@ -313,6 +323,13 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 }
             }
             newPictureState(new PictureState(newData, this.currentState.scaleFactor));
+        } else if (button.id == -12) {
+            try {
+                saveImage(true);
+            } catch (IOException e) {
+                mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), true);
+                mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), false);
+            }
         } else if (button.id >= 0 && button.id < 100) {
             this.color = EnumPaintColor.VALUES[button.id].color;
             this.redSlider.setSliderValue(this.color.getRed(), false);
@@ -414,6 +431,79 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             this.lessSize.enabled = false;
         } else {
             this.lessSize.enabled = true;
+        }
+    }
+
+    private void saveImage(boolean background) throws IOException {
+        BufferedImage paint = new BufferedImage(128 / this.currentState.scaleFactor, 128 / this.currentState.scaleFactor, BufferedImage.TYPE_INT_ARGB);
+        for (int x = 0; x < this.currentState.picture.length; x++) {
+            for (int y = 0; y < this.currentState.picture[0].length; y++) {
+                paint.setRGB(x, y, this.currentState.picture[x][y]);
+            }
+        }
+        BufferedImage output = new BufferedImage(paint.getWidth(), paint.getHeight(), BufferedImage.TYPE_INT_ARGB);
+
+        if (background) {
+            List<BakedQuad> quads = this.mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), 0);
+            for (BakedQuad quad : quads) {
+                TextureAtlasSprite sprite = quad.getSprite();
+                try (IResource resource = mc.getResourceManager().getResource(mc.getTextureMapBlocks().getResourceLocation(sprite))) {
+                    Image image = ImageIO.read(resource.getInputStream());
+                    if (quad.hasTintIndex()) {
+                        int color = mc.getBlockColors().colorMultiplier(state, mc.world, pos, quad.getTintIndex());
+                        float red = (float) (color >> 16 & 255) / 255.0F;
+                        float green = (float) (color >> 8 & 255) / 255.0F;
+                        float blue = (float) (color & 255) / 255.0F;
+                        BufferedImage asBufferedImage = (BufferedImage) image;
+                        for (int x = 0; x < paint.getWidth(); x++) {
+                            for (int y = 0; y < paint.getHeight(); y++) {
+                                Color originalColor = new Color(asBufferedImage.getRGB(x, y), true);
+                                int newRed = Math.round(originalColor.getRed() * red);
+                                int newGreen = Math.round(originalColor.getGreen() * green);
+                                int newBlue = Math.round(originalColor.getBlue() * blue);
+                                asBufferedImage.setRGB(x, y, new Color(newRed, newGreen, newBlue, originalColor.getAlpha()).getRGB());
+                            }
+                        }
+                    }
+                    image = image.getScaledInstance(output.getWidth(), output.getHeight(), Image.SCALE_FAST);
+                    output.getGraphics().drawImage(image, 0, 0, null);
+                }
+            }
+        }
+        output.getGraphics().drawImage(paint, 0, 0, null);
+        JFileChooser chooser = new JFileChooser();
+        chooser.setDialogTitle("Select the path to save");
+//        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileFilter(new FileFilter() {
+            @Override
+            public boolean accept(File f) {
+                return f.isDirectory() || !f.getName().contains(".") || f.getName().endsWith(".png");
+            }
+
+            @Override
+            public String getDescription() {
+                return "png";
+            }
+        });
+        LookAndFeel old = UIManager.getLookAndFeel();
+        try {
+            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
+            MCPaint.LOGGER.warn("Unable to set system look and feel", e);
+        }
+        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
+        if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+            File file = chooser.getSelectedFile();
+            if (file.isDirectory())
+                throw new IOException("Expected file, got dir!");
+            if (!file.getName().endsWith(".png"))
+                file = new File(file.toString() + ".png");
+            ImageIO.write(output, "png", file);
+        }
+        try {
+            UIManager.setLookAndFeel(old);
+        } catch (UnsupportedLookAndFeelException e) {
+            MCPaint.LOGGER.error("Could not revert look and feel!", e);
         }
     }
 
