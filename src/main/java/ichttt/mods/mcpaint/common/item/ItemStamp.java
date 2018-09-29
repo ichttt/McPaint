@@ -64,7 +64,7 @@ public class ItemStamp extends ItemBrush {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null), "No paint in stamp");
             if (MCPaintConfig.CLIENT.directApplyStamp) {
                 canvas.getPaintFor(facing).copyFrom(heldPaint, canvas, facing);
-                MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData());
+                MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData(), false);
             } else {
                 List<IPaintable> paintList = new LinkedList<>();
                 if (canvas.hasPaintFor(facing)) {

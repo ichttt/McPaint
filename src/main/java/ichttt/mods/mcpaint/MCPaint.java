@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint;
 
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
+import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraftforge.common.MinecraftForge;
@@ -27,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final String NAME = "MC Paint";
-    public static final String VERSION = "1.1.1";
+    public static final String VERSION = "1.2.0";
     public static final String CERTIFICATE = "7904c4e13947c8a616c5f39b26bdeba796500722";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
@@ -49,6 +50,7 @@ public class MCPaint {
         NETWORKING.registerMessage(MessagePaintData.ServerHandler.class, MessagePaintData.class, 1, Side.SERVER);
         NETWORKING.registerMessage(MessageDrawAbort.Handler.class, MessageDrawAbort.class, 2, Side.SERVER);
         NETWORKING.registerMessage(MessagePaintData.ClientHandler.class, MessagePaintData.class, 3, Side.CLIENT);
+        NETWORKING.registerMessage(MessageClearSide.Handler.class, MessageClearSide.class, 4, Side.SERVER);
         CapabilityPaintable.register();
         checkEarlyExit();
         if (MCPaintConfig.enableOneProbeCompat)

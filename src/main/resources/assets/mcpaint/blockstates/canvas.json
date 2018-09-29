@@ -1,9 +1,12 @@
 {
-  "forge_marker": 1,
-  "defaults": {
-    "model": "minecraft:coal_ore"
-  },
   "variants": {
-    "normal": [{}]
+    "full_block=false,normal_cube=false,opaque_cube=false": {"model": "minecraft:coal_ore"},
+    "full_block=false,normal_cube=false,opaque_cube=true": {"model": "minecraft:coal_ore"},
+    "full_block=false,normal_cube=true,opaque_cube=false": {"model": "minecraft:coal_ore"},
+    "full_block=false,normal_cube=true,opaque_cube=true": {"model": "minecraft:coal_ore"},
+    "full_block=true,normal_cube=false,opaque_cube=false": {"model": "minecraft:coal_ore"},
+    "full_block=true,normal_cube=false,opaque_cube=true": {"model": "minecraft:coal_ore"},
+    "full_block=true,normal_cube=true,opaque_cube=false": {"model": "minecraft:coal_ore"},
+    "full_block=true,normal_cube=true,opaque_cube=true": {"model": "minecraft:coal_ore"}
   }
 }

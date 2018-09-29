@@ -116,7 +116,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
-        return pixelCountX == 128 && pixelCountY == 128;
+        return (pixelCountX == 0 && pixelCountY == 0) || (pixelCountX == 128 && pixelCountY == 128);
     }
 
     public void setInitialData(IBlockState state, Set<EnumFacing> disallowedFaces) {

@@ -31,7 +31,7 @@ repositories {
     }
 }
 
-version = "1.1.1"
+version = "1.2.0"
 group = "ichttt.mods.mcpaint" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = "mcpaint"
 

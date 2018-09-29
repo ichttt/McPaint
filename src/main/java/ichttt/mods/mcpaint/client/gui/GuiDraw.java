@@ -8,7 +8,6 @@ import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
@@ -289,9 +288,9 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         if (button.id == -1) {
             if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                 this.noRevert = true;
-                MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture);
+                MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, false);
             } else if (hadPaint) {
-                MCPaint.NETWORKING.sendToServer(new MessageClearSide(this.pos, this.facing));
+                MCPaintUtil.uploadPictureToServer(this.mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, true);
             }
             this.mc.displayGuiScreen(null);
         } else if (button.id == -2) {
