@@ -79,7 +79,8 @@ public class ItemStamp extends ItemBrush {
     @SideOnly(Side.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        if (Objects.requireNonNull(stack.getCapability(CapabilityPaintable.PAINTABLE, null)).hasPaintData()) {
+        IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null);
+        if (paintable != null && paintable.hasPaintData()) {
             tooltip.add(I18n.format("mcpaint.tooltip.stamp.paint"));
         } else {
             tooltip.add(I18n.format("mcpaint.tooltip.stamp.nopaint"));
