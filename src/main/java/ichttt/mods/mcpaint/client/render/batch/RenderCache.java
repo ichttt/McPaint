@@ -21,7 +21,7 @@ public class RenderCache {
             .build();
 
     private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors() >= 8 ? 4 : 2, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
-        private AtomicInteger count = new AtomicInteger(1);
+        private final AtomicInteger count = new AtomicInteger(1);
 
         @Override
         public Thread newThread(@Nonnull Runnable runnable) {

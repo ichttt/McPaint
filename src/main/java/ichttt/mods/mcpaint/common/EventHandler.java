@@ -33,7 +33,7 @@ public class EventHandler {
 
     //Avoids warnings of a field being null because it is populated by the ObjectHolder
     //So Nonnull despite returning null
-    @SuppressWarnings("ConstantConditions")
+    @SuppressWarnings({"ConstantConditions", "SameReturnValue"})
     @Nonnull
     private static <T> T getNull() {
         return null;

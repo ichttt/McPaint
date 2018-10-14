@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
+import com.google.common.base.Stopwatch;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
@@ -14,11 +15,13 @@ import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 public class PictureCacheBuilder {
 
     public static void batch(int[][] picture, byte scaleFactor, IOptimisationCallback callback) {
         if (picture == null) throw new IllegalArgumentException("No paint data");
+        Stopwatch stopwatch = Stopwatch.createStarted();
         int pixelsToDraw = 0;
 
         Int2ObjectMap<List<PixelInfo>> colorMap = new Int2ObjectOpenHashMap<>();
@@ -96,7 +99,10 @@ public class PictureCacheBuilder {
             callback.optimizationFailed();
             return;
         }
-        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles to draw", pixelsToDraw, finalDrawLists.size());
+        stopwatch.stop();
+        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, finalDrawLists.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        stopwatch.reset();
+        stopwatch.start();
         //Start filling a buffer
         CachedBufferBuilder cachedBufferBuilder = new CachedBufferBuilder(finalDrawLists.size() * 16 + 4);
         cachedBufferBuilder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
@@ -117,11 +123,13 @@ public class PictureCacheBuilder {
             double topDraw = 1 - (((top) * scaleFactor) / 128F);
             double rightDraw = (((right + 1) * scaleFactor) / 128F);
             double bottomDraw = 1 - (((bottom + 1) * scaleFactor) / 128F);
-            PictureRenderer.drawToBuffer(color, cachedBufferBuilder, leftDraw, topDraw, rightDraw, bottomDraw);
+            if (PictureRenderer.drawToBuffer(color, cachedBufferBuilder, leftDraw, topDraw, rightDraw, bottomDraw))
+                MCPaint.LOGGER.warn("Region left={} right={} top={} bottom={} color{} has not been filtered out from batched picture!", left, right, top, bottom, color);
         }
         cachedBufferBuilder.finishBuilding();
+        stopwatch.stop();
+        MCPaint.LOGGER.debug("Build buffer with {} bytes in {} ms", cachedBufferBuilder.getSize(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         callback.provideFinishedBuffer(cachedBufferBuilder);
-        MCPaint.LOGGER.debug("Taking {} bytes of memory", cachedBufferBuilder.getSize());
     }
 
     public static CachedBufferBuilder buildSimple(IPaintable paint) {

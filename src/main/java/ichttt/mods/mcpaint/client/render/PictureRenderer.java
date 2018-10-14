@@ -51,7 +51,7 @@ public class PictureRenderer {
     public static boolean drawToBuffer(int color, BufferBuilder builder, double left, double top, double right, double bottom) {
         //See drawRect(int left, int top, int right, int bottom, int color
         float a = (float) (color >> 24 & 255) / 255.0F;
-        if (a <= 0.01F) return false;
+        if (a <= 0.01F) return true;
         float r = (float) (color >> 16 & 255) / 255.0F;
         float g = (float) (color >> 8 & 255) / 255.0F;
         float b = (float) (color & 255) / 255.0F;
@@ -59,6 +59,6 @@ public class PictureRenderer {
         builder.pos(right, bottom, 0).color(r, g, b, a).endVertex();
         builder.pos(right, top, 0).color(r, g, b, a).endVertex();
         builder.pos(left, top, 0).color(r, g, b, a).endVertex();
-        return true;
+        return false;
     }
 }
