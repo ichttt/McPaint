@@ -51,11 +51,13 @@ public class MCPaintUtil {
             return;
         }
         TileEntityCanvas canvas = (TileEntityCanvas) te;
-        if (clear)
+        if (clear) {
             MCPaint.NETWORKING.sendToServer(new MessageClearSide(te.getPos(), facing));
-        else
+            canvas.removePaint(facing);
+        } else {
             MessagePaintData.createAndSend(te.getPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
-        IPaintable paintable = canvas.getPaintFor(facing);
-        paintable.setData(scaleFactor, picture, canvas, facing);
+            IPaintable paintable = canvas.getPaintFor(facing);
+            paintable.setData(scaleFactor, picture, canvas, facing);
+        }
     }
 }

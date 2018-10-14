@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.common.block;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.SoundType;
+import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.properties.PropertyBool;
 import net.minecraft.block.state.BlockStateContainer;
@@ -30,8 +31,8 @@ public class BlockCanvas extends Block {
     public static final PropertyBool IS_NORMAL_CUBE = PropertyBool.create("normal_cube");
     public static final PropertyBool IS_OPAQUE_CUBE = PropertyBool.create("opaque_cube");
 
-    public BlockCanvas(ResourceLocation regNam) {
-        super(Material.ROCK);
+    public BlockCanvas(Material material, ResourceLocation regNam) {
+        super(material);
         setHardness(1F);
         setCreativeTab(CreativeTabs.DECORATIONS);
         setResistance(5F);
@@ -155,7 +156,15 @@ public class BlockCanvas extends Block {
         return super.getBoundingBox(state, source, pos);
     }
 
-
+    @SuppressWarnings("deprecation")
+    @Override
+    public MapColor getMapColor(IBlockState state, IBlockAccess world, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            return canvas.getContainedState().getMapColor(world, pos);
+        }
+        return super.getMapColor(state, world, pos);
+    }
 
     @SuppressWarnings("deprecation")
     @Nonnull

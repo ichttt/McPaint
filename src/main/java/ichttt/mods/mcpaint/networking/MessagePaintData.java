@@ -4,8 +4,8 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.primitives.Shorts;
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
@@ -145,7 +145,7 @@ public class MessagePaintData implements IMessage {
                 if (MCPaintUtil.isPosInvalid(handler, pos)) return;
 
                 IBlockState state = handler.player.world.getBlockState(pos);
-                if (state.getBlock() != EventHandler.CANVAS) {
+                if (!(state.getBlock() instanceof BlockCanvas)) {
                     MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + handler.player.getName() + " - Block invalid");
                     return;
                 }
@@ -156,7 +156,10 @@ public class MessagePaintData implements IMessage {
                     return;
                 }
                 TileEntityCanvas canvas = (TileEntityCanvas) te;
-                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
+                if (data == null)
+                    canvas.removePaint(facing);
+                else
+                    canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
                 NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
                 if (data == null) {

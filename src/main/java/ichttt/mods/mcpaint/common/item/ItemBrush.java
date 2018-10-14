@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.common.item;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.BlockFaceShape;
@@ -31,7 +32,7 @@ public class ItemBrush extends Item {
     @Override
     public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
         IBlockState state = world.getBlockState(pos);
-        if (state.getBlock() == EventHandler.CANVAS) {
+        if (state.getBlock() instanceof BlockCanvas) {
             ItemStack held = player.getHeldItem(hand);
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             //We need to cache getBlockFaceShape as the method takes a world as an argument
@@ -50,7 +51,12 @@ public class ItemBrush extends Item {
                     disallowedFaces.add(testFacing);
             }
             ItemStack held = player.getHeldItem(hand);
-            world.setBlockState(pos, EventHandler.CANVAS.getStateFrom(state));
+            if (state.getMaterial().getCanBurn())
+                world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(state));
+            else if (state.getMaterial().isToolNotRequired())
+                world.setBlockState(pos, EventHandler.CANVAS_GROUND.getStateFrom(state));
+            else
+                world.setBlockState(pos, EventHandler.CANVAS_ROCK.getStateFrom(state));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setInitialData(state, disallowedFaces);
             canvas.markDirty();

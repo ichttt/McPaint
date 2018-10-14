@@ -2,8 +2,8 @@ package ichttt.mods.mcpaint.common.item;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -44,7 +44,7 @@ public class ItemStamp extends ItemBrush {
             return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
         } else if (player.isSneaking()) {
             facing = facing.getOpposite();
-            if (state.getBlock() == EventHandler.CANVAS) {
+            if (state.getBlock() instanceof BlockCanvas) {
                 TileEntity te = world.getTileEntity(pos);
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;

@@ -6,11 +6,7 @@ import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockRendererDispatcher;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
+import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -172,7 +168,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
         IBlockState state = te.getContainedState();
         if (state == null)
-            state = EventHandler.CANVAS.getDefaultState();
+            state = EventHandler.CANVAS_WOOD.getDefaultState();
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
         if (destroyStage >= 0)

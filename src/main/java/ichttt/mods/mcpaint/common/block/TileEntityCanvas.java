@@ -201,4 +201,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     public boolean isSideBlockedForPaint(EnumFacing facing) {
         return disallowedFaces.contains(facing);
     }
+
+    public void removePaint(EnumFacing facing) {
+        facingToPaintMap.remove(facing);
+    }
 }

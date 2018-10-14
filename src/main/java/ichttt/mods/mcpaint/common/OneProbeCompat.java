@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.common;
 
 import com.google.common.base.Function;
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import mcjty.theoneprobe.api.*;
 import mcjty.theoneprobe.apiimpl.providers.HarvestInfoTools;
@@ -46,7 +47,7 @@ public class OneProbeCompat implements Function<ITheOneProbe, Void>, IProbeConfi
     }
 
     private static IBlockState getReal(IBlockState state, IBlockAccess world, IProbeHitData data) {
-        if (state.getBlock() == EventHandler.CANVAS && world != null ) {
+        if (state.getBlock() instanceof BlockCanvas && world != null ) {
             TileEntity te = world.getTileEntity(data.getPos());
             if (te instanceof TileEntityCanvas) {
                 return ((TileEntityCanvas) te).getContainedState();

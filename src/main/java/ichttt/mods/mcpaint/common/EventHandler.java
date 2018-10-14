@@ -8,6 +8,7 @@ import ichttt.mods.mcpaint.common.capability.CapabilityProvider;
 import ichttt.mods.mcpaint.common.item.ItemBrush;
 import ichttt.mods.mcpaint.common.item.ItemStamp;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.EnumActionResult;
@@ -29,7 +30,9 @@ import java.util.Objects;
 public class EventHandler {
     public static final Item BRUSH = getNull();
     public static final Item STAMP = getNull();
-    public static final BlockCanvas CANVAS = getNull();
+    public static final BlockCanvas CANVAS_WOOD = getNull();
+    public static final BlockCanvas CANVAS_ROCK = getNull();
+    public static final BlockCanvas CANVAS_GROUND = getNull();
 
     //Avoids warnings of a field being null because it is populated by the ObjectHolder
     //So Nonnull despite returning null
@@ -48,7 +51,9 @@ public class EventHandler {
 
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
-        event.getRegistry().register(new BlockCanvas(new ResourceLocation(MCPaint.MODID, "canvas")));
+        event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
+        event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
+        event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
         GameRegistry.registerTileEntity(TileEntityCanvas.class, new ResourceLocation(MCPaint.MODID, "canvas"));
     }
 
@@ -73,6 +78,14 @@ public class EventHandler {
             Objects.requireNonNull(stack.getCapability(CapabilityPaintable.PAINTABLE, null)).clear(null, null);
             event.setCanceled(true);
             event.setCancellationResult(EnumActionResult.SUCCESS);
+        }
+    }
+
+    @SubscribeEvent
+    public static void missingMapping(RegistryEvent.MissingMappings<Block> event) {
+        for (RegistryEvent.MissingMappings.Mapping<Block> entry : event.getAllMappings()) {
+            if (entry.key.equals(new ResourceLocation(MCPaint.MODID, "canvas")))
+                entry.remap(CANVAS_GROUND); //make legacy non-burning
         }
     }
 }
