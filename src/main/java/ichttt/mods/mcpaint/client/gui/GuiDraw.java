@@ -326,6 +326,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             try {
                 saveImage(true);
             } catch (IOException e) {
+                MCPaint.LOGGER.error("Could not save image!", e);
                 mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), true);
                 mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), false);
             }
@@ -497,7 +498,8 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 throw new IOException("Expected file, got dir!");
             if (!file.getName().endsWith(".png"))
                 file = new File(file.toString() + ".png");
-            ImageIO.write(output, "png", file);
+            if (!ImageIO.write(output, "png", file))
+                throw new IOException("Could not encode image as png!");
         }
         try {
             UIManager.setLookAndFeel(old);

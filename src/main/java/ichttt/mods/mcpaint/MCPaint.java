@@ -52,9 +52,9 @@ public class MCPaint {
         NETWORKING.registerMessage(MessagePaintData.ClientHandler.class, MessagePaintData.class, 3, Side.CLIENT);
         NETWORKING.registerMessage(MessageClearSide.Handler.class, MessageClearSide.class, 4, Side.SERVER);
         CapabilityPaintable.register();
-        checkEarlyExit();
         if (MCPaintConfig.enableOneProbeCompat)
             FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "ichttt.mods.mcpaint.common.OneProbeCompat");
+        checkEarlyExit();
     }
 
     @Mod.EventHandler

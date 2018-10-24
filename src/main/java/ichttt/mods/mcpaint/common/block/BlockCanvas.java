@@ -166,6 +166,7 @@ public class BlockCanvas extends Block {
         return super.getMapColor(state, world, pos);
     }
 
+
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
