@@ -6,6 +6,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
+import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -14,18 +15,12 @@ public class CapabilityProvider implements ICapabilitySerializable<NBTTagCompoun
     public static final ResourceLocation LOCATION = new ResourceLocation(MCPaint.MODID, "paintable");
     private final IPaintable paint = new Paint();
 
+    @Nonnull
     @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityPaintable.PAINTABLE;
-    }
-
-    @SuppressWarnings("unchecked")
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityPaintable.PAINTABLE)
-            return (T) paint;
-        return null;
+    public <T> OptionalCapabilityInstance<T> getCapability(@Nonnull Capability<T> cap, @Nullable EnumFacing side) {
+        if (cap == CapabilityPaintable.PAINTABLE)
+            return OptionalCapabilityInstance.of(() -> (T) paint);
+        return OptionalCapabilityInstance.empty();
     }
 
     @Override

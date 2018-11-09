@@ -10,7 +10,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
-import java.awt.Color;
+import java.awt.*;
 
 public class GuiSetupCanvas extends GuiScreen {
     private static final ResourceLocation BACKGROUND = GuiDraw.BACKGROUND;
@@ -45,42 +45,43 @@ public class GuiSetupCanvas extends GuiScreen {
     public void initGui() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new GuiButton(1, this.guiLeft + 5, this.guiTop + 26, 20, 20, "<");
-        this.moreSize = new GuiButton(2, this.guiLeft + 83, this.guiTop + 26, 20, 20, ">");
-        addButton(new GuiButton(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")));
+        this.lessSize = new GuiButton(1, this.guiLeft + 5, this.guiTop + 26, 20, 20, "<") {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiSetupCanvas.this.currentMulti /= 2;
+                handleSizeChanged();
+                super.onClick(mouseX, mouseY);
+            }
+        };
+        this.moreSize = new GuiButton(2, this.guiLeft + 83, this.guiTop + 26, 20, 20, ">") {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiSetupCanvas.this.currentMulti *= 2;
+                handleSizeChanged();
+                super.onClick(mouseX, mouseY);
+            }
+        };
+        addButton(new GuiButton(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                handled = true;
+                mc.displayGuiScreen(null);
+                mc.displayGuiScreen(new GuiDraw((byte) (16 / GuiSetupCanvas.this.currentMulti), pos, facing, state));
+                super.onClick(mouseX, mouseY);
+            }
+        });
         addButton(this.lessSize);
         addButton(this.moreSize);
         handleSizeChanged();
     }
 
     @Override
-    public void drawScreen(int mouseX, int mouseY, float partialTicks) {
+    public void render(int mouseX, int mouseY, float partialTicks) {
         mc.getTextureManager().bindTexture(BACKGROUND);
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
         this.drawCenteredString(mc.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
         this.drawCenteredString(mc.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
-        super.drawScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    protected void actionPerformed(GuiButton button) {
-        switch (button.id) {
-            case 0:
-                handled = true;
-                mc.displayGuiScreen(null);
-                mc.displayGuiScreen(new GuiDraw((byte) (16 / this.currentMulti), pos, facing, state));
-                break;
-            case 1:
-                this.currentMulti /= 2;
-                handleSizeChanged();
-                break;
-            case 2:
-                this.currentMulti *= 2;
-                handleSizeChanged();
-                break;
-            default:
-                MCPaint.LOGGER.warn("Unknown button id: " + button.id + " with button " + button);
-        }
+        super.render(mouseX, mouseY, partialTicks);
     }
 
     @Override

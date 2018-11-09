@@ -32,8 +32,8 @@ public class CachedBufferBuilder extends BufferBuilder {
 
     public void finishBuilding() {
         building = false;
-        this.byteBuffer = this.byteBuffer.compact();
-        this.size = this.byteBuffer.position();
+//        this.byteBuffer = this.byteBuffer.compact(); TODO AT
+//        this.size = this.byteBuffer.position();
     }
 
     public int getSize() {

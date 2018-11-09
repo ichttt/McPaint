@@ -21,7 +21,7 @@ public class MCPaintUtil {
             return true;
         }
 
-        if (handler.player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(handler.player.getEntityAttribute(EntityPlayer.REACH_DISTANCE).getAttributeValue()) + 5)) {
+        if (handler.player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(handler.player.getAttribute(EntityPlayer.REACH_DISTANCE).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is writing to out of reach block!");
             return true;
         }
@@ -46,8 +46,8 @@ public class MCPaintUtil {
 
     public static void uploadPictureToServer(TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture, boolean clear) {
         if (!(te instanceof TileEntityCanvas)) {
-            MCPaint.LOGGER.error("Could not set paint! Found block " + te.getBlockType());
-            Minecraft.getMinecraft().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
+            MCPaint.LOGGER.error("Could not set paint! Found block " + te.getType());
+            Minecraft.getInstance().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
             return;
         }
         TileEntityCanvas canvas = (TileEntityCanvas) te;

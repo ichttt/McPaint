@@ -1,45 +1,41 @@
 package ichttt.mods.mcpaint.common.block;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
 import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
-import net.minecraft.block.properties.PropertyBool;
-import net.minecraft.block.state.BlockStateContainer;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.state.BooleanProperty;
+import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.EnumBlockRenderType;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockAccess;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
 import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
-public class BlockCanvas extends Block {
-    public static final PropertyBool IS_FULL_BLOCK = PropertyBool.create("full_block");
-    public static final PropertyBool IS_NORMAL_CUBE = PropertyBool.create("normal_cube");
-    public static final PropertyBool IS_OPAQUE_CUBE = PropertyBool.create("opaque_cube");
+public class BlockCanvas extends Block implements ITileEntityProvider {
+    public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
+    public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
     public BlockCanvas(Material material, ResourceLocation regNam) {
-        super(material);
-        setHardness(1F);
-        setCreativeTab(CreativeTabs.DECORATIONS);
-        setResistance(5F);
-        useNeighborBrightness = true;
+        super(Block.Builder.create(material).hardnessAndResistance(1F, 4F));
+//        setCreativeTab(CreativeTabs.DECORATIONS); //TODO
+//        useNeighborBrightness = true;
         setRegistryName(regNam);
-        setTranslationKey(regNam.getNamespace() + "." + regNam.getPath());
-        setDefaultState(blockState.getBaseState().withProperty(IS_FULL_BLOCK, true).withProperty(IS_NORMAL_CUBE, true).withProperty(IS_OPAQUE_CUBE, true));
+        setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
     }
 
     @Override
@@ -49,7 +45,7 @@ public class BlockCanvas extends Block {
 
     @Nullable
     @Override
-    public TileEntity createTileEntity(@Nonnull World world, @Nonnull IBlockState state) {
+    public TileEntity createNewTileEntity(IBlockReader reader) {
         return new TileEntityCanvas();
     }
 
@@ -70,7 +66,7 @@ public class BlockCanvas extends Block {
 
     @SuppressWarnings("deprecation")
     @Override
-    public float getBlockHardness(IBlockState blockState, World world, BlockPos pos) {
+    public float getBlockHardness(IBlockState blockState, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlockHardness(world, pos);
@@ -79,17 +75,16 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public float getExplosionResistance(World world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
+    public float getExplosionResistance(IBlockState state, IWorldReader world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBlock().getExplosionResistance(world, pos, exploder, explosion);
+            return canvas.getContainedState().getBlock().getExplosionResistance(canvas.getContainedState(), world, pos, exploder, explosion);
         }
-        return super.getExplosionResistance(world, pos, exploder, explosion);
+        return super.getExplosionResistance(state, world, pos, exploder, explosion);
     }
 
-    @Nonnull
     @Override
-    public SoundType getSoundType(IBlockState state, World world, BlockPos pos, @Nullable Entity entity) {
+    public SoundType getSoundType(IBlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlock().getSoundType(canvas.getContainedState(), world, pos, entity);
@@ -114,51 +109,54 @@ public class BlockCanvas extends Block {
         return true;
     }
 
+//    @Override TODO
+//    public boolean canHarvestBlock(IBlockAccess world, @Nonnull BlockPos pos, @Nonnull EntityPlayer player) {
+//        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+//        if (canvas != null && canvas.getContainedState() != null) {
+//            return canvas.getContainedState().getBlock().canHarvestBlock(world, pos, player);
+//        }
+//        return super.canHarvestBlock(world, pos, player);
+//    }
+
     @Override
-    public boolean canHarvestBlock(IBlockAccess world, @Nonnull BlockPos pos, @Nonnull EntityPlayer player) {
+    public VoxelShape getCollisionShape(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBlock().canHarvestBlock(world, pos, player);
+            return canvas.getContainedState().getCollisionShape(world, pos);
         }
-        return super.canHarvestBlock(world, pos, player);
+        return super.getCollisionShape(state, world, pos);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public void addCollisionBoxToList(IBlockState state, @Nonnull World world, @Nonnull BlockPos pos, @Nonnull AxisAlignedBB entityBox, @Nonnull List<AxisAlignedBB> collidingBoxes, @Nullable Entity entityIn, boolean isActualState) {
+    public VoxelShape getShape(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            canvas.getContainedState().getBlock().addCollisionBoxToList(canvas.getContainedState(), world, pos, entityBox, collidingBoxes, entityIn, isActualState);
-            return;
+            return canvas.getContainedState().getShape(world, pos);
         }
-        super.addCollisionBoxToList(state, world, pos, entityBox, collidingBoxes, entityIn, isActualState);
+        return super.getShape(state, world, pos);
     }
 
-    @SuppressWarnings("deprecation")
-    @Nullable
     @Override
-    public AxisAlignedBB getCollisionBoundingBox(IBlockState blockState, @Nonnull IBlockAccess world, @Nonnull BlockPos pos) {
+    public VoxelShape getRenderShape(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getCollisionBoundingBox(world, pos);
+            return canvas.getContainedState().getRenderShape(world, pos);
         }
-        return super.getCollisionBoundingBox(blockState, world, pos);
+        return super.getRenderShape(state, world, pos);
     }
 
-    @SuppressWarnings("deprecation")
-    @Nonnull
     @Override
-    public AxisAlignedBB getBoundingBox(IBlockState state, IBlockAccess source, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) source.getTileEntity(pos);
+    public VoxelShape getRaytraceShape(IBlockState state, IBlockReader world, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBoundingBox(source, pos);
+            return canvas.getContainedState().getRaytraceShape(world, pos);
         }
-        return super.getBoundingBox(state, source, pos);
+        return super.getRaytraceShape(state, world, pos);
     }
 
     @SuppressWarnings("deprecation")
     @Override
-    public MapColor getMapColor(IBlockState state, IBlockAccess world, BlockPos pos) {
+    public MapColor getMapColor(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getMapColor(world, pos);
@@ -167,61 +165,31 @@ public class BlockCanvas extends Block {
     }
 
 
-    @SuppressWarnings("deprecation")
-    @Nonnull
-    @Override
-    public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
-        //HARD AND REALLY DIRTY HACK: BE WARNED IF YOU CONTINUE READING
-        //See if we are called from ForgeHooks#canHarvestBlock
-        //if yes, return the contained state
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-        if (canvas != null && canvas.getContainedState() != null) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            if (stackTrace.length > 2 && stackTrace[2].toString().contains("net.minecraftforge.common.ForgeHooks.canHarvestBlock")) {
-                return canvas.getContainedState();
-            }
-        }
-        return super.getActualState(state, world, pos);
-    }
+//    @SuppressWarnings("deprecation")
+//    @Nonnull TODO
+//    @Override
+//    public IBlockState getActualState(@Nonnull IBlockState state, IBlockReader world, BlockPos pos) {
+//        //HARD AND REALLY DIRTY HACK: BE WARNED IF YOU CONTINUE READING
+//        //See if we are called from ForgeHooks#canHarvestBlock
+//        //if yes, return the contained state
+//        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+//        if (canvas != null && canvas.getContainedState() != null) {
+//            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+//            if (stackTrace.length > 2 && stackTrace[2].toString().contains("net.minecraftforge.common.ForgeHooks.canHarvestBlock")) {
+//                return canvas.getContainedState();
+//            }
+//        }
+//        return super.getActualState(state, world, pos);
+//    }
 
     @Override
-    public int getMetaFromState(IBlockState state) {
-        if (state.getBlock() != this) //Possible when harvesting (as we send the technically wrong blockstate)
-            return state.getBlock().getMetaFromState(state);
-        //We got one bool rest...
-        int meta = 0;
-        if (!state.getValue(IS_OPAQUE_CUBE))
-            meta = meta | 4;
-        if (!state.getValue(IS_NORMAL_CUBE))
-            meta = meta | 2;
-        if (!state.getValue(IS_FULL_BLOCK))
-            meta = meta | 1;
-        return meta;
+    protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
+        builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
     }
 
     @Nonnull
     @Override
-    protected BlockStateContainer createBlockState() {
-        return new BlockStateContainer(this, IS_FULL_BLOCK, IS_NORMAL_CUBE, IS_OPAQUE_CUBE);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Nonnull
-    @Override
-    public IBlockState getStateFromMeta(int meta) {
-        IBlockState state = getDefaultState();
-        if ((meta & 4) > 0)
-            state = state.withProperty(IS_OPAQUE_CUBE, false);
-        if ((meta & 2) > 0)
-            state = state.withProperty(IS_NORMAL_CUBE, false);
-        if ((meta & 1) > 0)
-            state = state.withProperty(IS_FULL_BLOCK, false);
-        return state;
-    }
-
-    @Nonnull
-    @Override
-    public ItemStack getPickBlock(@Nonnull IBlockState state, RayTraceResult target, @Nonnull World world, @Nonnull BlockPos pos, EntityPlayer player) {
+    public ItemStack getPickBlock(@Nonnull IBlockState state, RayTraceResult target, @Nonnull IBlockReader world, @Nonnull BlockPos pos, EntityPlayer player) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
@@ -230,37 +198,26 @@ public class BlockCanvas extends Block {
         return ItemStack.EMPTY;
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isFullBlock(IBlockState state) {
-        return state.getValue(IS_FULL_BLOCK);
-    }
 
     @SuppressWarnings("deprecation")
     @Override
     public boolean isFullCube(IBlockState state) {
-        return state.getValue(IS_FULL_BLOCK);
+        return state.get(IS_FULL_BLOCK);
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public boolean isNormalCube(IBlockState state) {
-        return state.getValue(IS_NORMAL_CUBE);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isOpaqueCube(IBlockState state) {
-        return state.getValue(IS_OPAQUE_CUBE);
+        return state.get(IS_NORMAL_CUBE);
     }
 
     @SuppressWarnings("deprecation")
     @Override
     public boolean isBlockNormalCube(IBlockState state) {
-        return state.getValue(IS_FULL_BLOCK);
+        return state.get(IS_FULL_BLOCK);
     }
 
     public IBlockState getStateFrom(IBlockState state) {
-        return getDefaultState().withProperty(IS_OPAQUE_CUBE, state.isOpaqueCube()).withProperty(IS_NORMAL_CUBE, state.isNormalCube()).withProperty(IS_FULL_BLOCK, state.isFullBlock());
+        return getDefaultState().with(IS_NORMAL_CUBE, state.isNormalCube()).with(IS_FULL_BLOCK, state.isBlockNormalCube());
     }
 }

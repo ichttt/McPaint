@@ -1,6 +1,5 @@
 package ichttt.mods.mcpaint.client;
 
-import ichttt.mods.mcpaint.IProxy;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.GuiDraw;
 import ichttt.mods.mcpaint.client.gui.GuiSetupCanvas;
@@ -17,31 +16,26 @@ import net.minecraftforge.fml.client.registry.ClientRegistry;
 
 import java.util.List;
 
-public class ClientProxy implements IProxy {
-    @Override
-    public void preInit() {
+public class ClientHooks {
+    public static void preInit() {
         MCPaint.LOGGER.debug("Loading ClientProxy");
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCanvas.class, new TESRCanvas());
         MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);
     }
 
-    @Override
-    public void showGuiDraw(List<IPaintable> canvasList, BlockPos pos, EnumFacing facing, IBlockState state) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiDraw(canvasList.remove(canvasList.size() - 1), canvasList, pos, facing, state));
+    public static void showGuiDraw(List<IPaintable> canvasList, BlockPos pos, EnumFacing facing, IBlockState state) {
+        Minecraft.getInstance().displayGuiScreen(new GuiDraw(canvasList.remove(canvasList.size() - 1), canvasList, pos, facing, state));
     }
 
-    @Override
-    public void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {
-        Minecraft.getMinecraft().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
+    public static void showGuiDraw(BlockPos pos, EnumFacing facing, IBlockState state) {
+        Minecraft.getInstance().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
     }
 
-    @Override
-    public void onConfigReload() {
+    public static void onConfigReload() {
         RenderCache.onConfigReload();
     }
 
-    @Override
-    public void invalidateCache(IPaintable paint, TileEntityCanvas canvas, EnumFacing facing) {
+    public static void invalidateCache(IPaintable paint, TileEntityCanvas canvas, EnumFacing facing) {
         RenderCache.uncache(paint);
         if (canvas != null)
             canvas.invalidateBuffer(facing);

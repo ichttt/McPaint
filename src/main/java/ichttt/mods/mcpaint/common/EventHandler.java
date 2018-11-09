@@ -11,28 +11,27 @@ import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.tileentity.TileEntityType;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.ResourceLocation;
-import net.minecraftforge.common.config.Config;
-import net.minecraftforge.common.config.ConfigManager;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.registry.GameRegistry;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
+import net.minecraftforge.registries.ObjectHolder;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
-@GameRegistry.ObjectHolder(MCPaint.MODID)
+@ObjectHolder(MCPaint.MODID)
 public class EventHandler {
-    public static final Item BRUSH = getNull();
-    public static final Item STAMP = getNull();
-    public static final BlockCanvas CANVAS_WOOD = getNull();
-    public static final BlockCanvas CANVAS_ROCK = getNull();
-    public static final BlockCanvas CANVAS_GROUND = getNull();
+    public static Item BRUSH = getNull();
+    public static Item STAMP = getNull();
+    public static BlockCanvas CANVAS_WOOD = getNull();
+    public static BlockCanvas CANVAS_ROCK = getNull();
+    public static BlockCanvas CANVAS_GROUND = getNull();
+    public static TileEntityType<TileEntityCanvas> CANVAS_TE = getNull();
 
     //Avoids warnings of a field being null because it is populated by the ObjectHolder
     //So Nonnull despite returning null
@@ -40,6 +39,15 @@ public class EventHandler {
     @Nonnull
     private static <T> T getNull() {
         return null;
+    }
+
+    public static void update() {
+        BRUSH = ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "brush"));
+        STAMP = ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp"));
+        CANVAS_WOOD = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_wood"));
+        CANVAS_ROCK = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_rock"));
+        CANVAS_GROUND = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_ground"));
+        CANVAS_TE = (TileEntityType<TileEntityCanvas>) ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(MCPaint.MODID, "canvas_te"));
     }
 
     @SubscribeEvent
@@ -54,7 +62,11 @@ public class EventHandler {
         event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
         event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
         event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
-        GameRegistry.registerTileEntity(TileEntityCanvas.class, new ResourceLocation(MCPaint.MODID, "canvas"));
+    }
+
+    @SubscribeEvent
+    public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
+        event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
     }
 
     @SubscribeEvent
@@ -63,19 +75,19 @@ public class EventHandler {
             event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
     }
 
-    @SubscribeEvent
-    public static void onConfigChange(ConfigChangedEvent event) {
-        if (event.getModID().equals(MCPaint.MODID)) {
-            ConfigManager.sync(MCPaint.MODID, Config.Type.INSTANCE);
-            MCPaint.proxy.onConfigReload();
-        }
-    }
+//    @SubscribeEvent TODO
+//    public static void onConfigChange(ConfigChangedEvent event) {
+//        if (event.getModID().equals(MCPaint.MODID)) {
+//            ConfigManager.sync(MCPaint.MODID, Config.Type.INSTANCE);
+//            MCPaint.proxy.onConfigReload();
+//        }
+//    }
 
     @SubscribeEvent
     public static void onRightClick(PlayerInteractEvent.RightClickItem event) {
         ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
         if (event.getEntityPlayer().isSneaking() && stack.getItem() == EventHandler.STAMP) {
-            Objects.requireNonNull(stack.getCapability(CapabilityPaintable.PAINTABLE, null)).clear(null, null);
+            stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(RuntimeException::new).clear(null, null);
             event.setCanceled(true);
             event.setCancellationResult(EnumActionResult.SUCCESS);
         }

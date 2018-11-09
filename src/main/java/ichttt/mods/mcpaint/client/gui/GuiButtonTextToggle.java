@@ -2,11 +2,9 @@ package ichttt.mods.mcpaint.client.gui;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.resources.I18n;
 
-import javax.annotation.Nonnull;
 import java.awt.*;
 import java.util.Locale;
 
@@ -21,8 +19,10 @@ public class GuiButtonTextToggle extends GuiButton {
         this.type = type;
     }
 
+
+
     @Override
-    public void drawButton(@Nonnull Minecraft mc, int mouseX, int mouseY, float partialTicks) {
+    public void render(int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             //GuiHollowButton
             if (toggled) {
@@ -31,7 +31,7 @@ public class GuiButtonTextToggle extends GuiButton {
                 this.drawHorizontalLine(this.x - 1, this.x + this.width, this.y - 1, this.color);
                 this.drawHorizontalLine(this.x - 1, this.x + this.width, this.y + this.height, this.color);
             }
-            super.drawButton(mc, mouseX, mouseY, partialTicks);
+            super.render(mouseX, mouseY, partialTicks);
         }
     }
 }

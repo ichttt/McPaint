@@ -1,26 +1,28 @@
 package ichttt.mods.mcpaint.common.item;
 
-import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
+import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.ItemUseContext;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,12 +38,16 @@ public class ItemStamp extends ItemBrush {
 
     @Nonnull
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public EnumActionResult onItemUse(ItemUseContext context) {
+        ItemStack hold = context.getItem();
+        World world = context.getWorld();
+        BlockPos pos = context.getPos();
+        EntityPlayer player = context.getPlayer();
+        EnumFacing facing = context.getFace();
         IBlockState state = world.getBlockState(pos);
-        ItemStack hold = player.getHeldItem(hand);
-        IPaintable paint = Objects.requireNonNull(hold.getCapability(CapabilityPaintable.PAINTABLE, null));
-        if (paint.hasPaintData()) {
-            return super.onItemUse(player, world, pos, hand, facing, hitX, hitY, hitZ);
+        IPaintable paint = Objects.requireNonNull(hold.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null));
+        if (paint != null && paint.hasPaintData()) {
+            return super.onItemUse(context);
         } else if (player.isSneaking()) {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {
@@ -61,7 +67,7 @@ public class ItemStamp extends ItemBrush {
     @Override
     protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, EnumFacing facing, IBlockState state) {
         if (world.isRemote) {
-            IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null), "No paint in stamp");
+            IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
             if (MCPaintConfig.CLIENT.directApplyStamp) {
                 canvas.getPaintFor(facing).copyFrom(heldPaint, canvas, facing);
                 MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData(), false);
@@ -71,19 +77,19 @@ public class ItemStamp extends ItemBrush {
                     paintList.add(canvas.getPaintFor(facing));
                 }
                 paintList.add(heldPaint);
-                MCPaint.proxy.showGuiDraw(paintList, pos, facing, canvas.getContainedState());
+                DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientHooks.showGuiDraw(paintList, pos, facing, canvas.getContainedState()));
             }
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<String> tooltip, ITooltipFlag flagIn) {
-        IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null);
+    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+        IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
         if (paintable != null && paintable.hasPaintData()) {
-            tooltip.add(I18n.format("mcpaint.tooltip.stamp.paint"));
+            tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.paint"));
         } else {
-            tooltip.add(I18n.format("mcpaint.tooltip.stamp.nopaint"));
+            tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.nopaint"));
         }
         super.addInformation(stack, worldIn, tooltip, flagIn);
     }

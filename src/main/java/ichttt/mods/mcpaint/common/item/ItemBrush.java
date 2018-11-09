@@ -1,19 +1,26 @@
 package ichttt.mods.mcpaint.common.item;
 
-import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.ClientHooks;
+import ichttt.mods.mcpaint.client.render.TEISRStamp;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.creativetab.CreativeTabs;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.*;
+import net.minecraft.item.ItemUseContext;
+import net.minecraft.util.EnumActionResult;
+import net.minecraft.util.EnumBlockRenderType;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
 import java.util.*;
@@ -21,19 +28,20 @@ import java.util.*;
 public class ItemBrush extends Item {
 
     public ItemBrush(ResourceLocation registryName) {
-        setCreativeTab(CreativeTabs.DECORATIONS);
+        super(new Item.Builder().setTEISR(() -> () -> TEISRStamp.INSTANCE).group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32));
         setRegistryName(registryName);
-        setTranslationKey(registryName.getNamespace() + "." + registryName.getPath());
-        setMaxStackSize(1);
-        setMaxDamage(32);
     }
 
     @Nonnull
     @Override
-    public EnumActionResult onItemUse(EntityPlayer player, World world, BlockPos pos, EnumHand hand, EnumFacing facing, float hitX, float hitY, float hitZ) {
+    public EnumActionResult onItemUse(ItemUseContext context) {
+        World world = context.getWorld();
+        EntityPlayer player = context.getPlayer();
+        BlockPos pos = context.getPos();
+        ItemStack held = context.getItem();
+        EnumFacing facing = context.getFace();
         IBlockState state = world.getBlockState(pos);
         if (state.getBlock() instanceof BlockCanvas) {
-            ItemStack held = player.getHeldItem(hand);
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             //We need to cache getBlockFaceShape as the method takes a world as an argument
             if (canvas.isSideBlockedForPaint(facing)) return EnumActionResult.FAIL;
@@ -42,16 +50,15 @@ public class ItemBrush extends Item {
             return EnumActionResult.SUCCESS;
         }
 
-        //TODO substates for props... we need 5, we have 4... state.isFullCube = this.getDefaultState().isOpaqueCube
-        if (state.getBlockFaceShape(world, pos, facing) == BlockFaceShape.SOLID && state.getMaterial().isOpaque() && state.isFullBlock() == state.isFullCube() &&
+        //TODO check isFullBlock
+        if (state.getBlockFaceShape(world, pos, facing) == BlockFaceShape.SOLID && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
                 state.isFullCube() == state.isBlockNormalCube() && state.getRenderType() == EnumBlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
             Set<EnumFacing> disallowedFaces = EnumSet.noneOf(EnumFacing.class);
-            for (EnumFacing testFacing : EnumFacing.VALUES) {
+            for (EnumFacing testFacing : EnumFacing.values()) {
                 if (state.getBlockFaceShape(world, pos, testFacing) != BlockFaceShape.SOLID)
                     disallowedFaces.add(testFacing);
             }
-            ItemStack held = player.getHeldItem(hand);
-            if (state.getMaterial().getCanBurn())
+            if (state.getMaterial().isFlammable())
                 world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(state));
             else if (state.getMaterial().isToolNotRequired())
                 world.setBlockState(pos, EventHandler.CANVAS_GROUND.getStateFrom(state));
@@ -72,9 +79,9 @@ public class ItemBrush extends Item {
             if (canvas.hasPaintFor(facing)) {
                 List<IPaintable> list = new ArrayList<>(1);
                 list.add(canvas.getPaintFor(facing));
-                MCPaint.proxy.showGuiDraw(list, canvas.getPos(), facing, canvas.getContainedState());
+                DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientHooks.showGuiDraw(list, canvas.getPos(), facing, canvas.getContainedState()));
             } else {
-                MCPaint.proxy.showGuiDraw(pos, facing, canvas.getContainedState());
+                DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientHooks.showGuiDraw(pos, facing, canvas.getContainedState()));
             }
         }
     }

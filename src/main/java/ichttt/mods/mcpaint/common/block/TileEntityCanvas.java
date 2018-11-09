@@ -6,6 +6,7 @@ import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.client.render.batch.SimpleCallback;
+import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -13,14 +14,11 @@ import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -35,11 +33,15 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     private final Map<EnumFacing, Object> bufferMap = new EnumMap<>(EnumFacing.class);
     private final Set<EnumFacing> disallowedFaces = EnumSet.noneOf(EnumFacing.class);
 
+    public TileEntityCanvas() {
+        super(EventHandler.CANVAS_TE);
+    }
+
     @Nonnull
     @Override
-    public NBTTagCompound writeToNBT(NBTTagCompound tag) {
-        tag = super.writeToNBT(tag);
-        NBTUtil.writeBlockState(tag, containedState);
+    public NBTTagCompound write(NBTTagCompound tag) {
+        tag = super.write(tag);
+        tag.setTag("blockState", NBTUtil.writeBlockState(this.containedState));
         NBTTagCompound faces = new NBTTagCompound();
         for (Map.Entry<EnumFacing, IPaintable> entry : this.facingToPaintMap.entrySet()) {
             faces.setTag(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
@@ -47,52 +49,53 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         tag.setTag("faces", faces);
         if (!disallowedFaces.isEmpty()) {
             NBTTagCompound blockedFaces = new NBTTagCompound();
-            for (EnumFacing facing : EnumFacing.VALUES)
+            for (EnumFacing facing : EnumFacing.values())
                 blockedFaces.setBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.setTag("blocked", blockedFaces);
         }
         return tag;
     }
 
-    @Override
-    public boolean shouldRenderInPass(int pass) {
-        return pass == 0 || pass == 1;
-    }
+//    @Override TODO
+//    public boolean shouldRenderInPass(int pass) {
+//        return pass == 0 || pass == 1;
+//    }
 
     @Override
-    public void readFromNBT(NBTTagCompound tag) {
-        super.readFromNBT(tag);
-        this.containedState = NBTUtil.readBlockState(tag);
-        NBTTagCompound faces = tag.getCompoundTag("faces");
-        for (String key : faces.getKeySet()) {
+    public void read(NBTTagCompound tag) {
+        super.read(tag);
+        this.containedState = NBTUtil.readBlockState(tag.getCompound("blockState"));
+        NBTTagCompound faces = tag.getCompound("faces");
+        for (String key : faces.keySet()) {
             Paint paint = new Paint(this);
-            CapabilityPaintable.readFromNBT(paint, faces.getCompoundTag(key));
+            CapabilityPaintable.readFromNBT(paint, faces.getCompound(key));
             this.facingToPaintMap.put(EnumFacing.byName(key), paint);
         }
         disallowedFaces.clear();
-        if (tag.hasKey("blocked", Constants.NBT.TAG_COMPOUND)) {
-            NBTTagCompound blockedFaces = tag.getCompoundTag("blocked");
-            for (String key : blockedFaces.getKeySet()) {
+        if (tag.hasKey("blocked")) {
+            NBTTagCompound blockedFaces = tag.getCompound("blocked");
+            for (String key : blockedFaces.keySet()) {
                 if (blockedFaces.getBoolean(key))
                     disallowedFaces.add(EnumFacing.byName(key));
             }
         }
     }
 
-    @Override
-    public boolean hasFastRenderer() {
-        return true;
-    }
-
-    @Override
-    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
-        this.readFromNBT(tag);
-    }
+    //TODO
+//    @Override
+//    public boolean hasFastRenderer() {
+//        return true;
+//    }
+//
+//    @Override
+//    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
+//        this.read(tag);
+//    }
 
     @Nonnull
     @Override
     public NBTTagCompound getUpdateTag() {
-        return this.writeToNBT(new NBTTagCompound());
+        return this.write(new NBTTagCompound());
     }
 
     @Nullable
@@ -101,18 +104,19 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
     }
 
-    @Nullable
-    @Override
-    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-        if (capability == CapabilityPaintable.PAINTABLE)
-            return CapabilityPaintable.PAINTABLE.cast(getPaintFor(facing));
-        return super.getCapability(capability, facing);
-    }
-
-    @Override
-    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-        return capability == CapabilityPaintable.PAINTABLE || super.hasCapability(capability, facing);
-    }
+    //TODO
+//    @Nullable
+//    @Override
+//    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
+//        if (capability == CapabilityPaintable.PAINTABLE)
+//            return CapabilityPaintable.PAINTABLE.cast(getPaintFor(facing));
+//        return super.getCapability(capability, facing);
+//    }
+//
+//    @Override
+//    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
+//        return capability == CapabilityPaintable.PAINTABLE || super.hasCapability(capability, facing);
+//    }
 
     @Override
     public boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
@@ -140,7 +144,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return paint.hasPaintData();
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public CachedBufferBuilder getBuffer(EnumFacing facing) {
         Object obj = bufferMap.get(facing);
         if (obj instanceof CachedBufferBuilder)
@@ -165,7 +169,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         }
     }
 
-    @SideOnly(Side.CLIENT)
+    @OnlyIn(Dist.CLIENT)
     public void invalidateBuffers() {
         for (Map.Entry<EnumFacing, Object> entry : bufferMap.entrySet()) {
             Object obj = entry.getValue();
@@ -183,11 +187,11 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return MCPaintConfig.CLIENT.maxRenderDistance * MCPaintConfig.CLIENT.maxRenderDistance;
     }
 
-    @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-        this.readFromNBT(pkt.getNbtCompound());
-        invalidateBuffers();
-    }
+//    @Override TODO
+//    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+//        this.read(pkt.getNbtCompound());
+//        invalidateBuffers();
+//    }
 
     public void invalidateBuffer(EnumFacing facing) {
         Object obj = bufferMap.remove(facing);

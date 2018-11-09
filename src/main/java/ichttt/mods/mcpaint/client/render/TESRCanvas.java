@@ -8,40 +8,32 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.texture.TextureMap;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.client.MinecraftForgeClient;
 import org.lwjgl.opengl.GL11;
 
-public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
+import java.util.Random;
+
+public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
 
     @Override
-    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
-        if (destroyStage >= 0 && MinecraftForgeClient.getRenderPass() == 0) {
+    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
+        if (/*destroyStage >= 0 && */MinecraftForgeClient.getRenderPass() == 0) {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder builder = tessellator.getBuffer();
-            builder.noColor();
+            //builder.noColor(); TODO uncomment when fast tesr
             builder.begin(GL11.GL_QUADS, DefaultVertexFormats.BLOCK);
             renderBlock(x, y, z, te, builder, destroyStage);
-            Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
+            Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             tessellator.draw();
-        }
-    }
-
-    //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
-    @Override
-    public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
-        int renderPass = MinecraftForgeClient.getRenderPass();
-        if (renderPass == 0) {
-            renderBlock(x, y, z, te, buffer, -1);
-        }
-        else if (renderPass == 1) {
-            double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
+        } else { //TODO remove when fast tesr
+            double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
             if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
                 int light = te.getWorld().getCombinedLight(te.getPos(), 0);
-                for (EnumFacing facing : EnumFacing.VALUES) {
+                for (EnumFacing facing : EnumFacing.values()) {
                     if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
                 }
             } else {
@@ -49,6 +41,26 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             }
         }
     }
+
+    //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
+//    @Override TODO
+//    public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
+//        int renderPass = MinecraftForgeClient.getRenderPass();
+//        if (renderPass == 0) {
+//            renderBlock(x, y, z, te, buffer, -1);
+//        }
+//        else if (renderPass == 1) {
+//            double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
+//            if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
+//                int light = te.getWorld().getCombinedLight(te.getPos(), 0);
+//                for (EnumFacing facing : EnumFacing.VALUES) {
+//                    if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
+//                }
+//            } else {
+//                te.invalidateBuffers(); //We stay in the global cache for a little longer
+//            }
+//        }
+//    }
 
     private static void renderPicture(double x, double y, double z, TileEntityCanvas te, EnumFacing facing, int light, double playerDistSq) {
         //Facing setup
@@ -126,16 +138,16 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
 
         //GL setup
         PictureRenderer.setWorldGLState();
-        GlStateManager.translate(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
+        GlStateManager.translated(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k);
+//        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float)j, (float)k); TODO light
 
         if (angle != 0)
-            GlStateManager.rotate(angle, 0, 1, 0);
+            GlStateManager.rotatef(angle, 0, 1, 0);
         else if (facing.getAxis().isVertical()) {
-            GlStateManager.rotate(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotate(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            GlStateManager.rotatef(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
         }
 
         IPaintable paint = te.getPaintFor(facing);
@@ -147,7 +159,8 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
                 if (playerDistSq < (88D * 88D))
                     slow = true;
             } else {
-                Tessellator.getInstance().vboUploader.draw(builder);
+//                Tessellator.getInstance().vboUploader.draw(builder); TODO AT
+                new WorldVertexBufferUploader().draw(builder);
             }
         }
         if (slow) {
@@ -165,16 +178,16 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
 
     private void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder, int destroyStage) {
         //Render block
-        BlockRendererDispatcher dispatcher = Minecraft.getMinecraft().getBlockRendererDispatcher();
+        BlockRendererDispatcher dispatcher = Minecraft.getInstance().getBlockRendererDispatcher();
         IBlockState state = te.getContainedState();
         if (state == null)
             state = EventHandler.CANVAS_WOOD.getDefaultState();
         BlockPos pos = te.getPos();
         builder.setTranslation(x - pos.getX(), y - pos.getY(), z - pos.getZ());
         if (destroyStage >= 0)
-            dispatcher.renderBlockDamage(state, pos, Minecraft.getMinecraft().getTextureMapBlocks().getAtlasSprite("minecraft:blocks/destroy_stage_" + destroyStage), te.getWorld());
+            dispatcher.renderBlockDamage(state, pos, Minecraft.getInstance().getTextureMap().getAtlasSprite("minecraft:blocks/destroy_stage_" + destroyStage), te.getWorld());
         else
-            dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true);
+            dispatcher.getBlockModelRenderer().renderModel(te.getWorld(), dispatcher.getModelForState(state), state, te.getPos(), builder, true, new Random(), state.getPositionRandom(te.getPos()));
         builder.setTranslation(0, 0, 0);
     }
 }

@@ -9,24 +9,17 @@ import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
+import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraftforge.fml.common.network.NetworkRegistry;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessage;
-import net.minecraftforge.fml.common.network.simpleimpl.IMessageHandler;
-import net.minecraftforge.fml.common.network.simpleimpl.MessageContext;
-import net.minecraftforge.fml.relauncher.Side;
-import net.minecraftforge.fml.relauncher.SideOnly;
 
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.function.Consumer;
 
-public class MessagePaintData implements IMessage {
+public class MessagePaintData {
     private BlockPos pos;
     private EnumFacing facing;
     private byte scale;
@@ -69,7 +62,6 @@ public class MessagePaintData implements IMessage {
         this.maxParts = maxParts;
     }
 
-    @Override
     public void fromBytes(ByteBuf buf) {
         this.pos = BlockPos.fromLong(buf.readLong());
         this.scale = buf.readByte();
@@ -87,7 +79,6 @@ public class MessagePaintData implements IMessage {
         }
     }
 
-    @Override
     public void toBytes(ByteBuf buf) {
         buf.writeLong(pos.toLong());
         buf.writeByte(scale);
@@ -107,12 +98,11 @@ public class MessagePaintData implements IMessage {
         }
     }
 
-    public static class ServerHandler implements IMessageHandler<MessagePaintData, IMessage> {
+    public static class ServerHandler {
         @SuppressWarnings("UnstableApiUsage")
         private final Multimap<BlockPos, MessagePaintData> partMap = MultimapBuilder.hashKeys().hashSetValues().build();
 
-        @Override
-        public IMessage onMessage(MessagePaintData message, MessageContext ctx) {
+        public void onMessage(MessagePaintData message, INetHandler ctx) {
             if (message.maxParts == 0) //single message
                 handleSide(ctx, message.pos, message.facing, message.scale, message.data);
             else {
@@ -133,14 +123,14 @@ public class MessagePaintData implements IMessage {
                     }
                 }
             }
-            return null;
         }
-        protected void handleSide(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+
+        protected void handleSide(INetHandler ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
             setServerData(ctx, pos, facing, scale, data);
         }
 
-        public static void setServerData(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
-            NetHandlerPlayServer handler = ctx.getServerHandler();
+        public static void setServerData(INetHandler ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+            NetHandlerPlayServer handler = (NetHandlerPlayServer) ctx;
             handler.player.server.addScheduledTask(() ->{
                 if (MCPaintUtil.isPosInvalid(handler, pos)) return;
 
@@ -161,36 +151,37 @@ public class MessagePaintData implements IMessage {
                 else
                     canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
                 te.markDirty();
-                NetworkRegistry.TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
+                //TODO networking mess
+//                TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
                 if (data == null) {
-                    MCPaint.NETWORKING.sendToAllTracking(new MessageClearSide(pos, facing), point);
+//                    MCPaint.NETWORKING.sendTo(new MessageClearSide(pos, facing), handler.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
                 } else {
-                    MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
+//                    MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
                 }
             });
         }
     }
 
-    public static class ClientHandler extends ServerHandler {
-
-        @SideOnly(Side.CLIENT)
-        @Override
-        protected void handleSide(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
-            Minecraft.getMinecraft().addScheduledTask(() -> {
-                World world = Minecraft.getMinecraft().world;
-                if (!world.isBlockLoaded(pos)) {
-                    MCPaint.LOGGER.warn("Invalid pos " + pos + " when updating data - Not loaded");
-                }
-
-                TileEntity te = world.getTileEntity(pos);
-                if (!(te instanceof TileEntityCanvas)) {
-                    MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
-                    return;
-                }
-                TileEntityCanvas canvas = (TileEntityCanvas) te;
-                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
-                te.markDirty();
-            });
-        }
-    }
+//    public static class ClientHandler extends ServerHandler { TODO networking
+//
+//        @SideOnly(Side.CLIENT)
+//        @Override
+//        protected void handleSide(MessageContext ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+//            Minecraft.getMinecraft().addScheduledTask(() -> {
+//                World world = Minecraft.getMinecraft().world;
+//                if (!world.isBlockLoaded(pos)) {
+//                    MCPaint.LOGGER.warn("Invalid pos " + pos + " when updating data - Not loaded");
+//                }
+//
+//                TileEntity te = world.getTileEntity(pos);
+//                if (!(te instanceof TileEntityCanvas)) {
+//                    MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
+//                    return;
+//                }
+//                TileEntityCanvas canvas = (TileEntityCanvas) te;
+//                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
+//                te.markDirty();
+//            });
+//        }
+//    }
 }

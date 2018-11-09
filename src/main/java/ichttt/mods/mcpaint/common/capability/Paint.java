@@ -1,10 +1,12 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import com.google.common.primitives.Shorts;
-import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nullable;
 import java.util.Arrays;
@@ -38,7 +40,7 @@ public class Paint implements IPaintable {
         short pixelCountY = Shorts.checkedCast(pictureData == null ? 0 : (pictureData[0].length * scaleFactor));
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
             throw new IllegalArgumentException("Invalid pixel count: x:" + pixelCountX + " y:" + pixelCountY);
-        MCPaint.proxy.invalidateCache(this, canvas, facing);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientHooks.invalidateCache(this, canvas, facing));
         this.pixelCountX = pixelCountX;
         this.pixelCountY = pixelCountY;
         this.scaleFactor = scaleFactor;
