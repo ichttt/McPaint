@@ -50,6 +50,7 @@ public class ItemBrush extends Item {
             return EnumActionResult.SUCCESS;
         }
 
+        System.out.println("REMOTE PRE: " + world.isRemote);
         //TODO check isFullBlock
         if (state.getBlockFaceShape(world, pos, facing) == BlockFaceShape.SOLID && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
                 state.isFullCube() == state.isBlockNormalCube() && state.getRenderType() == EnumBlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
@@ -58,6 +59,7 @@ public class ItemBrush extends Item {
                 if (state.getBlockFaceShape(world, pos, testFacing) != BlockFaceShape.SOLID)
                     disallowedFaces.add(testFacing);
             }
+            System.out.println("REMOTE POST: " + world.isRemote);
             if (state.getMaterial().isFlammable())
                 world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(state));
             else if (state.getMaterial().isToolNotRequired())

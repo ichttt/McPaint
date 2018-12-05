@@ -3,6 +3,8 @@ package ichttt.mods.mcpaint;
 import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
+import ichttt.mods.mcpaint.networking.MessageDrawAbort;
+import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
@@ -57,11 +59,15 @@ public class MCPaint {
 
     @SubscribeEvent
     public static void init(FMLInitializationEvent event) {
-        //TODO networking
-//        NETWORKING.registerMessage(MessagePaintData.ServerHandler.class, MessagePaintData.class, 1, Side.SERVER);
-//        NETWORKING.registerMessage(MessageDrawAbort.Handler.class, MessageDrawAbort.class, 2, Side.SERVER);
-//        NETWORKING.registerMessage(MessagePaintData.ClientHandler.class, MessagePaintData.class, 3, Side.CLIENT);
-//        NETWORKING.registerMessage(MessageClearSide.Handler.class, MessageClearSide.class, 4, Side.SERVER);
+        NETWORKING.registerMessage(1, MessagePaintData.class, MessagePaintData::encode, MessagePaintData::new, MessagePaintData.ServerHandler.INSTANCE::onMessage);
+        NETWORKING.registerMessage(2, MessageDrawAbort.class, MessageDrawAbort::encode, MessageDrawAbort::new, MessageDrawAbort.Handler::onMessage);
+        NETWORKING.registerMessage(3, MessagePaintData.ClientMessage.class, MessagePaintData.ClientMessage::encode, MessagePaintData.ClientMessage::new, (clientMessage, supplier) -> {
+            DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
+                throw new RuntimeException("MessagePaintData.ClientMessage cannot be run on server!");
+            });
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MessagePaintData.ClientHandler.INSTANCE.onMessage(clientMessage, supplier));
+        });
+        NETWORKING.registerMessage(4, MessageDrawAbort.class, MessageDrawAbort::encode, MessageDrawAbort::new, MessageDrawAbort.Handler::onMessage);
         CapabilityPaintable.register();
 //        if (MCPaintConfig.enableOneProbeCompat)
 //            FMLInterModComms.sendFunctionMessage("theoneprobe", "getTheOneProbe", "ichttt.mods.mcpaint.common.OneProbeCompat");

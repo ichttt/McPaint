@@ -18,10 +18,11 @@ import org.lwjgl.opengl.GL11;
 import java.util.Random;
 
 public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
+    private static final WorldVertexBufferUploader UPLOADER = new WorldVertexBufferUploader();
 
     @Override
     public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
-        if (/*destroyStage >= 0 && */MinecraftForgeClient.getRenderPass() == 0) {
+        /*if (destroyStage >= 0 && MinecraftForgeClient.getRenderPass() == 0)*/ {
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder builder = tessellator.getBuffer();
             //builder.noColor(); TODO uncomment when fast tesr
@@ -29,7 +30,27 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
             renderBlock(x, y, z, te, builder, destroyStage);
             Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             tessellator.draw();
-        } else { //TODO remove when fast tesr
+        }
+        //TODO remove when fast tesr. No render pass yet - always render
+        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
+        if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
+            int light = te.getWorld().getCombinedLight(te.getPos(), 0);
+            for (EnumFacing facing : EnumFacing.values()) {
+                if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
+            }
+        } else {
+            te.invalidateBuffers(); //We stay in the global cache for a little longer
+        }
+    }
+
+    //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
+//    @Override
+    public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
+        int renderPass = MinecraftForgeClient.getRenderPass();
+        if (renderPass == 0) {
+            renderBlock(x, y, z, te, buffer, -1);
+        }
+        else if (renderPass == 1) {
             double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
             if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
                 int light = te.getWorld().getCombinedLight(te.getPos(), 0);
@@ -41,26 +62,6 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
             }
         }
     }
-
-    //We say we are fast so we can you the buffer. But we also use the "slow" mode for our picture
-//    @Override TODO
-//    public void renderTileEntityFast(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float partial, BufferBuilder buffer) {
-//        int renderPass = MinecraftForgeClient.getRenderPass();
-//        if (renderPass == 0) {
-//            renderBlock(x, y, z, te, buffer, -1);
-//        }
-//        else if (renderPass == 1) {
-//            double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
-//            if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
-//                int light = te.getWorld().getCombinedLight(te.getPos(), 0);
-//                for (EnumFacing facing : EnumFacing.VALUES) {
-//                    if (te.hasPaintFor(facing)) renderPicture(x, y, z, te, facing, light, playerDistSq);
-//                }
-//            } else {
-//                te.invalidateBuffers(); //We stay in the global cache for a little longer
-//            }
-//        }
-//    }
 
     private static void renderPicture(double x, double y, double z, TileEntityCanvas te, EnumFacing facing, int light, double playerDistSq) {
         //Facing setup
@@ -159,8 +160,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
                 if (playerDistSq < (88D * 88D))
                     slow = true;
             } else {
-//                Tessellator.getInstance().vboUploader.draw(builder); TODO AT
-                new WorldVertexBufferUploader().draw(builder);
+                UPLOADER.draw(builder);
             }
         }
         if (slow) {

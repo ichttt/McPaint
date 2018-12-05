@@ -1,8 +1,12 @@
 package ichttt.mods.mcpaint.networking;
 
+import ichttt.mods.mcpaint.common.MCPaintUtil;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.util.function.Supplier;
 
 public class MessageClearSide {
     private BlockPos pos;
@@ -26,8 +30,8 @@ public class MessageClearSide {
     }
 
     public static class Handler {
-        public void onMessage(MessageClearSide message) {
-//            MessagePaintData.ServerHandler.setServerData(ctx, message.pos, message.facing, (byte) 0, null);
+        public void onMessage(MessageClearSide message, Supplier<NetworkEvent.Context> supplier) {
+            MessagePaintData.ServerHandler.setServerData(MCPaintUtil.getNetHandler(supplier.get()), message.pos, message.facing, (byte) 0, null);
         }
     }
 }

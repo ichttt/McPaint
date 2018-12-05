@@ -14,11 +14,14 @@ import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.nbt.NBTUtil;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -83,14 +86,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     //TODO
 //    @Override
-//    public boolean hasFastRenderer() {
-//        return true;
-//    }
-//
-//    @Override
-//    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
-//        this.read(tag);
-//    }
+    public boolean hasFastRenderer() {
+        return true;
+    }
+
+    @Override
+    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
+        this.read(tag);
+    }
 
     @Nonnull
     @Override
@@ -104,19 +107,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
     }
 
-    //TODO
-//    @Nullable
-//    @Override
-//    public <T> T getCapability(@Nonnull Capability<T> capability, @Nullable EnumFacing facing) {
-//        if (capability == CapabilityPaintable.PAINTABLE)
-//            return CapabilityPaintable.PAINTABLE.cast(getPaintFor(facing));
-//        return super.getCapability(capability, facing);
-//    }
-//
-//    @Override
-//    public boolean hasCapability(@Nonnull Capability<?> capability, @Nullable EnumFacing facing) {
-//        return capability == CapabilityPaintable.PAINTABLE || super.hasCapability(capability, facing);
-//    }
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> OptionalCapabilityInstance<T> getCapability(@Nonnull Capability<T> cap, EnumFacing facing) {
+        if (cap == CapabilityPaintable.PAINTABLE)
+            return OptionalCapabilityInstance.of(() -> (T) getPaintFor(facing));
+        return super.getCapability(cap, facing);
+    }
 
     @Override
     public boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
@@ -187,11 +185,11 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return MCPaintConfig.CLIENT.maxRenderDistance * MCPaintConfig.CLIENT.maxRenderDistance;
     }
 
-//    @Override TODO
-//    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
-//        this.read(pkt.getNbtCompound());
-//        invalidateBuffers();
-//    }
+    @Override
+    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+        this.read(pkt.getNbtCompound());
+        invalidateBuffers();
+    }
 
     public void invalidateBuffer(EnumFacing facing) {
         Object obj = bufferMap.remove(facing);

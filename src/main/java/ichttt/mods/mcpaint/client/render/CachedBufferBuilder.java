@@ -33,11 +33,11 @@ public class CachedBufferBuilder extends BufferBuilder {
     public void finishBuilding() {
         building = false;
 //        this.byteBuffer = this.byteBuffer.compact(); TODO AT
-//        this.size = this.byteBuffer.position();
+        this.size = this.getByteBuffer().position();
     }
 
     public int getSize() {
-        if (size == -1) throw new IllegalStateException("In building pass!");
+        if (building) throw new IllegalStateException("In building pass!");
         return size;
     }
 }

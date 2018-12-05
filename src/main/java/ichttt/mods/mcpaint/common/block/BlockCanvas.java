@@ -30,10 +30,10 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
     public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
     public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
+    //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
         super(Block.Builder.create(material).hardnessAndResistance(1F, 4F));
-//        setCreativeTab(CreativeTabs.DECORATIONS); //TODO
-//        useNeighborBrightness = true;
+//        useNeighborBrightness = true; TODO
         setRegistryName(regNam);
         setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
     }
@@ -109,14 +109,15 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
         return true;
     }
 
-//    @Override TODO
-//    public boolean canHarvestBlock(IBlockAccess world, @Nonnull BlockPos pos, @Nonnull EntityPlayer player) {
-//        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-//        if (canvas != null && canvas.getContainedState() != null) {
-//            return canvas.getContainedState().getBlock().canHarvestBlock(world, pos, player);
-//        }
-//        return super.canHarvestBlock(world, pos, player);
-//    }
+    @Override
+    public boolean canHarvestBlock(IBlockState state, IBlockReader world, BlockPos pos, EntityPlayer player) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            state = canvas.getContainedState();
+            return state.getBlock().canHarvestBlock(state, world, pos, player);
+        }
+        return super.canHarvestBlock(state, world, pos, player);
+    }
 
     @Override
     public VoxelShape getCollisionShape(IBlockState state, IBlockReader world, BlockPos pos) {
@@ -163,24 +164,6 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
         }
         return super.getMapColor(state, world, pos);
     }
-
-
-//    @SuppressWarnings("deprecation")
-//    @Nonnull TODO
-//    @Override
-//    public IBlockState getActualState(@Nonnull IBlockState state, IBlockReader world, BlockPos pos) {
-//        //HARD AND REALLY DIRTY HACK: BE WARNED IF YOU CONTINUE READING
-//        //See if we are called from ForgeHooks#canHarvestBlock
-//        //if yes, return the contained state
-//        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-//        if (canvas != null && canvas.getContainedState() != null) {
-//            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-//            if (stackTrace.length > 2 && stackTrace[2].toString().contains("net.minecraftforge.common.ForgeHooks.canHarvestBlock")) {
-//                return canvas.getContainedState();
-//            }
-//        }
-//        return super.getActualState(state, world, pos);
-//    }
 
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {

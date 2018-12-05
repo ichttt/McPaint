@@ -7,11 +7,17 @@ import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.network.INetHandler;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.network.NetworkEvent;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class MCPaintUtil {
     public static boolean isPosInvalid(NetHandlerPlayServer handler, BlockPos pos) {
@@ -58,6 +64,33 @@ public class MCPaintUtil {
             MessagePaintData.createAndSend(te.getPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
             IPaintable paintable = canvas.getPaintFor(facing);
             paintable.setData(scaleFactor, picture, canvas, facing);
+        }
+    }
+
+
+    private static final Method getNetworkManager;
+
+    static {
+        Method m;
+        ReflectiveOperationException ex = null;
+        try {
+            m = NetworkEvent.Context.class.getDeclaredMethod("getNetworkManager");
+            m.setAccessible(true);
+        } catch (ReflectiveOperationException e) {
+            m = null;
+            ex = e;
+        }
+        getNetworkManager = m;
+        if (ex != null)
+            throw new RuntimeException(ex);
+    }
+
+    public static<T extends INetHandler> T getNetHandler(NetworkEvent.Context context) {
+        try {
+            //noinspection unchecked
+            return (T) (((NetworkManager) getNetworkManager.invoke(context)).getNetHandler());
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new RuntimeException(e);
         }
     }
 }

@@ -42,13 +42,13 @@ minecraft {
     mappings channel: 'snapshot', version: '20180921-1.13'
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 
-    accessTransformer = file('test_at.cfg')
+    accessTransformer = file('mcpaint_at.cfg')
 }
 
 dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied. 
-    minecraft 'net.minecraftforge:forge:1.13-15.24.0.0-utilPatches'
+    minecraft 'net.minecraftforge.test:forge:1.13-24.0.24-1.13-pre'
 
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
