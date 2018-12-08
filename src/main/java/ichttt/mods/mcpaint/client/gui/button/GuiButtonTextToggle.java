@@ -1,4 +1,4 @@
-package ichttt.mods.mcpaint.client.gui;
+package ichttt.mods.mcpaint.client.gui.button;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
@@ -18,8 +18,6 @@ public class GuiButtonTextToggle extends GuiButton {
         this.color = Color.GREEN.getRGB();
         this.type = type;
     }
-
-
 
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {

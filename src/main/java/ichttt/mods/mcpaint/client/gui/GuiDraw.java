@@ -2,8 +2,9 @@ package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.gui.button.GuiButtonTextToggle;
+import ichttt.mods.mcpaint.client.gui.button.GuiColorButton;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
-import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.client.render.PictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
@@ -37,8 +38,8 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
 public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
@@ -114,7 +115,6 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
                     mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), true);
                     mc.player.sendStatusMessage(new TextComponentString("Failed to save file!"), false);
                 }
-                super.onClick(mouseX, mouseY);
             }
         };
         GuiButton rotateRight = new GuiButton(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright")) {
@@ -128,7 +128,6 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
                     }
                 }
                 newPictureState(new PictureState(newData, GuiDraw.this.currentState.scaleFactor));
-                super.onClick(mouseX, mouseY);
             }
         };
         GuiButton rotateLeft = new GuiButton(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft")) {
@@ -142,27 +141,44 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
                     }
                 }
                 newPictureState(new PictureState(newData, GuiDraw.this.currentState.scaleFactor));
-                super.onClick(mouseX, mouseY);
             }
         };
         this.redo = new GuiButton(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo")) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 redo();
-                super.onClick(mouseX, mouseY);
             }
         };
         this.undo = new GuiButton(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo")) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 undo();
-                super.onClick(mouseX, mouseY);
             }
         };
-        GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR);
-        GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER);
-        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL);
-        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL);
+        GuiButton pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiDraw.this.handleToolButton(this);
+            }
+        };
+        GuiButton erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiDraw.this.handleToolButton(this);
+            }
+        };
+        GuiButton fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiDraw.this.handleToolButton(this);
+            }
+        };
+        GuiButton pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL) {
+            @Override
+            public void onClick(double mouseX, double mouseY) {
+                GuiDraw.this.handleToolButton(this);
+            }
+        };
         this.moreSize = new GuiButton(-3, this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">") {
             @Override
             public void onClick(double mouseX, double mouseY) {
@@ -190,34 +206,24 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
             }
         };
 
-        GuiHollowButton black = new GuiHollowButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB());
-        GuiHollowButton white = new GuiHollowButton(1, this.guiLeft + 137 + 18, this.guiTop + 9, 16, 16, Color.BLUE.getRGB());
-        GuiHollowButton gray = new GuiHollowButton(2, this.guiLeft + 137, this.guiTop + 9 + 18, 16, 16, Color.BLUE.getRGB());
-        GuiHollowButton red = new GuiHollowButton(3, this.guiLeft + 137 + 18, this.guiTop + 9 + 18, 16, 16, Color.BLUE.getRGB());
-        GuiHollowButton orange = new GuiHollowButton(4, this.guiLeft + 137, this.guiTop + 9 + 36, 16, 16, Color.BLUE.getRGB());
-        GuiHollowButton yellow = new GuiHollowButton(5, this.guiLeft + 137 + 18, this.guiTop + 9 + 36, 16, 16, Color.BLUE.getRGB());
+        GuiColorButton black = new GuiColorButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
+        GuiColorButton white = new GuiColorButton(1, this.guiLeft + 137 + 18, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
+        GuiColorButton gray = new GuiColorButton(2, this.guiLeft + 137, this.guiTop + 9 + 18, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
+        GuiColorButton red = new GuiColorButton(3, this.guiLeft + 137 + 18, this.guiTop + 9 + 18, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
+        GuiColorButton orange = new GuiColorButton(4, this.guiLeft + 137, this.guiTop + 9 + 36, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
+        GuiColorButton yellow = new GuiColorButton(5, this.guiLeft + 137 + 18, this.guiTop + 9 + 36, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
 
-        GuiHollowButton lime = new GuiHollowButton(6, this.guiLeft + 137, this.guiTop + 9 + 54, 16, 16, Color.BLACK.getRGB());
-        GuiHollowButton green = new GuiHollowButton(7, this.guiLeft + 137 + 18, this.guiTop + 9 + 54, 16, 16, Color.BLACK.getRGB());
-        GuiHollowButton lightBlue = new GuiHollowButton(8, this.guiLeft + 137, this.guiTop + 9 + 72, 16, 16, Color.BLACK.getRGB());
-        GuiHollowButton darkBlue = new GuiHollowButton(9, this.guiLeft + 137 + 18, this.guiTop + 9 + 72, 16, 16, Color.BLACK.getRGB());
-        GuiHollowButton purple = new GuiHollowButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
-        GuiHollowButton pink = new GuiHollowButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
+        GuiColorButton lime = new GuiColorButton(6, this.guiLeft + 137, this.guiTop + 9 + 54, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
+        GuiColorButton green = new GuiColorButton(7, this.guiLeft + 137 + 18, this.guiTop + 9 + 54, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
+        GuiColorButton lightBlue = new GuiColorButton(8, this.guiLeft + 137, this.guiTop + 9 + 72, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
+        GuiColorButton darkBlue = new GuiColorButton(9, this.guiLeft + 137 + 18, this.guiTop + 9 + 72, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
+        GuiColorButton purple = new GuiColorButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
+        GuiColorButton pink = new GuiColorButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
 
-        this.redSlider = new GuiSlider(100, this.guiLeft + xSize + 3, this.guiTop + 4, I18n.format("mcpaint.gui.red"), 0, 255, 0, this) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                handleButton(this);
-                super.onClick(mouseX, mouseY);
-            }
-        };
-        this.redSlider.width = 74;
-        this.greenSlider = new GuiSlider(101, this.guiLeft + xSize + 3, this.guiTop + 26, I18n.format("mcpaint.gui.green"), 0, 255, 0, this);
-        this.greenSlider.width = 74;
-        this.blueSlider = new GuiSlider(102, this.guiLeft + xSize + 3, this.guiTop + 48, I18n.format("mcpaint.gui.blue"), 0, 255, 0, this);
-        this.blueSlider.width = 74;
-        this.alphaSlider = new GuiSlider(103, this.guiLeft + xSize + 3, this.guiTop + 70, I18n.format("mcpaint.gui.alpha"), 0, 255, 0, this);
-        this.alphaSlider.width = 74;
+        this.redSlider = new GuiSlider(100, this.guiLeft + xSize + 3, this.guiTop + 4, 74, 20, I18n.format("mcpaint.gui.red"), "", 0, 255, 0, false, true, this);
+        this.greenSlider = new GuiSlider(101, this.guiLeft + xSize + 3, this.guiTop + 26, 74, 20, I18n.format("mcpaint.gui.green"), "", 0, 255, 0, false, true, this);
+        this.blueSlider = new GuiSlider(102, this.guiLeft + xSize + 3, this.guiTop + 48, 74, 20, I18n.format("mcpaint.gui.blue"), "", 0, 255, 0, false, true, this);
+        this.alphaSlider = new GuiSlider(103, this.guiLeft + xSize + 3, this.guiTop + 70, 74, 20, I18n.format("mcpaint.gui.alpha"), "", 0, 255, 0, false, true, this);
 
         addButton(saveImage);
         addButton(rotateRight);
@@ -303,7 +309,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
         boolean drawSelect = isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
-        int toDraw[][] = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
+        int[][] toDraw = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.currentState.scaleFactor;
             int pixelPosY = offsetMouseY / this.currentState.scaleFactor;
@@ -361,28 +367,28 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         return super.keyPressed(keyCode, i1, i2);
     }
 
-    protected void handleButton(GuiButton button) {
-        if (button.id >= 0 && button.id < 100) {
-            this.color = EnumPaintColor.VALUES[button.id].color;
-            this.redSlider.setValue(this.color.getRed());
-            this.blueSlider.setValue(this.color.getBlue());
-            this.greenSlider.setValue(this.color.getGreen());
-            this.alphaSlider.setValue(this.color.getAlpha());
-        } else if (button.id < 100){
-            for (GuiButtonTextToggle toggleButton : this.textToggleList) {
-                boolean toggled = toggleButton.id == button.id;
-                toggleButton.toggled = toggled;
-                if (toggled) {
-                    this.activeDrawType = toggleButton.type;
-                    if (this.activeDrawType.hasSizeRegulator && !this.hasSizeWindow) {
-                        addButton(moreSize);
-                        addButton(lessSize);
-                    } else if (!this.activeDrawType.hasSizeRegulator && this.hasSizeWindow) {
-                        this.buttons.remove(this.moreSize);
-                        this.buttons.remove(this.lessSize);
-                    }
-                    this.hasSizeWindow = this.activeDrawType.hasSizeRegulator;
+    private void handleColorChange(Color color) {
+        this.color = color;
+        this.redSlider.setValue(this.color.getRed());
+        this.blueSlider.setValue(this.color.getBlue());
+        this.greenSlider.setValue(this.color.getGreen());
+        this.alphaSlider.setValue(this.color.getAlpha());
+    }
+
+    protected void handleToolButton(GuiButton button) {
+        for (GuiButtonTextToggle toggleButton : this.textToggleList) {
+            boolean toggled = toggleButton.id == button.id;
+            toggleButton.toggled = toggled;
+            if (toggled) {
+                this.activeDrawType = toggleButton.type;
+                if (this.activeDrawType.hasSizeRegulator && !this.hasSizeWindow) {
+                    addButton(moreSize);
+                    addButton(lessSize);
+                } else if (!this.activeDrawType.hasSizeRegulator && this.hasSizeWindow) {
+                    this.buttons.remove(this.moreSize);
+                    this.buttons.remove(this.lessSize);
                 }
+                this.hasSizeWindow = this.activeDrawType.hasSizeRegulator;
             }
         }
     }
@@ -468,7 +474,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         }
     }
 
-    private void saveImage(boolean background) throws IOException {
+    private void saveImage(boolean background) throws IOException { //TODO 1.13 marks itself as headless... this throws HeadlessExceptions
         BufferedImage paint = new BufferedImage(128 / this.currentState.scaleFactor, 128 / this.currentState.scaleFactor, BufferedImage.TYPE_INT_ARGB);
         for (int x = 0; x < this.currentState.picture.length; x++) {
             for (int y = 0; y < this.currentState.picture[0].length; y++) {
@@ -541,12 +547,6 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
             MCPaint.LOGGER.error("Could not revert look and feel!", e);
         }
     }
-
-//    @Nonnull
-//    @Override TODO
-//    public String getText(int id,@Nonnull String name, float value) {
-//        return name + ":" + Math.round(value);
-//    }
 
     @Override
     public void onChangeSliderValue(GuiSlider slider) {

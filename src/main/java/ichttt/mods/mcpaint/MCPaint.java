@@ -10,6 +10,7 @@ import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.DistExecutor;
@@ -20,6 +21,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import net.minecraftforge.fml.javafmlmod.FMLModLoadingContext;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.registries.ForgeRegistries;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -41,6 +43,10 @@ public class MCPaint {
         DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MinecraftForge.EVENT_BUS.register(ClientEventHandler.class));
         DeferredWorkQueue.enqueueWork(() -> {
             DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCanvas.class, new TESRCanvas()));
+            //TODO remove once registry events are fired
+            EventHandler.registerBlocks(new RegistryEvent.Register<>(null, ForgeRegistries.BLOCKS));
+            EventHandler.registerItems(new RegistryEvent.Register<>(null, ForgeRegistries.ITEMS));
+            EventHandler.registerTileEntity(new RegistryEvent.Register<>(null, ForgeRegistries.TILE_ENTITIES));
             return null;
         });
     }

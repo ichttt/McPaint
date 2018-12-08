@@ -50,21 +50,21 @@ public class EventHandler {
         CANVAS_TE = (TileEntityType<TileEntityCanvas>) ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(MCPaint.MODID, "canvas_te"));
     }
 
-    @SubscribeEvent
+//    @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         IForgeRegistry<Item> registry = event.getRegistry();
         registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
         registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
     }
 
-    @SubscribeEvent
+//    @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
         event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
         event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
     }
 
-    @SubscribeEvent
+//    @SubscribeEvent
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
         event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
     }
@@ -87,17 +87,9 @@ public class EventHandler {
     public static void onRightClick(PlayerInteractEvent.RightClickItem event) {
         ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
         if (event.getEntityPlayer().isSneaking() && stack.getItem() == EventHandler.STAMP) {
-            stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(RuntimeException::new).clear(null, null);
+            stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!")).clear(null, null);
             event.setCanceled(true);
             event.setCancellationResult(EnumActionResult.SUCCESS);
-        }
-    }
-
-    @SubscribeEvent
-    public static void missingMapping(RegistryEvent.MissingMappings<Block> event) {
-        for (RegistryEvent.MissingMappings.Mapping<Block> entry : event.getAllMappings()) {
-            if (entry.key.equals(new ResourceLocation(MCPaint.MODID, "canvas")))
-                entry.remap(CANVAS_GROUND); //make legacy non-burning
         }
     }
 }

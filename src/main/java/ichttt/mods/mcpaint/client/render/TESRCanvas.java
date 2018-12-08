@@ -23,6 +23,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     @Override
     public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         /*if (destroyStage >= 0 && MinecraftForgeClient.getRenderPass() == 0)*/ {
+            GlStateManager.pushMatrix();
             Tessellator tessellator = Tessellator.getInstance();
             BufferBuilder builder = tessellator.getBuffer();
             //builder.noColor(); TODO uncomment when fast tesr
@@ -30,6 +31,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
             renderBlock(x, y, z, te, builder, destroyStage);
             Minecraft.getInstance().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             tessellator.draw();
+            GlStateManager.popMatrix();
         }
         //TODO remove when fast tesr. No render pass yet - always render
         double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
