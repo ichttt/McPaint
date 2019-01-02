@@ -11,6 +11,8 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import java.util.Objects;
+
 public class ClientEventHandler {
 
     @SubscribeEvent
@@ -18,7 +20,7 @@ public class ClientEventHandler {
 //        ModelLoader.setCustomModelResourceLocation(EventHandler.BRUSH, 0, new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, "brush"), "inventory"));
 //        ModelLoader.setCustomModelResourceLocation(EventHandler.STAMP, 0, new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, "stamp"), "inventory"));
 //        EventHandler.STAMP.setTileEntityItemStackRenderer(TEISRStamp.INSTANCE);
-        ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")).addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
+        Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
     }
 
     @SubscribeEvent

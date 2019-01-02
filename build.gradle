@@ -1,7 +1,7 @@
 buildscript {
     repositories {
         mavenLocal()
-        maven { url = 'http://files.minecraftforge.net/maven' }
+        maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
         mavenCentral()
     }
@@ -18,6 +18,7 @@ buildscript {
 }
 apply plugin: 'net.minecraftforge.gradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
+apply plugin: 'eclipse'
 
 repositories {
     mavenLocal()
@@ -42,13 +43,35 @@ minecraft {
     mappings channel: 'snapshot', version: '20180921-1.13'
     // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
 
+    //accessTransformer = file('my_at.cfg')
+
+    // default run configurations.
+    // these can be tweaked, removed, or duplicated as needed.
+    runConfig {
+        name= "Minecraft Client"
+        main= "net.minecraftforge.userdev.UserdevLauncher"
+        ideaModuleName = "${project.name}_main"
+        workingDirectory = project.file("run").canonicalPath
+        environment "target", "fmldevclient"
+        environment "assetDirectory", downloadAssets.output.absolutePath
+    }
+
+    runConfig {
+        name= "Minecraft Server"
+        main= "net.minecraftforge.userdev.UserdevLauncher"
+        ideaModuleName = "${project.name}_main"
+        workingDirectory = project.file("run").canonicalPath
+        environment "target", "fmldevserver"
+        environment "assetDirectory", downloadAssets.output.absolutePath
+    }
+
     accessTransformer = file('mcpaint_at.cfg')
 }
 
 dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied. 
-    minecraft 'net.minecraftforge.test:forge:1.13-24.0.24-1.13-pre'
+    minecraft 'net.minecraftforge.test:forge:1.13-24.0.35-1.13-pre'
 
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
@@ -73,6 +96,12 @@ dependencies {
 
 }
 
+project.afterEvaluate {
+    reobfJar {
+        args = ["--in-jar", "{input}", "--out-jar", "{output}", "--srg-in", "{mappings}", "--live"]
+    }
+}
+
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property 'version', project.version
@@ -80,7 +109,7 @@ processResources {
 
     // replace stuff in mcmod.info, nothing else
     from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+        include 'META_INF/mods.toml'
 
         // replace version and mcversion
         expand 'version':project.version, 'mcversion': '1.13'
@@ -88,6 +117,6 @@ processResources {
 
     // copy everything else except the mcmod.info
     from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+        exclude 'META_INF/mods.toml'
     }
 }

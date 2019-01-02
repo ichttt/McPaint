@@ -47,30 +47,32 @@ public class EventHandler {
         CANVAS_WOOD = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_wood"));
         CANVAS_ROCK = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_rock"));
         CANVAS_GROUND = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_ground"));
+        //noinspection unchecked
         CANVAS_TE = (TileEntityType<TileEntityCanvas>) ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(MCPaint.MODID, "canvas_te"));
     }
 
-//    @SubscribeEvent
+    @SubscribeEvent
     public static void registerItems(RegistryEvent.Register<Item> event) {
         IForgeRegistry<Item> registry = event.getRegistry();
         registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
         registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
     }
 
-//    @SubscribeEvent
+    @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
         event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
         event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
     }
 
-//    @SubscribeEvent
+    @SubscribeEvent
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
         event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
     }
 
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<ItemStack> event) {
+        update();
         if (event.getObject().getItem() == STAMP)
             event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
     }
