@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
+import ichttt.mods.mcpaint.client.render.BufferManager;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
@@ -141,10 +142,10 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @SideOnly(Side.CLIENT)
-    public CachedBufferBuilder getBuffer(EnumFacing facing) {
+    public BufferManager getBuffer(EnumFacing facing) {
         Object obj = bufferMap.get(facing);
-        if (obj instanceof CachedBufferBuilder)
-            return (CachedBufferBuilder) obj;
+        if (obj instanceof BufferManager)
+            return (BufferManager) obj;
         else if (obj instanceof IOptimisationCallback) { //already waiting
             return null;
         } else if (obj != null) {
@@ -153,7 +154,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         } else {
             SimpleCallback callback = new SimpleCallback() {
                 @Override
-                public void provideFinishedBuffer(CachedBufferBuilder builder) {
+                public void provideFinishedBuffer(BufferManager builder) {
                     if (this.isInvalid()) return;
                     RenderCache.cache(getPaintFor(facing), builder);
                     bufferMap.put(facing, builder);
@@ -171,8 +172,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             Object obj = entry.getValue();
             if (obj instanceof SimpleCallback) {
                 ((SimpleCallback) obj).invalidate();
-            } else if (obj instanceof CachedBufferBuilder) {
-                RenderCache.cache(getPaintFor(entry.getKey()), (CachedBufferBuilder) obj);
+            } else if (obj instanceof BufferManager) {
+                RenderCache.cache(getPaintFor(entry.getKey()), (BufferManager) obj);
             }
         }
         bufferMap.clear();

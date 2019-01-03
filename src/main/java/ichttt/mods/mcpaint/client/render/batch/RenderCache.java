@@ -4,7 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
+import ichttt.mods.mcpaint.client.render.BufferManager;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 import javax.annotation.Nonnull;
@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RenderCache {
-    private static final Cache<IPaintable, CachedBufferBuilder> PAINT_CACHE = CacheBuilder.newBuilder()
+    private static final Cache<IPaintable, BufferManager> PAINT_CACHE = CacheBuilder.newBuilder()
             .concurrencyLevel(2)
             .expireAfterAccess(30L, TimeUnit.SECONDS)
             .build();
@@ -34,7 +34,7 @@ public class RenderCache {
 
     public static void getOrRequest(IPaintable paintable, IOptimisationCallback callback) {
         if (!MCPaintConfig.CLIENT.optimizePictures) return;
-        CachedBufferBuilder builder = getIfPresent(paintable);
+        BufferManager builder = getIfPresent(paintable);
         if (builder != null) {
             callback.provideFinishedBuffer(builder);
             return;
@@ -42,11 +42,11 @@ public class RenderCache {
         POOL_EXECUTOR.execute(new PictureOptimizationJob(paintable, callback));
     }
 
-    public static CachedBufferBuilder getIfPresent(IPaintable paintable) {
+    public static BufferManager getIfPresent(IPaintable paintable) {
         return PAINT_CACHE.getIfPresent(paintable);
     }
 
-    public static void cache(IPaintable paintable, CachedBufferBuilder obj) {
+    public static void cache(IPaintable paintable, BufferManager obj) {
         if (MCPaintConfig.CLIENT.optimizePictures)
             PAINT_CACHE.put(paintable, obj);
     }

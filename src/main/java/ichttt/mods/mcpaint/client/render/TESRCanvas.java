@@ -123,6 +123,11 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
             translationYOffset *= 2D;
             translationZOffset *= 2D;
         }
+        if (playerDistSq > 9216D) { //96
+            translationXOffset *= 2D;
+            translationYOffset *= 2D;
+            translationZOffset *= 2D;
+        }
 
         //GL setup
         PictureRenderer.setWorldGLState();
@@ -142,12 +147,12 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         //Render picture
         boolean slow = !MCPaintConfig.CLIENT.optimizePictures;
         if (!slow) {
-            BufferBuilder builder = te.getBuffer(facing);
+            BufferManager builder = te.getBuffer(facing);
             if (builder == null) {
-                if (playerDistSq < (88D * 88D))
+                if (playerDistSq < ((MCPaintConfig.CLIENT.maxPaintRenderDistance - 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance - 8)))
                     slow = true;
             } else {
-                Tessellator.getInstance().vboUploader.draw(builder);
+                Tessellator.getInstance().vboUploader.draw(builder.get(getRes(playerDistSq)));
             }
         }
         if (slow) {
@@ -161,6 +166,18 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
         PictureRenderer.resetWorldGLState();
 
         //GL cleanup
+    }
+
+    public static int getRes(double playerDistSq) {
+        if (playerDistSq < 32 * 32)
+            return 128;
+        if (playerDistSq < 64 * 64)
+            return 64;
+        if (playerDistSq < 96 * 96)
+            return 32;
+        if (playerDistSq < 128 * 128)
+            return 16;
+        return 8;
     }
 
     private void renderBlock(double x, double y, double z, TileEntityCanvas te, BufferBuilder builder, int destroyStage) {

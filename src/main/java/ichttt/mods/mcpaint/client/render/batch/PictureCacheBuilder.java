@@ -11,16 +11,20 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import org.apache.commons.lang3.tuple.Pair;
 import org.lwjgl.opengl.GL11;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class PictureCacheBuilder {
 
-    public static void batch(int[][] picture, byte scaleFactor, IOptimisationCallback callback) {
+    public static Pair<CachedBufferBuilder, Integer> batch(int[][] picture, byte scaleFactor, IOptimisationCallback callback, Function<Integer, Boolean> shouldDiscard, int maxTotalVar, int maxSingleVar) {
         if (picture == null) throw new IllegalArgumentException("No paint data");
+        if (callback.isInvalid()) return null;
         Stopwatch stopwatch = Stopwatch.createStarted();
         int pixelsToDraw = 0;
 
@@ -36,9 +40,9 @@ public class PictureCacheBuilder {
                 colorMap.computeIfAbsent(color, value -> new ArrayList<>()).add(new PixelInfo(x, y, color));
             }
         }
-        if (callback.isInvalid()) return;
+        if (callback.isInvalid()) return null;
 
-        List<List<PixelInfo>> finalDrawLists = new ArrayList<>();
+        List<PixelRect> allRects = new ArrayList<>();
         for (Int2ObjectMap.Entry<List<PixelInfo>> entry : colorMap.int2ObjectEntrySet()) {
             List<PixelInfo> pixels = entry.getValue();
             List<PixelLine> lines = new ArrayList<>();
@@ -67,7 +71,7 @@ public class PictureCacheBuilder {
                 }
             }
 
-            if (callback.isInvalid()) return;
+            if (callback.isInvalid()) return null;
             //Now sort into rects
             List<PixelRect> rects = new ArrayList<>();
             for (PixelLine line : lines) {
@@ -82,25 +86,26 @@ public class PictureCacheBuilder {
                     rects.add(new PixelRect(line));
                 }
             }
-            for (PixelRect rect : rects) {
-                List<PixelInfo> mergedInfos = rect.getMergedLines();
-                finalDrawLists.add(mergedInfos);
-            }
+            allRects.addAll(rects);
         }
-        if (callback.isInvalid()) return;
+        if (callback.isInvalid()) return null;
 
         //If this is done, we can finally fill the buffer
-        int pixelsInFinalList = 0;
-        for (List<PixelInfo> infos : finalDrawLists) {
-            pixelsInFinalList += infos.size();
+        int allPixels = 0;
+        for (PixelRect rect : allRects) {
+            for (PixelLine line : rect)
+                allPixels += line.size();
         }
-        if (pixelsToDraw  != pixelsInFinalList) {
-            MCPaint.LOGGER.warn("LOST/DUPLICATE INFORMATION!!!!! {} pixels in array, {} in final list", pixelsToDraw, pixelsInFinalList);
+        if (pixelsToDraw  != allPixels) {
+            MCPaint.LOGGER.warn("LOST/DUPLICATE INFORMATION!!!!! {} pixels in array, {} in final list", pixelsToDraw, allPixels);
             callback.optimizationFailed();
-            return;
+            return null;
         }
         stopwatch.stop();
-        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, finalDrawLists.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        allRects = LossyCompression.colorCompress(maxTotalVar, maxSingleVar, allRects);
+        if (shouldDiscard.apply(allRects.size())) return null;
+        List<List<PixelInfo>> finalDrawLists = allRects.stream().map(PixelRect::getMergedLines).collect(Collectors.toList());
         stopwatch.reset();
         stopwatch.start();
         //Start filling a buffer
@@ -111,9 +116,9 @@ public class PictureCacheBuilder {
             int top = infos.get(0).y;
             int right = infos.get(infos.size() - 1).x;
             int bottom = infos.get(infos.size() - 1).y;
-            int color = infos.get(0).color;
+            int color = infos.get(0).drawColor;
             for (PixelInfo info : infos) {
-                //validate
+                //find all corners
                 left = Math.min(left, info.x);
                 right = Math.max(right, info.x);
                 top = Math.min(top, info.y);
@@ -129,7 +134,7 @@ public class PictureCacheBuilder {
         cachedBufferBuilder.finishBuilding();
         stopwatch.stop();
         MCPaint.LOGGER.debug("Build buffer with {} bytes in {} ms", cachedBufferBuilder.getSize(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
-        callback.provideFinishedBuffer(cachedBufferBuilder);
+        return Pair.of(cachedBufferBuilder, allRects.size());
     }
 
     public static CachedBufferBuilder buildSimple(IPaintable paint) {

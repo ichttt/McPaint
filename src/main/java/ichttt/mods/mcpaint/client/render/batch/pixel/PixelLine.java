@@ -42,4 +42,8 @@ public class PixelLine implements Iterable<PixelInfo> {
             add(info);
         }
     }
+
+    public int size() {
+        return this.pixelInfos.size();
+    }
 }
