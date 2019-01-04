@@ -60,6 +60,7 @@ public class BlockCanvas extends Block {
         return EnumBlockRenderType.MODEL;
     }
 
+    @Nonnull
     @Override
     public BlockRenderLayer getRenderLayer() {
         return BlockRenderLayer.CUTOUT_MIPPED;
@@ -149,6 +150,7 @@ public class BlockCanvas extends Block {
         return super.getBoundingBox(state, source, pos);
     }
 
+    @Nonnull
     @SuppressWarnings("deprecation")
     @Override
     public MapColor getMapColor(IBlockState state, IBlockAccess world, BlockPos pos) {

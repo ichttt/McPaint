@@ -225,7 +225,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;
         boolean drawSelect = isInWindow(offsetMouseX, offsetMouseY) && this.activeDrawType != EnumDrawType.PICK_COLOR;
-        int toDraw[][] = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
+        int[][] toDraw = this.paintingState == null ? this.currentState.picture : this.paintingState.picture;
         if (drawSelect) {
             int pixelPosX = offsetMouseX / this.currentState.scaleFactor;
             int pixelPosY = offsetMouseY / this.currentState.scaleFactor;

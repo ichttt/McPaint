@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.render.batch.pixel;
 
+import javax.annotation.Nonnull;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ public class PixelRect implements Iterable<PixelLine> {
         return list;
     }
 
+    @Nonnull
     @Override
     public Iterator<PixelLine> iterator() {
         return this.lines.iterator();

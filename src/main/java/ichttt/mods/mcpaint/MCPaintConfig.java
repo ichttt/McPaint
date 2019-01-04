@@ -7,6 +7,7 @@ public class MCPaintConfig {
     @Config.Comment("Client-Only options")
     public static final Client CLIENT = new Client();
 
+    @SuppressWarnings("CanBeFinal")
     public static class Client {
 
         @Config.Comment("True if stamps should set the picture directly instead of opening the GUI")
