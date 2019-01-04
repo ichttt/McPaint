@@ -53,17 +53,16 @@ public class BlockCanvas extends Block {
         return new TileEntityCanvas();
     }
 
-    @Nonnull
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
-    }
-
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+        return EnumBlockRenderType.MODEL;
+    }
+
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     //Delegating methods
@@ -106,12 +105,6 @@ public class BlockCanvas extends Block {
             return;
         }
         super.harvestBlock(world, player, pos, state, te, stack);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean hasCustomBreakingProgress(IBlockState state) {
-        return true;
     }
 
     @Override
@@ -171,15 +164,10 @@ public class BlockCanvas extends Block {
     @Nonnull
     @Override
     public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
-        //HARD AND REALLY DIRTY HACK: BE WARNED IF YOU CONTINUE READING
-        //See if we are called from ForgeHooks#canHarvestBlock
-        //if yes, return the contained state
+        //Return the contained state, needed for rendering
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-            if (stackTrace.length > 2 && stackTrace[2].toString().contains("net.minecraftforge.common.ForgeHooks.canHarvestBlock")) {
-                return canvas.getContainedState();
-            }
+            return canvas.getContainedState();
         }
         return super.getActualState(state, world, pos);
     }

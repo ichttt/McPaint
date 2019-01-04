@@ -15,16 +15,16 @@ public class MCPaintConfig {
         @Config.Comment("True to allow MCPaint to optimize picture draw calls in the background to improve performance in the long run")
         public boolean optimizePictures = true;
 
-        @Config.Comment("Defines how far away the underlying block should be rendered at max")
-        @Config.RangeInt(min = 64, max = 512)
-        public int maxRenderDistance = 160;
-
         @Config.Comment("Defines how far away the paint on the block should be rendered at max")
         @Config.RangeInt(min = 64, max = 256)
         public int maxPaintRenderDistance = 128;
 
         @Config.Comment("If enabled, mipmaps will be used for far away blocks. Can improve speed and image stability, but also could make images more blurry on farther distance")
         public boolean enableMipMaps = false;
+
+        @Config.Comment("")
+        @Config.RangeInt(min = 180, max = 240)
+        public int maxPaintBrightness = 220;
 
         @Config.Comment("The factor how many rects the mip is allowed to have so it is allowed to be used. Saves some memory when performance is not better than no-mip version and provides clearer images, but makes image less stable")
         @Config.RangeDouble(min = 0, max = 1)

@@ -20,6 +20,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
@@ -56,11 +57,6 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public boolean shouldRenderInPass(int pass) {
-        return pass == 0 || pass == 1;
-    }
-
-    @Override
     public void readFromNBT(NBTTagCompound tag) {
         super.readFromNBT(tag);
         this.containedState = NBTUtil.readBlockState(tag);
@@ -78,11 +74,6 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
                     disallowedFaces.add(EnumFacing.byName(key));
             }
         }
-    }
-
-    @Override
-    public boolean hasFastRenderer() {
-        return true;
     }
 
     @Override
@@ -167,7 +158,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @SideOnly(Side.CLIENT)
-    public void invalidateBuffers() {
+    public void unbindBuffers() {
         for (Map.Entry<EnumFacing, Object> entry : bufferMap.entrySet()) {
             Object obj = entry.getValue();
             if (obj instanceof SimpleCallback) {
@@ -180,14 +171,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public double getMaxRenderDistanceSquared() {
-        return MCPaintConfig.CLIENT.maxRenderDistance * MCPaintConfig.CLIENT.maxRenderDistance;
+    public double getMaxRenderDistanceSquared() { //add 8 so we catch when were are no longer rendered
+        return (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         this.readFromNBT(pkt.getNbtCompound());
-        invalidateBuffers();
+        unbindBuffers();
     }
 
     public void invalidateBuffer(EnumFacing facing) {
@@ -196,6 +187,13 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             ((SimpleCallback) obj).invalidate();
         } else if (obj instanceof CachedBufferBuilder) {
             RenderCache.uncache(getPaintFor(facing));
+        }
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            unbindBuffers();
         }
     }
 
