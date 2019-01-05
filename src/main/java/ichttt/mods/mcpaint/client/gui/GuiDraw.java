@@ -11,9 +11,7 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiPageButtonList;
 import net.minecraft.client.gui.GuiScreen;
-import net.minecraft.client.gui.GuiSlider;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
@@ -27,10 +25,10 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.client.config.GuiSlider;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.GL11;
 
-import javax.annotation.Nonnull;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.filechooser.FileFilter;
@@ -38,10 +36,10 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
 import java.util.List;
+import java.util.*;
 
-public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder, GuiSlider.FormatHelper {
+public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
     public static final int ZERO_ALPHA = new Color(255, 255,255, 0).getRGB();
     private static final int PICTURE_START_LEFT = 6;
@@ -74,6 +72,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
     private boolean noRevert = false;
+    private boolean updating = false;
 
     public GuiDraw(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas, "Canvas is null");
@@ -132,14 +131,13 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
         GuiHollowButton purple = new GuiHollowButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
         GuiHollowButton pink = new GuiHollowButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB());
 
-        this.redSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 4, I18n.format("mcpaint.gui.red"), 0, 255, 0, this);
+        this.redSlider = make(100, this.guiLeft + xSize + 3, this.guiTop + 4, "mcpaint.gui.red");
         this.redSlider.width = 74;
-        this.greenSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 26, I18n.format("mcpaint.gui.green"), 0, 255, 0, this);
+        this.greenSlider = make(101, this.guiLeft + xSize + 3, this.guiTop + 26, "mcpaint.gui.green");
         this.greenSlider.width = 74;
-        this.blueSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 48, I18n.format("mcpaint.gui.blue"), 0, 255, 0, this);
+        this.blueSlider = make(102, this.guiLeft + xSize + 3, this.guiTop + 48,"mcpaint.gui.blue");
         this.blueSlider.width = 74;
-        this.alphaSlider = new GuiSlider(this, 100, this.guiLeft + xSize + 3, this.guiTop + 70, I18n.format("mcpaint.gui.alpha"), 0, 255, 0, this);
-        this.alphaSlider.width = 74;
+        this.alphaSlider = make(103, this.guiLeft + xSize + 3, this.guiTop + 70, "mcpaint.gui.alpha");
 
         addButton(saveImage);
         addButton(rotateRight);
@@ -332,10 +330,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
             }
         } else if (button.id >= 0 && button.id < 100) {
             this.color = EnumPaintColor.VALUES[button.id].color;
-            this.redSlider.setSliderValue(this.color.getRed(), false);
-            this.blueSlider.setSliderValue(this.color.getBlue(), false);
-            this.greenSlider.setSliderValue(this.color.getGreen(), false);
-            this.alphaSlider.setSliderValue(this.color.getAlpha(), false);
+            updateSliders();
         } else if (button.id < 100){
             for (GuiButtonTextToggle toggleButton : this.textToggleList) {
                 boolean toggled = toggleButton.id == button.id;
@@ -405,10 +400,7 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
                 this.paintingState = new PictureState(this.currentState);
             if (pixelPosX < this.paintingState.picture.length && pixelPosY < this.paintingState.picture.length && this.color != null) {
                 this.color = this.activeDrawType.draw(this.paintingState.picture, this.color, pixelPosX, pixelPosY, this.toolSize);
-                this.redSlider.setSliderValue(this.color.getRed(), false);
-                this.blueSlider.setSliderValue(this.color.getBlue(), false);
-                this.greenSlider.setSliderValue(this.color.getGreen(), false);
-                this.alphaSlider.setSliderValue(this.color.getAlpha(), false);
+                updateSliders();
                 return true;
             }
         }
@@ -417,6 +409,23 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
 
     private boolean isInWindow(int offsetMouseX, int offsetMouseY) {
         return offsetMouseX >= 0 && offsetMouseX < (this.currentState.picture.length * this.currentState.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (this.currentState.picture.length * this.currentState.scaleFactor);
+    }
+
+    private GuiSlider make(int id, int xPos, int yPos, String key) {
+        return new GuiSlider(id, xPos, yPos, 74, 20, I18n.format(key), "", 0, 255, 0,false, true, this);
+    }
+
+    private void updateSliders() {
+        this.redSlider.setValue(this.color.getRed());
+        this.blueSlider.setValue(this.color.getBlue());
+        this.greenSlider.setValue(this.color.getGreen());
+        this.alphaSlider.setValue(this.color.getAlpha());
+        updating = true;
+        this.redSlider.updateSlider();
+        this.blueSlider.updateSlider();
+        this.greenSlider.updateSlider();
+        this.alphaSlider.updateSlider();
+        updating = false;
     }
 
     private void handleSizeChanged() {
@@ -509,22 +518,11 @@ public class GuiDraw extends GuiScreen implements GuiPageButtonList.GuiResponder
     }
 
     @Override
-    public void setEntryValue(int id, boolean value) {}
-
-    @Override
-    public void setEntryValue(int id, float value) {
-        this.color = new Color(Math.round(this.redSlider.getSliderValue()),
-                Math.round(this.greenSlider.getSliderValue()),
-                Math.round(this.blueSlider.getSliderValue()),
-                Math.round(this.alphaSlider.getSliderValue()));
-    }
-
-    @Override
-    public void setEntryValue(int id, @Nonnull String value) {}
-
-    @Nonnull
-    @Override
-    public String getText(int id,@Nonnull String name, float value) {
-        return name + ":" + Math.round(value);
+    public void onChangeSliderValue(GuiSlider slider) {
+        if (updating) return;
+        this.color = new Color(this.redSlider.getValueInt(),
+                this.greenSlider.getValueInt(),
+                this.blueSlider.getValueInt(),
+                this.alphaSlider.getValueInt());
     }
 }
