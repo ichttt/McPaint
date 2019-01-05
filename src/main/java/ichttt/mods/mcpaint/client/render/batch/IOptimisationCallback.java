@@ -1,12 +1,12 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
-import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
+import ichttt.mods.mcpaint.client.render.BufferManager;
 
 public interface IOptimisationCallback {
 
     boolean isInvalid();
 
-    void provideFinishedBuffer(CachedBufferBuilder builder);
+    void provideFinishedBuffer(BufferManager builder);
 
     default void optimizationFailed() {}
 }

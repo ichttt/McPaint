@@ -18,10 +18,7 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,17 +46,17 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
         return new TileEntityCanvas();
     }
 
-    @Nonnull
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.TRANSLUCENT;
-    }
-
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
     public EnumBlockRenderType getRenderType(IBlockState state) {
-        return EnumBlockRenderType.ENTITYBLOCK_ANIMATED;
+        return EnumBlockRenderType.MODEL;
+    }
+
+    @Nonnull
+    @Override
+    public BlockRenderLayer getRenderLayer() {
+        return BlockRenderLayer.CUTOUT_MIPPED;
     }
 
     //Delegating methods
@@ -101,12 +98,6 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
             return;
         }
         super.harvestBlock(world, player, pos, state, te, stack);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean hasCustomBreakingProgress(IBlockState state) {
-        return true;
     }
 
     @Override
@@ -168,6 +159,18 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, IBlockState> builder) {
         builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
+    }
+
+    @SuppressWarnings("deprecation")
+    @Nonnull
+    @Override
+    public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
+        //Return the contained state, needed for rendering
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            return canvas.getContainedState();
+        }
+        return super.getActualState(state, world, pos);
     }
 
     @Nonnull

@@ -74,6 +74,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     private GuiSlider redSlider, blueSlider, greenSlider, alphaSlider;
     private boolean hasSizeWindow;
     private boolean noRevert = false;
+    private boolean updating = false;
 
     public GuiDraw(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, EnumFacing facing, IBlockState state) {
         Objects.requireNonNull(canvas, "Canvas is null");
@@ -220,10 +221,13 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         GuiColorButton purple = new GuiColorButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
         GuiColorButton pink = new GuiColorButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
 
-        this.redSlider = new GuiSlider(100, this.guiLeft + xSize + 3, this.guiTop + 4, 74, 20, I18n.format("mcpaint.gui.red"), "", 0, 255, 0, false, true, this);
-        this.greenSlider = new GuiSlider(101, this.guiLeft + xSize + 3, this.guiTop + 26, 74, 20, I18n.format("mcpaint.gui.green"), "", 0, 255, 0, false, true, this);
-        this.blueSlider = new GuiSlider(102, this.guiLeft + xSize + 3, this.guiTop + 48, 74, 20, I18n.format("mcpaint.gui.blue"), "", 0, 255, 0, false, true, this);
-        this.alphaSlider = new GuiSlider(103, this.guiLeft + xSize + 3, this.guiTop + 70, 74, 20, I18n.format("mcpaint.gui.alpha"), "", 0, 255, 0, false, true, this);
+        this.redSlider = make(100, this.guiLeft + xSize + 3, this.guiTop + 4, "mcpaint.gui.red");
+        this.redSlider.width = 74;
+        this.greenSlider = make(101, this.guiLeft + xSize + 3, this.guiTop + 26, "mcpaint.gui.green");
+        this.greenSlider.width = 74;
+        this.blueSlider = make(102, this.guiLeft + xSize + 3, this.guiTop + 48,"mcpaint.gui.blue");
+        this.blueSlider.width = 74;
+        this.alphaSlider = make(103, this.guiLeft + xSize + 3, this.guiTop + 70, "mcpaint.gui.alpha");
 
         addButton(saveImage);
         addButton(rotateRight);
@@ -445,10 +449,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
                 this.paintingState = new PictureState(this.currentState);
             if (pixelPosX < this.paintingState.picture.length && pixelPosY < this.paintingState.picture.length && this.color != null) {
                 this.color = this.activeDrawType.draw(this.paintingState.picture, this.color, pixelPosX, pixelPosY, this.toolSize);
-                this.redSlider.setValue(this.color.getRed());
-                this.blueSlider.setValue(this.color.getBlue());
-                this.greenSlider.setValue(this.color.getGreen());
-                this.alphaSlider.setValue(this.color.getAlpha());
+                updateSliders();
                 return true;
             }
         }
@@ -457,6 +458,23 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
 
     private boolean isInWindow(int offsetMouseX, int offsetMouseY) {
         return offsetMouseX >= 0 && offsetMouseX < (this.currentState.picture.length * this.currentState.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (this.currentState.picture.length * this.currentState.scaleFactor);
+    }
+
+    private GuiSlider make(int id, int xPos, int yPos, String key) {
+        return new GuiSlider(id, xPos, yPos, 74, 20, I18n.format(key), "", 0, 255, 0,false, true, this);
+    }
+
+    private void updateSliders() {
+        this.redSlider.setValue(this.color.getRed());
+        this.blueSlider.setValue(this.color.getBlue());
+        this.greenSlider.setValue(this.color.getGreen());
+        this.alphaSlider.setValue(this.color.getAlpha());
+        updating = true;
+        this.redSlider.updateSlider();
+        this.blueSlider.updateSlider();
+        this.greenSlider.updateSlider();
+        this.alphaSlider.updateSlider();
+        updating = false;
     }
 
     private void handleSizeChanged() {
@@ -550,14 +568,14 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
 
     @Override
     public void onChangeSliderValue(GuiSlider slider) {
-        this.color = new Color(Math.round(this.redSlider.getValue()),
-                Math.round(this.greenSlider.getValue()),
-                Math.round(this.blueSlider.getValue()),
-                Math.round(this.alphaSlider.getValue()));
+        if (updating) return;
+        this.color = new Color(this.redSlider.getValueInt(),
+                this.greenSlider.getValueInt(),
+                this.blueSlider.getValueInt(),
+                this.alphaSlider.getValueInt());
     }
 
-    private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_)
-    {
+    private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_) {
         ResourceLocation resourcelocation = p_184396_1_.getName();
         return new ResourceLocation(resourcelocation.getNamespace(), String.format("textures/%s%s", resourcelocation.getPath(), ".png"));
     }

@@ -18,8 +18,6 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
 
@@ -59,11 +57,6 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return tag;
     }
 
-//    @Override TODO
-//    public boolean shouldRenderInPass(int pass) {
-//        return pass == 0 || pass == 1;
-//    }
-
     @Override
     public void read(NBTTagCompound tag) {
         super.read(tag);
@@ -82,12 +75,6 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
                     disallowedFaces.add(EnumFacing.byName(key));
             }
         }
-    }
-
-    //TODO
-//    @Override
-    public boolean hasFastRenderer() {
-        return true;
     }
 
     @Override
@@ -145,8 +132,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @OnlyIn(Dist.CLIENT)
     public CachedBufferBuilder getBuffer(EnumFacing facing) {
         Object obj = bufferMap.get(facing);
-        if (obj instanceof CachedBufferBuilder)
-            return (CachedBufferBuilder) obj;
+        if (obj instanceof BufferManager)
+            return (BufferManager) obj;
         else if (obj instanceof IOptimisationCallback) { //already waiting
             return null;
         } else if (obj != null) {
@@ -155,7 +142,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         } else {
             SimpleCallback callback = new SimpleCallback() {
                 @Override
-                public void provideFinishedBuffer(CachedBufferBuilder builder) {
+                public void provideFinishedBuffer(BufferManager builder) {
                     if (this.isInvalid()) return;
                     RenderCache.cache(getPaintFor(facing), builder);
                     bufferMap.put(facing, builder);
@@ -168,27 +155,27 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public void invalidateBuffers() {
+    public void unbindBuffers() {
         for (Map.Entry<EnumFacing, Object> entry : bufferMap.entrySet()) {
             Object obj = entry.getValue();
             if (obj instanceof SimpleCallback) {
                 ((SimpleCallback) obj).invalidate();
-            } else if (obj instanceof CachedBufferBuilder) {
-                RenderCache.cache(getPaintFor(entry.getKey()), (CachedBufferBuilder) obj);
+            } else if (obj instanceof BufferManager) {
+                RenderCache.cache(getPaintFor(entry.getKey()), (BufferManager) obj);
             }
         }
         bufferMap.clear();
     }
 
     @Override
-    public double getMaxRenderDistanceSquared() {
-        return MCPaintConfig.CLIENT.maxRenderDistance * MCPaintConfig.CLIENT.maxRenderDistance;
+    public double getMaxRenderDistanceSquared() { //add 8 so we catch when were are no longer rendered
+        return (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8);
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
         this.read(pkt.getNbtCompound());
-        invalidateBuffers();
+        unbindBuffers();
     }
 
     public void invalidateBuffer(EnumFacing facing) {
@@ -197,6 +184,13 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             ((SimpleCallback) obj).invalidate();
         } else if (obj instanceof CachedBufferBuilder) {
             RenderCache.uncache(getPaintFor(facing));
+        }
+    }
+
+    @Override
+    public void onChunkUnload() {
+        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+            unbindBuffers();
         }
     }
 

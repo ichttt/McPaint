@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 
+import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public class ClientEventHandler {
@@ -21,6 +22,19 @@ public class ClientEventHandler {
 //        ModelLoader.setCustomModelResourceLocation(EventHandler.STAMP, 0, new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, "stamp"), "inventory"));
 //        EventHandler.STAMP.setTileEntityItemStackRenderer(TEISRStamp.INSTANCE);
         Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
+    }
+
+    private static final IStateMapper MAPPER = new StateMapperBase() {
+        @Nonnull
+        @Override
+        protected ModelResourceLocation getModelResourceLocation(@Nonnull IBlockState state) {
+            state = EventHandler.CANVAS_GROUND.getStateFromMeta(state.getBlock().getMetaFromState(state));
+            return new ModelResourceLocation(Block.REGISTRY.getNameForObject(state.getBlock()), this.getPropertyString(state.getProperties()));
+        }
+    };
+
+    private static void map(Block block) {
+        ModelLoader.setCustomStateMapper(block, MAPPER);
     }
 
     @SubscribeEvent

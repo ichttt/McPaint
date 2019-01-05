@@ -20,11 +20,6 @@ apply plugin: 'net.minecraftforge.gradle'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 
-repositories {
-    mavenLocal()
-    maven { url ='file://' + file('../repo').absolutePath } //Used by Forge development testing only, you can delete this.
-}
-
 version = '1.0'
 group = 'com.yourname.modid' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'modid'
@@ -64,14 +59,13 @@ minecraft {
         environment "target", "fmldevserver"
         environment "assetDirectory", downloadAssets.output.absolutePath
     }
-
-    accessTransformer = file('mcpaint_at.cfg')
 }
 
 dependencies {
     // Specify the version of Minecraft to use, If this is any group other then 'net.minecraft' it is assumed
-    // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied. 
-    minecraft 'net.minecraftforge.test:forge:1.13-24.0.35-1.13-pre'
+    // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
+    // The userdev artifact is a special name and will get all sorts of transformations applied to it.
+    minecraft 'net.minecraftforge.test:userdev:1.13-24.0.54-1.13-pre'
 
     // you may put jars on which you depend on in ./libs
     // or you may define them like so..
@@ -96,12 +90,6 @@ dependencies {
 
 }
 
-project.afterEvaluate {
-    reobfJar {
-        args = ["--in-jar", "{input}", "--out-jar", "{output}", "--srg-in", "{mappings}", "--live"]
-    }
-}
-
 processResources {
     // this will ensure that this task is redone when the versions change.
     inputs.property 'version', project.version
@@ -115,7 +103,7 @@ processResources {
         expand 'version':project.version, 'mcversion': '1.13'
     }
 
-    // copy everything else except the mcmod.info
+    // copy everything else except the mods.toml
     from(sourceSets.main.resources.srcDirs) {
         exclude 'META_INF/mods.toml'
     }

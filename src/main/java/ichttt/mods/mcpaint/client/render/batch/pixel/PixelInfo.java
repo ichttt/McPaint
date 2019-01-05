@@ -7,11 +7,13 @@ public class PixelInfo {
     public final int x;
     public final int y;
     public final int color;
+    public int drawColor;
 
     public PixelInfo(int x, int y, int color) {
         this.x = x;
         this.y = y;
         this.color = color;
+        this.drawColor = color;
     }
 
     public boolean isNeighbourX(PixelInfo info) {
