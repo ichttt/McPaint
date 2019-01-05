@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
+import ichttt.mods.mcpaint.client.render.BufferManager;
 import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
@@ -18,8 +19,12 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SPacketUpdateTileEntity;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
+import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.common.thread.EffectiveSide;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -130,7 +135,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public CachedBufferBuilder getBuffer(EnumFacing facing) {
+    public BufferManager getBuffer(EnumFacing facing) {
         Object obj = bufferMap.get(facing);
         if (obj instanceof BufferManager)
             return (BufferManager) obj;
@@ -188,8 +193,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void onChunkUnload() {
-        if (FMLCommonHandler.instance().getEffectiveSide() == Side.CLIENT) {
+    public void onChunkUnloaded() {
+        if (EffectiveSide.get() == LogicalSide.CLIENT) {
             unbindBuffers();
         }
     }

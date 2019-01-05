@@ -161,16 +161,15 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
         builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
     }
 
-    @SuppressWarnings("deprecation")
     @Nonnull
     @Override
-    public IBlockState getActualState(@Nonnull IBlockState state, IBlockAccess world, BlockPos pos) {
+    public IBlockState getExtendedState(@Nonnull IBlockState state, IBlockReader world, BlockPos pos) {
         //Return the contained state, needed for rendering
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState();
         }
-        return super.getActualState(state, world, pos);
+        return state;
     }
 
     @Nonnull

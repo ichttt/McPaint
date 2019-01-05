@@ -34,7 +34,7 @@ public class PictureRenderer {
 
     public static void setWorldGLState() {
         GlStateManager.pushMatrix();
-        GlStateManager.enableDepth(); //Should be true
+        GlStateManager.enableDepthTest(); //Should be true
         GlStateManager.disableTexture2D();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();

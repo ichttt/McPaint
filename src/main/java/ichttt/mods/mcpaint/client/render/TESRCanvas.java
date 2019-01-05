@@ -4,23 +4,25 @@ import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.OpenGlHelper;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntitySpecialRenderer;
+import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.EnumFacing;
 import org.lwjgl.opengl.GL11;
 
-public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
+import java.util.Objects;
+
+public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
+    private static final EnumFacing[] VALUES = EnumFacing.values();
+    private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
+
     @Override
-    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage, float alpha) {
+    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         if (destroyStage != -1) return;
-        double playerDistSq = Minecraft.getMinecraft().player.getDistanceSq(te.getPos());
+        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
         if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
-            int light = te.getWorld().getCombinedLight(te.getPos(), 0);
-            for (EnumFacing facing : EnumFacing.VALUES) {
+            int light = Objects.requireNonNull(te.getWorld()).getCombinedLight(te.getPos(), 0);
+            for (EnumFacing facing : VALUES) {
                 if (te.hasPaintFor(facing)) renderFace(x, y, z, te, facing, light, playerDistSq);
             }
         } else {
@@ -109,18 +111,19 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
 
         //GL setup
         PictureRenderer.setWorldGLState();
-        GlStateManager.translate(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
+        GlStateManager.translated(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
         if (k > MCPaintConfig.CLIENT.maxPaintBrightness)
             k = MCPaintConfig.CLIENT.maxPaintBrightness;
-        OpenGlHelper.setLightmapTextureCoords(OpenGlHelper.lightmapTexUnit, (float) j, (float) k);
+        //lightmap
+        OpenGlHelper.glMultiTexCoord2f(OpenGlHelper.GL_TEXTURE1, (float) j, (float) k);
 
         if (angle != 0)
-            GlStateManager.rotate(angle, 0, 1, 0);
+            GlStateManager.rotatef(angle, 0, 1, 0);
         else if (facing.getAxis().isVertical()) {
-            GlStateManager.rotate(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotate(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            GlStateManager.rotatef(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
         }
 
         IPaintable paint = te.getPaintFor(facing);
@@ -132,7 +135,7 @@ public class TESRCanvas extends TileEntitySpecialRenderer<TileEntityCanvas> {
                 if (playerDistSq < ((MCPaintConfig.CLIENT.maxPaintRenderDistance - 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance - 8)))
                     slow = true;
             } else {
-                Tessellator.getInstance().vboUploader.draw(builder.get(getRes(playerDistSq)));
+                vboUploader.draw(builder.get(getRes(playerDistSq)));
             }
         }
         if (slow) {
