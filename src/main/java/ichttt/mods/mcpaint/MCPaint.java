@@ -40,23 +40,15 @@ import java.util.Objects;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
-    public static final SimpleChannel NETWORKING = NetworkRegistry.newSimpleChannel(new ResourceLocation(MODID, "channel"), () -> "1", Objects::nonNull, Objects::nonNull);
+    private static final String NETWORKING_MAJOR = "1.";
+    private static final String NETWORKING_MINOR = "0";
 
-    static {
-        Configurator.setRootLevel(Level.DEBUG);
-        final MarkerFilter classloadingFilter = MarkerFilter.createFilter("CLASSLOADING", Filter.Result.DENY, Filter.Result.NEUTRAL);
-        final MarkerFilter launchpluginFilter = MarkerFilter.createFilter("LAUNCHPLUGIN", Filter.Result.DENY, Filter.Result.NEUTRAL);
-        final MarkerFilter axformFilter= MarkerFilter.createFilter("AXFORM", Filter.Result.DENY, Filter.Result.NEUTRAL);
-        final MarkerFilter eventbusFilter = MarkerFilter.createFilter("EVENTBUS", Filter.Result.DENY, Filter.Result.NEUTRAL);
-        final MarkerFilter distxformFilter = MarkerFilter.createFilter("DISTXFORM", Filter.Result.DENY, Filter.Result.NEUTRAL);
-        final LoggerContext logcontext = LoggerContext.getContext(false);
-        logcontext.getConfiguration().addFilter(classloadingFilter);
-        logcontext.getConfiguration().addFilter(launchpluginFilter);
-        logcontext.getConfiguration().addFilter(axformFilter);
-        logcontext.getConfiguration().addFilter(eventbusFilter);
-        logcontext.getConfiguration().addFilter(distxformFilter);
-        logcontext.updateLoggers();
-    }
+    private static final String NETWORKING_VERSION = NETWORKING_MAJOR + NETWORKING_MINOR;
+    public static final SimpleChannel NETWORKING = NetworkRegistry.newSimpleChannel(
+            new ResourceLocation(MODID, "channel"),
+            () -> NETWORKING_VERSION,
+            s -> s.startsWith(NETWORKING_MAJOR),
+            s -> s.equals(NETWORKING_VERSION));
 
     public MCPaint() {
         MinecraftForge.EVENT_BUS.register(EventHandler.class);
