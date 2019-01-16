@@ -1,7 +1,9 @@
 package ichttt.mods.mcpaint.common.item;
 
+import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.ClientHooks;
+import ichttt.mods.mcpaint.client.render.TEISRStamp;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
@@ -37,6 +39,7 @@ public class ItemStamp extends ItemBrush {
 
     public ItemStamp(ResourceLocation registryName) {
         super(registryName);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE));
     }
 
     @Override

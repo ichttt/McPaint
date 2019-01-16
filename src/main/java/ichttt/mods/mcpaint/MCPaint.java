@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint;
 import ichttt.mods.mcpaint.client.ClientEventHandler;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
+import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.util.ResourceLocation;
@@ -46,7 +47,7 @@ public class MCPaint {
             });
             DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MessagePaintData.ClientHandler.INSTANCE.onMessage(clientMessage, supplier));
         });
-        NETWORKING.registerMessage(4, MessageDrawAbort.class, MessageDrawAbort::encode, MessageDrawAbort::new, MessageDrawAbort.Handler::onMessage);
+        NETWORKING.registerMessage(4, MessageClearSide.class, MessageClearSide::encode, MessageClearSide::new, MessageClearSide.Handler::onMessage);
         CapabilityPaintable.register();
     }
 }
