@@ -9,20 +9,20 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.init.Fluids;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ItemUseContext;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumBlockRenderType;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.*;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 
 public class ItemBrush extends Item {
@@ -34,13 +34,22 @@ public class ItemBrush extends Item {
 
     @Nonnull
     @Override
-    public EnumActionResult onItemUse(ItemUseContext context) {
-        World world = context.getWorld();
-        EntityPlayer player = context.getPlayer();
-        BlockPos pos = context.getPos();
-        ItemStack held = context.getItem();
-        EnumFacing facing = context.getFace();
+    public ActionResult<ItemStack> onItemRightClick(World world, EntityPlayer player, @Nonnull EnumHand hand) {
+        ItemStack held = player.getHeldItem(hand);
+        RayTraceResult raytraceresult = this.rayTrace(world, player, false);
+        if (raytraceresult == null || raytraceresult.type != RayTraceResult.Type.BLOCK)
+            return new ActionResult<>(processMiss(world, player, hand, held, raytraceresult), held);
+        BlockPos pos = raytraceresult.getBlockPos();
         IBlockState state = world.getBlockState(pos);
+        EnumFacing facing = raytraceresult.sideHit;
+        return new ActionResult<>(processHit(world, player, held, pos, state, facing), held);
+    }
+
+    protected EnumActionResult processMiss(World world, EntityPlayer player, EnumHand hand, ItemStack stack, @Nullable RayTraceResult result) {
+        return EnumActionResult.FAIL;
+    }
+
+    protected EnumActionResult processHit(World world, EntityPlayer player, ItemStack held, BlockPos pos, IBlockState state, EnumFacing facing) {
         if (state.getBlock() instanceof BlockCanvas) {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             //We need to cache getBlockFaceShape as the method takes a world as an argument

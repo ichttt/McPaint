@@ -16,6 +16,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import javax.annotation.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -50,9 +51,9 @@ public class MCPaintUtil {
         return copy;
     }
 
-    public static void uploadPictureToServer(TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture, boolean clear) {
+    public static void uploadPictureToServer(@Nullable TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture, boolean clear) {
         if (!(te instanceof TileEntityCanvas)) {
-            MCPaint.LOGGER.error("Could not set paint! Found block " + te.getType());
+            MCPaint.LOGGER.error("Could not set paint! Found block " + (te == null ? "NONE" : te.getType()));
             Minecraft.getInstance().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
             return;
         }

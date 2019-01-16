@@ -56,6 +56,7 @@ public class EventHandler {
         IForgeRegistry<Item> registry = event.getRegistry();
         registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
         registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
+        update();
     }
 
     @SubscribeEvent
@@ -63,11 +64,13 @@ public class EventHandler {
         event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
         event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
         event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
+        update();
     }
 
     @SubscribeEvent
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
-        event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
+        event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(getNull()).setRegistryName(MCPaint.MODID, "canvas_te"));
+        update();
     }
 
     @SubscribeEvent
@@ -75,23 +78,5 @@ public class EventHandler {
         update();
         if (event.getObject().getItem() == STAMP)
             event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
-    }
-
-//    @SubscribeEvent TODO
-//    public static void onConfigChange(ConfigChangedEvent event) {
-//        if (event.getModID().equals(MCPaint.MODID)) {
-//            ConfigManager.sync(MCPaint.MODID, Config.Type.INSTANCE);
-//            MCPaint.proxy.onConfigReload();
-//        }
-//    }
-
-    @SubscribeEvent
-    public static void onRightClick(PlayerInteractEvent.RightClickItem event) {
-        ItemStack stack = event.getEntityPlayer().getHeldItem(event.getHand());
-        if (event.getEntityPlayer().isSneaking() && stack.getItem() == EventHandler.STAMP) {
-            stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!")).clear(null, null);
-            event.setCanceled(true);
-            event.setCancellationResult(EnumActionResult.SUCCESS);
-        }
     }
 }

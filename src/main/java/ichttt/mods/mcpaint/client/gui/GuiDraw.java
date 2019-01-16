@@ -373,10 +373,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
 
     private void handleColorChange(Color color) {
         this.color = color;
-        this.redSlider.setValue(this.color.getRed());
-        this.blueSlider.setValue(this.color.getBlue());
-        this.greenSlider.setValue(this.color.getGreen());
-        this.alphaSlider.setValue(this.color.getAlpha());
+        updateSliders();
     }
 
     protected void handleToolButton(GuiButton button) {
