@@ -27,6 +27,7 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
@@ -34,6 +35,7 @@ import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class ItemStamp extends ItemBrush {
 
@@ -90,11 +92,12 @@ public class ItemStamp extends ItemBrush {
         }
     }
 
+    @SuppressWarnings("ConstantConditions")
     @OnlyIn(Dist.CLIENT)
     @Override
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
-        IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint data!"));
-        if (paintable.hasPaintData()) {
+        IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
+        if (paintable != null && paintable.hasPaintData()) {
             tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.paint"));
         } else {
             tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.nopaint"));

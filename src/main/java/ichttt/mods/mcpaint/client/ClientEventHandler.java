@@ -26,7 +26,7 @@ import java.util.Objects;
 public class ClientEventHandler {
 
     public static void setupClient(FMLClientSetupEvent event) {
-        DeferredWorkQueue.enqueueWork(() -> {MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);return null;});
+        DeferredWorkQueue.runLater(() -> MinecraftForge.EVENT_BUS.register(ClientEventHandler.class));
         ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCanvas.class, new TESRCanvas());
     }
 

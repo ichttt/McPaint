@@ -24,14 +24,19 @@ import net.minecraftforge.registries.ObjectHolder;
 
 import javax.annotation.Nonnull;
 
-@ObjectHolder(MCPaint.MODID)
 public class EventHandler {
+    @ObjectHolder("mcpaint:brush")
     public static Item BRUSH = getNull();
+    @ObjectHolder("mcpaint:stamp")
     public static Item STAMP = getNull();
+    @ObjectHolder("mcpaint:canvas_wood")
     public static BlockCanvas CANVAS_WOOD = getNull();
+    @ObjectHolder("mcpaint:canvas_rock")
     public static BlockCanvas CANVAS_ROCK = getNull();
+    @ObjectHolder("mcpaint:canvas_ground")
     public static BlockCanvas CANVAS_GROUND = getNull();
-    public static TileEntityType<TileEntityCanvas> CANVAS_TE = getNull();
+    @ObjectHolder("mcpaint:canvas_te")
+    public static TileEntityType<?> CANVAS_TE = getNull();
 
     //Avoids warnings of a field being null because it is populated by the ObjectHolder
     //So Nonnull despite returning null
@@ -41,41 +46,8 @@ public class EventHandler {
         return null;
     }
 
-    public static void update() {
-        BRUSH = ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "brush"));
-        STAMP = ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp"));
-        CANVAS_WOOD = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_wood"));
-        CANVAS_ROCK = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_rock"));
-        CANVAS_GROUND = (BlockCanvas) ForgeRegistries.BLOCKS.getValue(new ResourceLocation(MCPaint.MODID, "canvas_ground"));
-        //noinspection unchecked
-        CANVAS_TE = (TileEntityType<TileEntityCanvas>) ForgeRegistries.TILE_ENTITIES.getValue(new ResourceLocation(MCPaint.MODID, "canvas_te"));
-    }
-
-    @SubscribeEvent
-    public static void registerItems(RegistryEvent.Register<Item> event) {
-        IForgeRegistry<Item> registry = event.getRegistry();
-        registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
-        registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
-        update();
-    }
-
-    @SubscribeEvent
-    public static void registerBlocks(RegistryEvent.Register<Block> event) {
-        event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
-        event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
-        event.getRegistry().register(new BlockCanvas(Material.GROUND, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
-        update();
-    }
-
-    @SubscribeEvent
-    public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
-        event.getRegistry().register(TileEntityType.Builder.create(TileEntityCanvas::new).build(getNull()).setRegistryName(MCPaint.MODID, "canvas_te"));
-        update();
-    }
-
     @SubscribeEvent
     public static void attachCaps(AttachCapabilitiesEvent<ItemStack> event) {
-        update();
         if (event.getObject().getItem() == STAMP)
             event.addCapability(CapabilityProvider.LOCATION, new CapabilityProvider());
     }

@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.networking;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.primitives.Shorts;
@@ -9,19 +10,26 @@ import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
+import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.common.DimensionManager;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -156,13 +164,17 @@ public class MessagePaintData {
             else
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
             te.markDirty();
-            //TODO networking mess
-//            TargetPoint point = new NetworkRegistry.TargetPoint(handler.player.world.provider.getDimension(), pos.getX(), pos.getY(), pos.getZ(), -1);
-//            if (data == null) {
-//                MCPaint.NETWORKING.sendTo(new MessageClearSide(pos, facing), handler.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
-//            } else {
-//                MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendToAllTracking(messagePaintData, point));
-//            }
+            PlayerChunkMapEntry entry = Objects.requireNonNull((WorldServer) te.getWorld()).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
+            if (entry == null)
+                return;
+
+            for (EntityPlayerMP player : entry.getWatchingPlayers()) {
+                if (data == null) {
+                    MCPaint.NETWORKING.sendTo(new MessageClearSide(pos, facing), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
+                } else {
+                    MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendTo(new MessagePaintData.ClientMessage(messagePaintData), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT));
+                }
+            }
         }
     }
 
@@ -189,8 +201,8 @@ public class MessagePaintData {
     }
 
     public static class ClientMessage extends MessagePaintData {
-        public ClientMessage(BlockPos pos, EnumFacing facing, byte scale, int[][] data, byte part, byte maxParts) {
-            super(pos, facing, scale, data, part, maxParts);
+        public ClientMessage(MessagePaintData msg) {
+            super(msg.pos, msg.facing, msg.scale, msg.data, msg.part, msg.maxParts);
         }
 
         public ClientMessage(PacketBuffer buf) {
