@@ -22,7 +22,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
+import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
 
@@ -102,9 +102,9 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> OptionalCapabilityInstance<T> getCapability(@Nonnull Capability<T> cap, EnumFacing facing) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, EnumFacing facing) {
         if (cap == CapabilityPaintable.PAINTABLE)
-            return OptionalCapabilityInstance.of(() -> (T) getPaintFor(facing));
+            return LazyOptional.of(() -> (T) getPaintFor(facing));
         return super.getCapability(cap, facing);
     }
 

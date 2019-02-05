@@ -11,6 +11,7 @@ import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -38,6 +39,9 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.*;
 
@@ -52,6 +56,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     private static final int toolYSize = 95;
     private static final int sizeXSize = toolXSize;
     private static final int sizeYSize = 34;
+    private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
 
     private final BlockPos pos;
     private final EnumFacing facing;
@@ -526,41 +531,15 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
             }
         }
         output.getGraphics().drawImage(paint, 0, 0, null);
-        JFileChooser chooser = new JFileChooser();
-        chooser.setDialogTitle("Select the path to save");
-//        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.setFileFilter(new FileFilter() {
-            @Override
-            public boolean accept(File f) {
-                return f.isDirectory() || !f.getName().contains(".") || f.getName().endsWith(".png");
-            }
 
-            @Override
-            public String getDescription() {
-                return "png";
-            }
-        });
-        LookAndFeel old = UIManager.getLookAndFeel();
-        try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException e) {
-            MCPaint.LOGGER.warn("Unable to set system look and feel", e);
-        }
-        chooser.setDialogType(JFileChooser.SAVE_DIALOG);
-        if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
-            File file = chooser.getSelectedFile();
-            if (file.isDirectory())
-                throw new IOException("Expected file, got dir!");
-            if (!file.getName().endsWith(".png"))
-                file = new File(file.toString() + ".png");
-            if (!ImageIO.write(output, "png", file))
-                throw new IOException("Could not encode image as png!");
-        }
-        try {
-            UIManager.setLookAndFeel(old);
-        } catch (UnsupportedLookAndFeelException e) {
-            MCPaint.LOGGER.error("Could not revert look and feel!", e);
-        }
+        File file = new File(this.mc.gameDir, "screenshots");
+        //noinspection ResultOfMethodCallIgnored
+        if (!file.exists() && !file.mkdir())
+            throw new IOException("Could not create folder");
+        file = getTimestampedPNGFileForDirectory(file);
+        if (!ImageIO.write(output, "png", file))
+            throw new IOException("Could not encode image as png!");
+        mc.player.sendStatusMessage(new TextComponentString("Saved as " + file), false);
     }
 
     @Override
@@ -575,5 +554,20 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_) {
         ResourceLocation resourcelocation = p_184396_1_.getName();
         return new ResourceLocation(resourcelocation.getNamespace(), String.format("textures/%s%s", resourcelocation.getPath(), ".png"));
+    }
+
+    //See ScreenShotHelper
+    private static File getTimestampedPNGFileForDirectory(File gameDirectory) {
+        String s = DATE_FORMAT.format(new Date());
+        int i = 1;
+
+        while(true) {
+            File file1 = new File(gameDirectory, s + (i == 1 ? "" : "_" + i) + ".png");
+            if (!file1.exists()) {
+                return file1;
+            }
+
+            ++i;
+        }
     }
 }

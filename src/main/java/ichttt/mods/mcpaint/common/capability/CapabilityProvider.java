@@ -6,7 +6,7 @@ import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
-import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
+import net.minecraftforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -17,10 +17,10 @@ public class CapabilityProvider implements ICapabilitySerializable<NBTTagCompoun
 
     @Nonnull
     @Override
-    public <T> OptionalCapabilityInstance<T> getCapability(@Nonnull Capability<T> cap, @Nullable EnumFacing side) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable EnumFacing side) {
         if (cap == CapabilityPaintable.PAINTABLE)
-            return OptionalCapabilityInstance.of(() -> (T) paint);
-        return OptionalCapabilityInstance.empty();
+            return LazyOptional.of(() -> (T) paint);
+        return LazyOptional.empty();
     }
 
     @Override

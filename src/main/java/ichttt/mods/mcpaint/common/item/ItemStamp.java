@@ -4,7 +4,6 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.client.render.TEISRStamp;
-import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
@@ -14,7 +13,6 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUseContext;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumActionResult;
 import net.minecraft.util.EnumFacing;
@@ -27,15 +25,12 @@ import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.capabilities.OptionalCapabilityInstance;
 import net.minecraftforge.fml.DistExecutor;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 public class ItemStamp extends ItemBrush {
 

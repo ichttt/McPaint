@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.render;
 
+import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
@@ -41,8 +42,12 @@ public class TEISRStamp extends TileEntityItemStackRenderer implements IItemProp
     @Override
     public float call(ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity) {
         if (InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
-            IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(RuntimeException::new);
-            if (paint != null && paint.hasPaintData()) {
+            IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
+            if (paint == null) {
+                MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");
+                return 0F;
+            }
+            if (paint.hasPaintData()) {
                 return 1F;
             }
         }
