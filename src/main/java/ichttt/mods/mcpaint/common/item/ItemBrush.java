@@ -28,7 +28,7 @@ import java.util.*;
 public class ItemBrush extends Item {
 
     public ItemBrush(ResourceLocation registryName) {
-        super(new Item.Builder().setTEISR(() -> () -> TEISRStamp.INSTANCE).group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32));
+        super(new Item.Properties().setTEISR(() -> () -> TEISRStamp.INSTANCE).group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32));
         setRegistryName(registryName);
     }
 

@@ -1,10 +1,9 @@
 package ichttt.mods.mcpaint.common.block;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.block.SoundType;
-import net.minecraft.block.material.MapColor;
 import net.minecraft.block.material.Material;
+import net.minecraft.block.material.MaterialColor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -18,18 +17,21 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.*;
+import net.minecraft.world.Explosion;
+import net.minecraft.world.IBlockReader;
+import net.minecraft.world.IWorldReader;
+import net.minecraft.world.World;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockCanvas extends Block implements ITileEntityProvider {
+public class BlockCanvas extends Block {
     public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
     public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
     //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
-        super(Block.Builder.create(material).hardnessAndResistance(1F, 4F));
+        super(Block.Properties.create(material).hardnessAndResistance(1F, 4F));
 //        useNeighborBrightness = true; TODO
         setRegistryName(regNam);
         setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
@@ -42,7 +44,7 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
 
     @Nullable
     @Override
-    public TileEntity createNewTileEntity(IBlockReader reader) {
+    public TileEntity createTileEntity(IBlockState state, IBlockReader world) {
         return new TileEntityCanvas();
     }
 
@@ -148,7 +150,7 @@ public class BlockCanvas extends Block implements ITileEntityProvider {
 
     @SuppressWarnings("deprecation")
     @Override
-    public MapColor getMapColor(IBlockState state, IBlockReader world, BlockPos pos) {
+    public MaterialColor getMapColor(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getMapColor(world, pos);

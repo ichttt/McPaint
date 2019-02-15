@@ -22,11 +22,9 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.javafmlmod.FMLModLoadingContext;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.network.NetworkRegistry;
 import net.minecraftforge.fml.network.simple.SimpleChannel;
-import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,8 +41,8 @@ public class MCPaint {
 
     public MCPaint() {
         MinecraftForge.EVENT_BUS.register(EventHandler.class);
-        FMLModLoadingContext.get().getModEventBus().register(MCPaint.class);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::setupClient));
+        FMLJavaModLoadingContext.get().getModEventBus().register(MCPaint.class);
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::setupClient));
     }
 
     @SubscribeEvent
