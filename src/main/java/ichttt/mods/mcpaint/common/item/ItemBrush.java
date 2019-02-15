@@ -26,9 +26,15 @@ import javax.annotation.Nullable;
 import java.util.*;
 
 public class ItemBrush extends Item {
+    public static Item.Properties getProperties() {
+        Item.Properties properties = new Item.Properties(); //Workaround for classloading issues
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> properties.setTEISR(TEISRStamp::getInstance));
+        properties.group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32);
+        return properties;
+    }
 
     public ItemBrush(ResourceLocation registryName) {
-        super(new Item.Properties().setTEISR(() -> () -> TEISRStamp.INSTANCE).group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32));
+        super(getProperties());
         setRegistryName(registryName);
     }
 

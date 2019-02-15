@@ -17,9 +17,14 @@ import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
+import java.util.concurrent.Callable;
 
 public class TEISRStamp extends TileEntityItemStackRenderer implements IItemPropertyGetter {
     public static final TEISRStamp INSTANCE = new TEISRStamp();
+
+    public static Callable<TileEntityItemStackRenderer> getInstance() {
+        return () -> INSTANCE;
+    }
 
     private TEISRStamp() {}
 
