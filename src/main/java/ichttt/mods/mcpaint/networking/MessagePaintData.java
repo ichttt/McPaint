@@ -1,6 +1,5 @@
 package ichttt.mods.mcpaint.networking;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.primitives.Shorts;
@@ -11,21 +10,15 @@ import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.NetworkManager;
 import net.minecraft.network.PacketBuffer;
-import net.minecraft.server.management.PlayerChunkMapEntry;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.WorldServer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.common.DimensionManager;
-import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fml.network.PacketDistributor;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -140,22 +133,19 @@ public class MessagePaintData {
             }
         }
 
-        protected void handleSide(NetworkEvent.Context context, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
-            setServerData(MCPaintUtil.getNetHandler(context), pos, facing, scale, data);
-        }
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+            EntityPlayerMP player = MCPaintUtil.checkServer(ctx);
+            if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
-        public static void setServerData(NetHandlerPlayServer handler, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
-            if (MCPaintUtil.isPosInvalid(handler, pos)) return;
-
-            IBlockState state = handler.player.world.getBlockState(pos);
+            IBlockState state = player.world.getBlockState(pos);
             if (!(state.getBlock() instanceof BlockCanvas)) {
-                MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + handler.player.getName() + " - Block invalid");
+                MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - Block invalid");
                 return;
             }
 
-            TileEntity te = handler.player.world.getTileEntity(pos);
+            TileEntity te = player.world.getTileEntity(pos);
             if (!(te instanceof TileEntityCanvas)) {
-                MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + handler.player.getName() + " - TE invalid");
+                MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - TE invalid");
                 return;
             }
             TileEntityCanvas canvas = (TileEntityCanvas) te;
@@ -164,16 +154,11 @@ public class MessagePaintData {
             else
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
             te.markDirty();
-            PlayerChunkMapEntry entry = Objects.requireNonNull((WorldServer) te.getWorld()).getPlayerChunkMap().getEntry(MathHelper.floor(pos.getX()) >> 4, MathHelper.floor(pos.getZ()) >> 4);
-            if (entry == null)
-                return;
-
-            for (EntityPlayerMP player : entry.getWatchingPlayers()) {
-                if (data == null) {
-                    MCPaint.NETWORKING.sendTo(new MessageClearSide(pos, facing), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT);
-                } else {
-                    MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.sendTo(new MessagePaintData.ClientMessage(messagePaintData), player.connection.getNetworkManager(), NetworkDirection.PLAY_TO_CLIENT));
-                }
+            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> Objects.requireNonNull(te.getWorld()).getChunk(te.getPos()));
+            if (data == null) {
+                MCPaint.NETWORKING.send(target, new MessageClearSide.ClientMessage(pos, facing));
+            } else {
+                MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.send(target, new MessagePaintData.ClientMessage(messagePaintData)));
             }
         }
     }
@@ -183,7 +168,8 @@ public class MessagePaintData {
 
         @OnlyIn(Dist.CLIENT)
         @Override
-        protected void handleSide(NetworkEvent.Context ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+            MCPaintUtil.checkClient(ctx);
             World world = Minecraft.getInstance().world;
             if (!world.isBlockLoaded(pos)) {
                 MCPaint.LOGGER.warn("Invalid pos " + pos + " when updating data - Not loaded");

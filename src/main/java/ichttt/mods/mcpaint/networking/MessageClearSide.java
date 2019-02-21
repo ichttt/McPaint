@@ -1,7 +1,5 @@
 package ichttt.mods.mcpaint.networking;
 
-import ichttt.mods.mcpaint.common.MCPaintUtil;
-import io.netty.buffer.ByteBuf;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
@@ -27,9 +25,28 @@ public class MessageClearSide {
         buf.writeByte(facing.getIndex());
     }
 
-    public static class Handler {
+    public static class ServerHandler {
         public static void onMessage(MessageClearSide message, Supplier<NetworkEvent.Context> supplier) {
-            MessagePaintData.ServerHandler.setServerData(MCPaintUtil.getNetHandler(supplier.get()), message.pos, message.facing, (byte) 0, null);
+            NetworkEvent.Context context = supplier.get();
+            context.enqueueWork(() -> MessagePaintData.ServerHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null));
+        }
+    }
+
+    public static class ClientHandler {
+        public static void onMessage(MessageClearSide message, Supplier<NetworkEvent.Context> supplier) {
+            NetworkEvent.Context context = supplier.get();
+            context.enqueueWork(() -> MessagePaintData.ClientHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null));
+        }
+    }
+
+    public static class ClientMessage extends MessageClearSide {
+
+        public ClientMessage(PacketBuffer buffer) {
+            super(buffer);
+        }
+
+        public ClientMessage(BlockPos pos, EnumFacing facing) {
+            super(pos, facing);
         }
     }
 }

@@ -7,29 +7,28 @@ import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.network.INetHandler;
-import net.minecraft.network.NetHandlerPlayServer;
-import net.minecraft.network.NetworkManager;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.Objects;
 
 public class MCPaintUtil {
-    public static boolean isPosInvalid(NetHandlerPlayServer handler, BlockPos pos) {
-        if (!handler.player.world.isBlockLoaded(pos)) {
-            MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is trying to write to unloaded block");
-            handler.disconnect(new TextComponentString("Trying to write to unloaded block"));
+    public static boolean isPosInvalid(EntityPlayerMP player, BlockPos pos) {
+        if (!player.world.isBlockLoaded(pos)) {
+            MCPaint.LOGGER.warn("Player" + player.getName() + " is trying to write to unloaded block");
+            player.connection.disconnect(new TextComponentString("Trying to write to unloaded block"));
             return true;
         }
 
-        if (handler.player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(handler.player.getAttribute(EntityPlayer.REACH_DISTANCE).getValue()) + 5)) {
-            MCPaint.LOGGER.warn("Player" + handler.player.getName() + " is writing to out of reach block!");
+        if (player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(player.getAttribute(EntityPlayer.REACH_DISTANCE).getValue()) + 5)) {
+            MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }
         return false;
@@ -68,30 +67,17 @@ public class MCPaintUtil {
         }
     }
 
-
-    private static final Method getNetworkManager;
-
-    static {
-        Method m;
-        ReflectiveOperationException ex = null;
-        try {
-            m = NetworkEvent.Context.class.getDeclaredMethod("getNetworkManager");
-            m.setAccessible(true);
-        } catch (ReflectiveOperationException e) {
-            m = null;
-            ex = e;
-        }
-        getNetworkManager = m;
-        if (ex != null)
-            throw new RuntimeException(ex);
+    @Nonnull
+    public static EntityPlayerMP checkServer(NetworkEvent.Context context) {
+        if (context.getDirection() != NetworkDirection.PLAY_TO_SERVER)
+            throw new IllegalArgumentException("Wrong side for server packet handler " + context.getDirection());
+        context.setPacketHandled(true);
+        return Objects.requireNonNull(context.getSender());
     }
 
-    public static<T extends INetHandler> T getNetHandler(NetworkEvent.Context context) {
-        try {
-            //noinspection unchecked
-            return (T) (((NetworkManager) getNetworkManager.invoke(context)).getNetHandler());
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+    public static void checkClient(NetworkEvent.Context context) {
+        if (context.getDirection() != NetworkDirection.PLAY_TO_CLIENT)
+            throw new IllegalArgumentException("Wrong side for client packet handler: " + context.getDirection());
+        context.setPacketHandled(true);
     }
 }

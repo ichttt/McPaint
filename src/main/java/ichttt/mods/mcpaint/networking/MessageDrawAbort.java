@@ -2,7 +2,7 @@ package ichttt.mods.mcpaint.networking;
 
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.network.NetHandlerPlayServer;
+import net.minecraft.entity.player.EntityPlayerMP;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
@@ -30,11 +30,11 @@ public class MessageDrawAbort {
 
         public static void onMessage(MessageDrawAbort message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context ctx = supplier.get();
-            NetHandlerPlayServer handler = MCPaintUtil.getNetHandler(ctx);
+            EntityPlayerMP player = MCPaintUtil.checkServer(ctx);
             ctx.enqueueWork(() -> {
-                if (MCPaintUtil.isPosInvalid(handler, message.pos)) return;
+                if (MCPaintUtil.isPosInvalid(player, message.pos)) return;
 
-                TileEntity te = handler.player.world.getTileEntity(message.pos);
+                TileEntity te = player.world.getTileEntity(message.pos);
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     boolean hasData = false;
@@ -45,7 +45,7 @@ public class MessageDrawAbort {
                         }
                     }
                     if (!hasData && canvas.getContainedState() != null) {
-                        handler.player.world.setBlockState(message.pos, canvas.getContainedState());
+                        player.world.setBlockState(message.pos, canvas.getContainedState());
                     }
                 }
             });

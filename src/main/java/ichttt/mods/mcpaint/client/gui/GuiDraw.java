@@ -490,7 +490,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         }
     }
 
-    private void saveImage(boolean background) throws IOException { //TODO 1.13 marks itself as headless... this throws HeadlessExceptions
+    private void saveImage(boolean background) throws IOException {
         BufferedImage paint = new BufferedImage(128 / this.currentState.scaleFactor, 128 / this.currentState.scaleFactor, BufferedImage.TYPE_INT_ARGB);
         for (int x = 0; x < this.currentState.picture.length; x++) {
             for (int y = 0; y < this.currentState.picture[0].length; y++) {
@@ -528,7 +528,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         }
         output.getGraphics().drawImage(paint, 0, 0, null);
 
-        File file = new File(this.mc.gameDir, "screenshots");
+        File file = new File(this.mc.gameDir, "paintings");
         if (!file.exists() && !file.mkdir())
             throw new IOException("Could not create folder");
         file = getTimestampedPNGFileForDirectory(file);
@@ -564,5 +564,10 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
 
             ++i;
         }
+    }
+
+    @Override
+    public boolean doesGuiPauseGame() {
+        return false;
     }
 }

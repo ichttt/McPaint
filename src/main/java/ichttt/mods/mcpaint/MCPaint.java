@@ -33,7 +33,7 @@ import org.apache.logging.log4j.Logger;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
-    private static final String NETWORKING_MAJOR = "1.";
+    private static final String NETWORKING_MAJOR = "2.";
     private static final String NETWORKING_MINOR = "0";
 
     private static final String NETWORKING_VERSION = NETWORKING_MAJOR + NETWORKING_MINOR;
@@ -54,13 +54,9 @@ public class MCPaint {
                 s -> s.equals(NETWORKING_VERSION));
         NETWORKING.registerMessage(1, MessagePaintData.class, MessagePaintData::encode, MessagePaintData::new, MessagePaintData.ServerHandler.INSTANCE::onMessage);
         NETWORKING.registerMessage(2, MessageDrawAbort.class, MessageDrawAbort::encode, MessageDrawAbort::new, MessageDrawAbort.Handler::onMessage);
-        NETWORKING.registerMessage(3, MessagePaintData.ClientMessage.class, MessagePaintData.ClientMessage::encode, MessagePaintData.ClientMessage::new, (clientMessage, supplier) -> {
-            DistExecutor.runWhenOn(Dist.DEDICATED_SERVER, () -> () -> {
-                throw new RuntimeException("MessagePaintData.ClientMessage cannot be run on server!");
-            });
-            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> MessagePaintData.ClientHandler.INSTANCE.onMessage(clientMessage, supplier));
-        });
-        NETWORKING.registerMessage(4, MessageClearSide.class, MessageClearSide::encode, MessageClearSide::new, MessageClearSide.Handler::onMessage);
+        NETWORKING.registerMessage(3, MessagePaintData.ClientMessage.class, MessagePaintData.ClientMessage::encode, MessagePaintData.ClientMessage::new, MessagePaintData.ClientHandler.INSTANCE::onMessage);
+        NETWORKING.registerMessage(4, MessageClearSide.class, MessageClearSide::encode, MessageClearSide::new, MessageClearSide.ServerHandler::onMessage);
+        NETWORKING.registerMessage(5, MessageClearSide.ClientMessage.class, MessageClearSide.ClientMessage::encode, MessageClearSide.ClientMessage::new, MessageClearSide.ClientHandler::onMessage);
         CapabilityPaintable.register();
     }
 
