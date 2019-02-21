@@ -17,5 +17,7 @@
   "mcpaint.gui.alpha": "alpha",
 
   "mcpaint.gui.rright": "Dreh R",
-  "mcpaint.gui.rleft": "Dreh L"
+  "mcpaint.gui.rleft": "Dreh L",
+
+  "mcpaint.gui.saved": "Gemälde gepeichert unter %s"
 }

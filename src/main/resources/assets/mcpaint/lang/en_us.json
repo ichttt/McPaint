@@ -15,7 +15,8 @@
   "mcpaint.gui.green": "green",
   "mcpaint.gui.blue": "blue",
   "mcpaint.gui.alpha": "alpha",
-
   "mcpaint.gui.rright": "Turn R",
-  "mcpaint.gui.rleft": "Turn L"
+  "mcpaint.gui.rleft": "Turn L",
+
+  "mcpaint.gui.saved": "Saved painting as %s"
 }

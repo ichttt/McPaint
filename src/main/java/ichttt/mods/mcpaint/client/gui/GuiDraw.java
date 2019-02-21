@@ -26,7 +26,11 @@ import net.minecraft.resources.IResource;
 import net.minecraft.util.EnumFacing;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.fml.client.config.GuiSlider;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -531,10 +535,12 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         File file = new File(this.mc.gameDir, "paintings");
         if (!file.exists() && !file.mkdir())
             throw new IOException("Could not create folder");
-        file = getTimestampedPNGFileForDirectory(file);
-        if (!ImageIO.write(output, "png", file))
+        final File finalFile = getTimestampedPNGFileForDirectory(file);
+        if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
-        mc.player.sendStatusMessage(new TextComponentString("Saved as " + file), false);
+        ITextComponent component = new TextComponentString(finalFile.getName());
+        component = component.applyTextStyle(TextFormatting.UNDERLINE).applyTextStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
+        mc.player.sendStatusMessage(new TextComponentTranslation("mcpaint.gui.saved", component), false);
     }
 
     @Override
