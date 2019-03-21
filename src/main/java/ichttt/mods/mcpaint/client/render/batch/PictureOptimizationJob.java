@@ -30,7 +30,7 @@ public class PictureOptimizationJob implements Runnable {
         Pair<CachedBufferBuilder, Integer> pair = PictureCacheBuilder.batch(pictureData, scaleFactor, callback, val -> false, 0, 0);
         if (pair == null)
             return;
-        int maxMips = MCPaintConfig.CLIENT.enableMipMaps ? getMaxPass(pictureData.length) : 0;
+        int maxMips = MCPaintConfig.CLIENT.enableMipMaps.get() ? getMaxPass(pictureData.length) : 0;
         BufferManager manager = new BufferManager(pair.getLeft(), pair.getRight(), maxMips, pictureData.length);
         callback.provideFinishedBuffer(manager);
         if (maxMips > 0) {
@@ -38,7 +38,7 @@ public class PictureOptimizationJob implements Runnable {
                 int[][] newPicture = LossyCompression.mipMap(pictureData, i);
                 byte newScaleFactor = (byte) (scaleFactor * Math.pow(2, i));
                 final int currentMip = i;
-                pair = PictureCacheBuilder.batch(newPicture, newScaleFactor, callback, val -> manager.needDiscard(val, currentMip), MCPaintConfig.CLIENT.maxTotalColorDiffPerMip * i, MCPaintConfig.CLIENT.maxSingleColorDiffPerMip * i);
+                pair = PictureCacheBuilder.batch(newPicture, newScaleFactor, callback, val -> manager.needDiscard(val, currentMip), MCPaintConfig.CLIENT.maxTotalColorDiffPerMip.get() * i, MCPaintConfig.CLIENT.maxSingleColorDiffPerMip.get() * i);
                 if (pair != null)
                     manager.putMips(pair.getLeft(), pair.getRight(), i - 1);
                 else
@@ -49,7 +49,8 @@ public class PictureOptimizationJob implements Runnable {
     }
 
     private static int getMaxPass(int res) {
-        int lowestRes = (TESRCanvas.getRes(MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance));
+        int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
+        int lowestRes = (TESRCanvas.getRes(maxDist * maxDist));
         int mips = 0;
         while (lowestRes < res) {
             lowestRes *= 2;

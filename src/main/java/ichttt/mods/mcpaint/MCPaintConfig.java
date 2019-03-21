@@ -1,46 +1,101 @@
 package ichttt.mods.mcpaint;
 
+import net.minecraftforge.common.ForgeConfigSpec;
+import org.apache.commons.lang3.tuple.Pair;
+
 //@Config(modid = MCPaint.MODID)
 public class MCPaintConfig {
-//    @Config.Comment("Client-Only options")
-    public static final Client CLIENT = new Client();
+    static final ForgeConfigSpec clientSpec;
+    public static final MCPaintConfig.Client CLIENT;
+    static {
+        final Pair<MCPaintConfig.Client, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(MCPaintConfig.Client::new);
+        clientSpec = specPair.getRight();
+        CLIENT = specPair.getLeft();
+    }
+
+
+    static final ForgeConfigSpec generalSpec;
+    public static final MCPaintConfig.General GENERAL;
+    static {
+        final Pair<MCPaintConfig.General, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(MCPaintConfig.General::new);
+        generalSpec = specPair.getRight();
+        GENERAL = specPair.getLeft();
+    }
 
     @SuppressWarnings("CanBeFinal")
     public static class Client {
+        Client(ForgeConfigSpec.Builder builder) {
+            builder.comment("Client-only settings").push("Client");
 
-//        @Config.Comment("True if stamps should set the picture directly instead of opening the GUI")
-        public boolean directApplyStamp = false;
+            directApplyStamp = builder
+                    .comment("True if stamps should set the picture directly instead of opening the GUI")
+                    .translation("mcpaint.config.directapplystamp")
+                    .define("directApplyStamp", false);
 
-//        @Config.Comment("True to allow MCPaint to optimize picture draw calls in the background to improve performance in the long run")
-        public boolean optimizePictures = true;
+            optimizePictures = builder
+                    .comment("True to allow MCPaint to optimize picture draw calls in the background to improve performance in the long run")
+                    .translation("mcpaint.config.optimizepictures")
+                    .define("optimizePictures", true);
 
-//        @Config.Comment("Defines how far away the paint on the block should be rendered at max")
-//        @Config.RangeInt(min = 64, max = 256)
-        public int maxPaintRenderDistance = 128;
+            maxPaintRenderDistance = builder
+                    .comment("Defines how far away the paint on the block should be rendered at max")
+                    .translation("mcpaint.config.maxpaintrenderdistance")
+                    .defineInRange("maxPaintRenderDistance", 128, 64, 256);
 
-//        @Config.Comment("If enabled, mipmaps will be used for far away blocks. Can improve speed and image stability, but also could make images more blurry on farther distance")
-        public boolean enableMipMaps = false;
+            enableMipMaps = builder
+                    .comment("If enabled, mipmaps will be used for far away blocks. Can improve speed and image stability, but also could make images more blurry on farther distance or cause micro lags. Somewhat experimental")
+                    .translation("mcpaint.config.enablemipmaps")
+                    .define("enableMipMaps", false);
 
-//        @Config.Comment("")
-//        @Config.RangeInt(min = 180, max = 240)
-        public int maxPaintBrightness = 220;
+            maxPaintBrightness = builder
+                    .comment("Defines the maximum brightness that a picture can have. Helps to reduce oversaturation")
+                    .translation("mcpaint.config.maxpaintbrightness")
+                    .defineInRange("maxPaintBrightness", 220, 180, 240);
 
-//        @Config.Comment("The factor how many rects the mip is allowed to have so it is allowed to be used. Saves some memory when performance is not better than no-mip version and provides clearer images, but makes image less stable")
-//        @Config.RangeDouble(min = 0, max = 1)
-//        @Config.RequiresWorldRestart
-        public double maxMipSize = 0.8D;
+            maxMipSize = builder
+                    .comment("The factor how many rects the mip is allowed to have so it is allowed to be used. Saves some memory when performance is not better than no-mip version and provides clearer images, but makes image less stable")
+                    .translation("mcpaint.config.maxmipsize")
+                    .worldRestart()
+                    .defineInRange("maxMipSize", 0.8D, 0D, 1D);
 
-//        @Config.Comment("How much all color channels can differ so they are merged as one channel in a mip. Value multiplied by mip level. Higher values improve performance, but reduce color clarity")
-//        @Config.RangeInt(min = 0, max = 50)
-//        @Config.RequiresWorldRestart
-        public int maxTotalColorDiffPerMip = 6;
+            maxTotalColorDiffPerMip = builder
+                    .comment("How much all color channels can differ so they are merged as one channel in a mip. Value multiplied by mip level. Higher values improve performance, but reduce color clarity")
+                    .translation("mcpaint.config.totalcolordiffpermap")
+                    .worldRestart()
+                    .defineInRange("maxTotalColorDiffPerMip", 6, 0, 50);
 
-//        @Config.Comment("How much a single color channel can differ so it is merged as one channel in a mip. Value multiplied by mip level. Higher values improve performance, but reduce color clarity")
-//        @Config.RangeInt(min = 0, max = 20)
-//        @Config.RequiresWorldRestart
-        public int maxSingleColorDiffPerMip = 4;
+            maxSingleColorDiffPerMip = builder
+                    .comment("How much all color channels can differ so they are merged as one channel in a mip. Value multiplied by mip level. Higher values improve performance, but reduce color clarity")
+                    .translation("mcpaint.config.maxsinglecolordiffpermip")
+                    .worldRestart()
+                    .defineInRange("maxSingleColorDiffPerMip", 4, 0, 20);
+
+            builder.pop();
+        }
+
+        public final ForgeConfigSpec.BooleanValue directApplyStamp;
+        public final ForgeConfigSpec.BooleanValue optimizePictures;
+        public final ForgeConfigSpec.IntValue maxPaintRenderDistance;
+        public final ForgeConfigSpec.BooleanValue enableMipMaps;
+        public final ForgeConfigSpec.IntValue maxPaintBrightness;
+        public final ForgeConfigSpec.DoubleValue maxMipSize;
+        public final ForgeConfigSpec.IntValue maxTotalColorDiffPerMip;
+        public final ForgeConfigSpec.IntValue maxSingleColorDiffPerMip;
     }
 
-//    @Config.Comment("Enables additional OneProbe compat if the mod is loaded. If you notice errors or log spam, disable this")
-    public static boolean enableOneProbeCompat = true;
+    public static class General {
+
+        General(ForgeConfigSpec.Builder builder) {
+            builder.comment("General configuration settings").push("General");
+
+            enableOneProbeCompat = builder
+                    .comment("Enables additional OneProbe compat if the mod is loaded. If you notice errors or log spam, disable this")
+                    .translation("mcpaint.config.enableoneprobecompat")
+                    .define("enableOneProbeCompat", true);
+
+            builder.pop();
+        }
+
+        public final ForgeConfigSpec.BooleanValue enableOneProbeCompat;
+    }
 }

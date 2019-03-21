@@ -174,7 +174,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public double getMaxRenderDistanceSquared() { //add 8 so we catch when were are no longer rendered
-        return (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance + 8);
+        int distOffset = MCPaintConfig.CLIENT.maxPaintRenderDistance.get() + 8;
+        return distOffset * distOffset;
     }
 
     @Override

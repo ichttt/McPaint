@@ -32,7 +32,7 @@ public class CachedBufferBuilder extends BufferBuilder {
 
     public void finishBuilding() {
         building = false;
-//        this.byteBuffer = this.byteBuffer.compact(); TODO AT
+        this.byteBuffer = this.byteBuffer.compact();
         this.size = this.getByteBuffer().position();
     }
 

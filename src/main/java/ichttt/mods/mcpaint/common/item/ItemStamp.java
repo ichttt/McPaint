@@ -73,7 +73,7 @@ public class ItemStamp extends ItemBrush {
     protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, EnumFacing facing, IBlockState state) {
         if (world.isRemote) {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
-            if (MCPaintConfig.CLIENT.directApplyStamp) {
+            if (MCPaintConfig.CLIENT.directApplyStamp.get()) {
                 canvas.getPaintFor(facing).copyFrom(heldPaint, canvas, facing);
                 MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData(), false);
             } else {

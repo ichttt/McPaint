@@ -66,7 +66,7 @@ public class BufferManager {
     }
 
     public boolean needDiscard(int rects, int mipIndex) {
-        boolean result = rects == -1 || !MCPaintConfig.CLIENT.enableMipMaps || (rects / getRects(mipIndex - 2)) > MCPaintConfig.CLIENT.maxMipSize;
+        boolean result = rects == -1 || !MCPaintConfig.CLIENT.enableMipMaps.get() || (rects / getRects(mipIndex - 2)) > MCPaintConfig.CLIENT.maxMipSize.get();
         if (result)
             MCPaint.LOGGER.debug("Discarding mip level {}, with {} rects", mipIndex, rects);
         return result;

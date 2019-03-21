@@ -20,7 +20,8 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         if (destroyStage != -1) return;
         double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
-        if (playerDistSq < (MCPaintConfig.CLIENT.maxPaintRenderDistance * MCPaintConfig.CLIENT.maxPaintRenderDistance)) {
+        int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
+        if (playerDistSq < (maxDist * maxDist)) {
             int light = Objects.requireNonNull(te.getWorld()).getCombinedLight(te.getPos(), 0);
             for (EnumFacing facing : VALUES) {
                 if (te.hasPaintFor(facing)) renderFace(x, y, z, te, facing, light, playerDistSq);
@@ -114,8 +115,9 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         GlStateManager.translated(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
-        if (k > MCPaintConfig.CLIENT.maxPaintBrightness)
-            k = MCPaintConfig.CLIENT.maxPaintBrightness;
+        int maxBrightness = MCPaintConfig.CLIENT.maxPaintBrightness.get();
+        if (k > maxBrightness)
+            k = maxBrightness;
         //lightmap
         OpenGlHelper.glMultiTexCoord2f(OpenGlHelper.GL_TEXTURE1, (float) j, (float) k);
 
@@ -128,11 +130,12 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
 
         IPaintable paint = te.getPaintFor(facing);
         //Render picture
-        boolean slow = !MCPaintConfig.CLIENT.optimizePictures;
+        boolean slow = !MCPaintConfig.CLIENT.optimizePictures.get();
         if (!slow) {
             BufferManager builder = te.getBuffer(facing);
             if (builder == null) {
-                if (playerDistSq < ((MCPaintConfig.CLIENT.maxPaintRenderDistance - 8) * (MCPaintConfig.CLIENT.maxPaintRenderDistance - 8)))
+                int maxDistOffset = MCPaintConfig.CLIENT.maxPaintRenderDistance.get() - 8;
+                if (playerDistSq < (maxDistOffset * maxDistOffset))
                     slow = true;
             } else {
                 vboUploader.draw(builder.get(getRes(playerDistSq)));
