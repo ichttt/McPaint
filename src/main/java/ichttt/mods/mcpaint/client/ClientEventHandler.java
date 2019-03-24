@@ -12,6 +12,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -43,5 +44,10 @@ public class ClientEventHandler {
         if (event.phase == TickEvent.Phase.START && Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 200 == 0) {
             RenderCache.scheduleCleanup();
         }
+    }
+
+    @SubscribeEvent
+    public static void onConfigChange(ConfigChangedEvent event) {
+        ClientHooks.onConfigReload();
     }
 }

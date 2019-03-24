@@ -8,7 +8,10 @@ import ichttt.mods.mcpaint.client.render.BufferManager;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 import javax.annotation.Nonnull;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class RenderCache {
@@ -28,15 +31,6 @@ public class RenderCache {
             return thread;
         }
     });
-
-    static {
-        POOL_EXECUTOR.setRejectedExecutionHandler(new RejectedExecutionHandler() {
-            @Override
-            public void rejectedExecution(Runnable r, ThreadPoolExecutor executor) {
-
-            }
-        });
-    }
 
     public static void getOrRequest(IPaintable paintable, IOptimisationCallback callback) {
         if (!MCPaintConfig.CLIENT.optimizePictures.get()) return;
