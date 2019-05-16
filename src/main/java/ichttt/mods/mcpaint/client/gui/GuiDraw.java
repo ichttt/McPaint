@@ -17,6 +17,7 @@ import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
+import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.texture.TextureMap;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -31,6 +32,8 @@ import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
+import net.minecraftforge.client.model.ModelDataManager;
+import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.fml.client.config.GuiSlider;
 import org.lwjgl.glfw.GLFW;
 import org.lwjgl.opengl.GL11;
@@ -61,6 +64,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
     private final BlockPos pos;
     private final EnumFacing facing;
     private final IBlockState state;
+    private final IBakedModel model;
     private final LinkedList<PictureState> statesForUndo = new LinkedList<>();
     private final LinkedList<PictureState> statesForRedo = new LinkedList<>();
     private final boolean hadPaint;
@@ -87,6 +91,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         this.pos = pos;
         this.facing = facing;
         this.state = state;
+        this.model = this.mc.getBlockRendererDispatcher().getModelForState(state);
         this.currentState = new PictureState(canvas);
         for (IPaintable paint : prevImages)
             this.statesForUndo.add(new PictureState(paint));
@@ -97,6 +102,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
         this.state = state;
+        this.model = this.mc.getBlockRendererDispatcher().getModelForState(state);
         int[][] picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, ZERO_ALPHA);
@@ -292,7 +298,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         BufferBuilder buffer = tessellator.getBuffer();
 
         //Background block
-        List<BakedQuad> quads = this.mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), new Random());
+        List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.getSprite();
             GlStateManager.pushMatrix();
@@ -504,7 +510,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         BufferedImage output = new BufferedImage(paint.getWidth(), paint.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         if (background) {
-            List<BakedQuad> quads = this.mc.getBlockRendererDispatcher().getModelForState(state).getQuads(state, facing.getOpposite(), new Random());
+            List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random());
             for (BakedQuad quad : quads) {
                 TextureAtlasSprite sprite = quad.getSprite();
                 try (IResource resource = mc.getResourceManager().getResource(getResourceLocation(sprite))) {

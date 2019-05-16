@@ -47,17 +47,17 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public NBTTagCompound write(NBTTagCompound tag) {
         tag = super.write(tag);
-        tag.setTag("blockState", NBTUtil.writeBlockState(this.containedState));
+        tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
         NBTTagCompound faces = new NBTTagCompound();
         for (Map.Entry<EnumFacing, IPaintable> entry : this.facingToPaintMap.entrySet()) {
-            faces.setTag(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
+            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
         }
-        tag.setTag("faces", faces);
+        tag.put("faces", faces);
         if (!disallowedFaces.isEmpty()) {
             NBTTagCompound blockedFaces = new NBTTagCompound();
             for (EnumFacing facing : EnumFacing.values())
-                blockedFaces.setBoolean(facing.getName(), disallowedFaces.contains(facing));
-            tag.setTag("blocked", blockedFaces);
+                blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
+            tag.put("blocked", blockedFaces);
         }
         return tag;
     }
@@ -73,7 +73,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             this.facingToPaintMap.put(EnumFacing.byName(key), paint);
         }
         disallowedFaces.clear();
-        if (tag.hasKey("blocked")) {
+        if (tag.contains("blocked")) {
             NBTTagCompound blockedFaces = tag.getCompound("blocked");
             for (String key : blockedFaces.keySet()) {
                 if (blockedFaces.getBoolean(key))

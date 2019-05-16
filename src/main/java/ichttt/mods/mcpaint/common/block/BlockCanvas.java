@@ -150,12 +150,12 @@ public class BlockCanvas extends Block {
 
     @SuppressWarnings("deprecation")
     @Override
-    public MaterialColor getMapColor(IBlockState state, IBlockReader world, BlockPos pos) {
+    public MaterialColor getMaterialColor(IBlockState state, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getMapColor(world, pos);
+            return canvas.getContainedState().getMaterialColor(world, pos);
         }
-        return super.getMapColor(state, world, pos);
+        return super.getMaterialColor(state, world, pos);
     }
 
     @Override
