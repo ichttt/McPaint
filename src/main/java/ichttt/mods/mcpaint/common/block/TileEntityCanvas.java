@@ -21,6 +21,10 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.EnumFacing;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.client.model.ModelDataManager;
+import net.minecraftforge.client.model.data.IModelData;
+import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
@@ -34,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
+    public static final ModelProperty<IBlockState> BLOCK_STATE_PROPERTY = new ModelProperty<>();
     private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
     private IBlockState containedState;
     private final Map<EnumFacing, Object> bufferMap = new EnumMap<>(EnumFacing.class);
@@ -117,6 +122,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         this.containedState = state;
         this.disallowedFaces.addAll(disallowedFaces);
         this.markDirty();
+        if (this.world.isRemote)
+            ModelDataManager.requestModelDataRefresh(this);
     }
 
     public IBlockState getContainedState() {
@@ -198,6 +205,12 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         if (EffectiveSide.get() == LogicalSide.CLIENT) {
             unbindBuffers();
         }
+    }
+
+    @Nonnull
+    @Override
+    public IModelData getModelData() {
+        return new ModelDataMap.Builder().withInitial(BLOCK_STATE_PROPERTY, this.containedState).build();
     }
 
     public boolean isSideBlockedForPaint(EnumFacing facing) {

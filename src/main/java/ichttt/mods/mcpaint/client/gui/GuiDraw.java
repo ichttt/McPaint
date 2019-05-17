@@ -11,6 +11,7 @@ import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.BufferBuilder;
@@ -91,7 +92,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         this.pos = pos;
         this.facing = facing;
         this.state = state;
-        this.model = this.mc.getBlockRendererDispatcher().getModelForState(state);
+        this.model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
         this.currentState = new PictureState(canvas);
         for (IPaintable paint : prevImages)
             this.statesForUndo.add(new PictureState(paint));
@@ -102,7 +103,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
         this.state = state;
-        this.model = this.mc.getBlockRendererDispatcher().getModelForState(state);
+        this.model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
         int[][] picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
             Arrays.fill(tileArray, ZERO_ALPHA);
@@ -510,7 +511,7 @@ public class GuiDraw extends GuiScreen implements GuiSlider.ISlider {
         BufferedImage output = new BufferedImage(paint.getWidth(), paint.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         if (background) {
-            List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random());
+            List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
             for (BakedQuad quad : quads) {
                 TextureAtlasSprite sprite = quad.getSprite();
                 try (IResource resource = mc.getResourceManager().getResource(getResourceLocation(sprite))) {
