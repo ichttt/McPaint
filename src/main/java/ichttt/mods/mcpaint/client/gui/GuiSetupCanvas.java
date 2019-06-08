@@ -68,7 +68,7 @@ public class GuiSetupCanvas extends Screen {
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
         minecraft.getTextureManager().bindTexture(BACKGROUND);
-        this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
+        blit(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
         this.drawCenteredString(minecraft.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
         this.drawCenteredString(minecraft.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
         super.render(mouseX, mouseY, partialTicks);

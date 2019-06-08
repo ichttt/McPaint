@@ -195,11 +195,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         GuiColorButton pink = new GuiColorButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
 
         this.redSlider = make(this.guiLeft + xSize + 3, this.guiTop + 4, "mcpaint.gui.red");
-        this.redSlider.width = 74;
         this.greenSlider = make(this.guiLeft + xSize + 3, this.guiTop + 26, "mcpaint.gui.green");
-        this.greenSlider.width = 74;
         this.blueSlider = make(this.guiLeft + xSize + 3, this.guiTop + 48,"mcpaint.gui.blue");
-        this.blueSlider.width = 74;
         this.alphaSlider = make(this.guiLeft + xSize + 3, this.guiTop + 70, "mcpaint.gui.alpha");
 
         addButton(saveImage);
@@ -244,14 +241,14 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     public void render(int mouseX, int mouseY, float partialTicks) {
         minecraft.getTextureManager().bindTexture(BACKGROUND);
         //main
-        this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
+        this.blit(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
         //color
-        this.drawTexturedModalRect(this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        this.blit(this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //tools
-        this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        this.blit(this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //size
         if (this.hasSizeWindow) {
-            this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
+            this.blit(this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
             drawCenteredString(this.font, toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
@@ -265,7 +262,6 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
             TextureAtlasSprite sprite = quad.getSprite();
             GlStateManager.pushMatrix();
             minecraft.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
-            this.zLevel = -1F;
             //See BlockModelRenderer
             if (quad.hasTintIndex()) {
                 int color = minecraft.getBlockColors().func_216860_a(state, minecraft.world, pos, quad.getTintIndex());
@@ -274,14 +270,13 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
                 float blue = (float) (color & 255) / 255.0F;
                 GlStateManager.color3f(red, green, blue);
             }
-            this.drawTexturedModalRect(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, sprite, 128, 128);
-            this.zLevel = 0F;
+            blit(this.guiLeft + PICTURE_START_LEFT, -1,this.guiTop + PICTURE_START_TOP, 128, 128, sprite);
             GlStateManager.popMatrix();
         }
 
         super.render(mouseX, mouseY, partialTicks);
 
-        drawRect(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.color.getRGB());
+        fill(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.color.getRGB());
 
         int offsetMouseX = mouseX - this.guiLeft - PICTURE_START_LEFT;
         int offsetMouseY = mouseY - this.guiTop - PICTURE_START_TOP;

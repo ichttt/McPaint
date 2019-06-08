@@ -16,6 +16,7 @@ import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
+import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.IBlockReader;
@@ -26,15 +27,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockCanvas extends Block {
-    public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
-    public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
+//    public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
+//    public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
     //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
         super(Block.Properties.create(material).hardnessAndResistance(1F, 4F));
-//        useNeighborBrightness = true; TODO
         setRegistryName(regNam);
-        setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
+//        setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
     }
 
     @Override
@@ -113,21 +113,21 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getCollisionShape(world, pos);
+            return canvas.getContainedState().getCollisionShape(world, pos, context);
         }
-        return super.getCollisionShape(state, world, pos);
+        return super.getCollisionShape(state, world, pos, context);
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getShape(world, pos);
+            return canvas.getContainedState().getShape(world, pos, context);
         }
-        return super.getShape(state, world, pos);
+        return super.getShape(state, world, pos, context);
     }
 
     @Override
@@ -160,7 +160,7 @@ public class BlockCanvas extends Block {
 
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-        builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
+//        builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
     }
 
     @Nonnull
@@ -186,25 +186,25 @@ public class BlockCanvas extends Block {
     }
 
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isFullCube(BlockState state) {
-        return state.get(IS_FULL_BLOCK);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isNormalCube(BlockState state) {
-        return state.get(IS_NORMAL_CUBE);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public boolean isBlockNormalCube(BlockState state) {
-        return state.get(IS_FULL_BLOCK);
-    }
+//    @SuppressWarnings("deprecation")
+//    @Override TODO
+//    public boolean isFullCube(BlockState state) {
+//        return state.get(IS_FULL_BLOCK);
+//    }
+//
+//    @SuppressWarnings("deprecation")
+//    @Override
+//    public boolean isNormalCube(BlockState state) {
+//        return state.get(IS_NORMAL_CUBE);
+//    }
+//
+//    @SuppressWarnings("deprecation")
+//    @Override
+//    public boolean isBlockNormalCube(BlockState state) {
+//        return state.get(IS_FULL_BLOCK);
+//    }
 
     public BlockState getStateFrom(BlockState state) {
-        return getDefaultState().with(IS_NORMAL_CUBE, state.isNormalCube()).with(IS_FULL_BLOCK, state.isBlockNormalCube());
+        return getDefaultState();//.with(IS_NORMAL_CUBE, state.isNormalCube()).with(IS_FULL_BLOCK, state.isBlockNormalCube());
     }
 }

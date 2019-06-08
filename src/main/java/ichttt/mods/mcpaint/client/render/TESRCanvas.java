@@ -1,5 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.platform.GLX;
+import com.mojang.blaze3d.platform.GlStateManager;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -8,6 +10,7 @@ import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.Direction;
+import net.minecraft.util.math.BlockPos;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Objects;
@@ -19,7 +22,8 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     @Override
     public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         if (destroyStage != -1) return;
-        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(te.getPos());
+        BlockPos pos = te.getPos();
+        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
         if (playerDistSq < (maxDist * maxDist)) {
             int light = Objects.requireNonNull(te.getWorld()).getCombinedLight(te.getPos(), 0);
@@ -119,7 +123,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         if (k > maxBrightness)
             k = maxBrightness;
         //lightmap
-        OpenGlHelper.glMultiTexCoord2f(OpenGlHelper.GL_TEXTURE1, (float) j, (float) k);
+        GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, j, k);
 
         if (angle != 0)
             GlStateManager.rotatef(angle, 0, 1, 0);
