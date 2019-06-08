@@ -1,12 +1,12 @@
 package ichttt.mods.mcpaint.client.gui.button;
 
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.widget.button.Button;
 
 import java.awt.*;
 import java.util.function.Consumer;
 
-public class GuiColorButton extends GuiButton {
+public class GuiColorButton extends Button {
     private final int borderColor;
     private final Consumer<Color> consumer;
 

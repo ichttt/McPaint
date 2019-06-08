@@ -12,13 +12,13 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.block.BlockState;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SPacketUpdateTileEntity;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.ModelDataManager;
@@ -38,11 +38,11 @@ import java.util.Map;
 import java.util.Set;
 
 public class TileEntityCanvas extends TileEntity implements IPaintValidator {
-    public static final ModelProperty<IBlockState> BLOCK_STATE_PROPERTY = new ModelProperty<>();
-    private final Map<EnumFacing, IPaintable> facingToPaintMap = new EnumMap<>(EnumFacing.class);
-    private IBlockState containedState;
-    private final Map<EnumFacing, Object> bufferMap = new EnumMap<>(EnumFacing.class);
-    private final Set<EnumFacing> disallowedFaces = EnumSet.noneOf(EnumFacing.class);
+    public static final ModelProperty<BlockState> BLOCK_STATE_PROPERTY = new ModelProperty<>();
+    private final Map<Direction, IPaintable> facingToPaintMap = new EnumMap<>(Direction.class);
+    private BlockState containedState;
+    private final Map<Direction, Object> bufferMap = new EnumMap<>(Direction.class);
+    private final Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
 
     public TileEntityCanvas() {
         super(EventHandler.CANVAS_TE);
@@ -50,17 +50,17 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Nonnull
     @Override
-    public NBTTagCompound write(NBTTagCompound tag) {
+    public CompoundNBT write(CompoundNBT tag) {
         tag = super.write(tag);
         tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
-        NBTTagCompound faces = new NBTTagCompound();
-        for (Map.Entry<EnumFacing, IPaintable> entry : this.facingToPaintMap.entrySet()) {
-            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new NBTTagCompound()));
+        CompoundNBT faces = new CompoundNBT();
+        for (Map.Entry<Direction, IPaintable> entry : this.facingToPaintMap.entrySet()) {
+            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
         }
         tag.put("faces", faces);
         if (!disallowedFaces.isEmpty()) {
-            NBTTagCompound blockedFaces = new NBTTagCompound();
-            for (EnumFacing facing : EnumFacing.values())
+            CompoundNBT blockedFaces = new CompoundNBT();
+            for (Direction facing : Direction.values())
                 blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
@@ -68,46 +68,46 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void read(NBTTagCompound tag) {
+    public void read(CompoundNBT tag) {
         super.read(tag);
         this.containedState = NBTUtil.readBlockState(tag.getCompound("blockState"));
-        NBTTagCompound faces = tag.getCompound("faces");
+        CompoundNBT faces = tag.getCompound("faces");
         for (String key : faces.keySet()) {
             Paint paint = new Paint(this);
             CapabilityPaintable.readFromNBT(paint, faces.getCompound(key));
-            this.facingToPaintMap.put(EnumFacing.byName(key), paint);
+            this.facingToPaintMap.put(Direction.byName(key), paint);
         }
         disallowedFaces.clear();
         if (tag.contains("blocked")) {
-            NBTTagCompound blockedFaces = tag.getCompound("blocked");
+            CompoundNBT blockedFaces = tag.getCompound("blocked");
             for (String key : blockedFaces.keySet()) {
                 if (blockedFaces.getBoolean(key))
-                    disallowedFaces.add(EnumFacing.byName(key));
+                    disallowedFaces.add(Direction.byName(key));
             }
         }
     }
 
     @Override
-    public void handleUpdateTag(@Nonnull NBTTagCompound tag) {
+    public void handleUpdateTag(@Nonnull CompoundNBT tag) {
         this.read(tag);
     }
 
     @Nonnull
     @Override
-    public NBTTagCompound getUpdateTag() {
-        return this.write(new NBTTagCompound());
+    public CompoundNBT getUpdateTag() {
+        return this.write(new CompoundNBT());
     }
 
     @Nullable
     @Override
-    public SPacketUpdateTileEntity getUpdatePacket() {
-        return new SPacketUpdateTileEntity(this.pos, 0, this.getUpdateTag());
+    public SUpdateTileEntityPacket getUpdatePacket() {
+        return new SUpdateTileEntityPacket(this.pos, 0, this.getUpdateTag());
     }
 
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, EnumFacing facing) {
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, Direction facing) {
         if (cap == CapabilityPaintable.PAINTABLE)
             return LazyOptional.of(() -> (T) getPaintFor(facing));
         return super.getCapability(cap, facing);
@@ -118,7 +118,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return (pixelCountX == 0 && pixelCountY == 0) || (pixelCountX == 128 && pixelCountY == 128);
     }
 
-    public void setInitialData(IBlockState state, Set<EnumFacing> disallowedFaces) {
+    public void setInitialData(BlockState state, Set<Direction> disallowedFaces) {
         this.containedState = state;
         this.disallowedFaces.addAll(disallowedFaces);
         this.markDirty();
@@ -126,15 +126,15 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             ModelDataManager.requestModelDataRefresh(this);
     }
 
-    public IBlockState getContainedState() {
+    public BlockState getContainedState() {
         return this.containedState;
     }
 
-    public IPaintable getPaintFor(EnumFacing facing) {
+    public IPaintable getPaintFor(Direction facing) {
         return facingToPaintMap.computeIfAbsent(facing, face -> new Paint(this));
     }
 
-    public boolean hasPaintFor(EnumFacing facing) {
+    public boolean hasPaintFor(Direction facing) {
         IPaintable paint = facingToPaintMap.get(facing);
         if (paint == null)
             return false;
@@ -142,7 +142,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @OnlyIn(Dist.CLIENT)
-    public BufferManager getBuffer(EnumFacing facing) {
+    public BufferManager getBuffer(Direction facing) {
         Object obj = bufferMap.get(facing);
         if (obj instanceof BufferManager)
             return (BufferManager) obj;
@@ -168,7 +168,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @OnlyIn(Dist.CLIENT)
     public void unbindBuffers() {
-        for (Map.Entry<EnumFacing, Object> entry : bufferMap.entrySet()) {
+        for (Map.Entry<Direction, Object> entry : bufferMap.entrySet()) {
             Object obj = entry.getValue();
             if (obj instanceof SimpleCallback) {
                 ((SimpleCallback) obj).invalidate();
@@ -186,12 +186,12 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void onDataPacket(NetworkManager net, SPacketUpdateTileEntity pkt) {
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
         this.read(pkt.getNbtCompound());
         unbindBuffers();
     }
 
-    public void invalidateBuffer(EnumFacing facing) {
+    public void invalidateBuffer(Direction facing) {
         Object obj = bufferMap.remove(facing);
         if (obj instanceof SimpleCallback) {
             ((SimpleCallback) obj).invalidate();
@@ -213,11 +213,11 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         return new ModelDataMap.Builder().withInitial(BLOCK_STATE_PROPERTY, this.containedState).build();
     }
 
-    public boolean isSideBlockedForPaint(EnumFacing facing) {
+    public boolean isSideBlockedForPaint(Direction facing) {
         return disallowedFaces.contains(facing);
     }
 
-    public void removePaint(EnumFacing facing) {
+    public void removePaint(Direction facing) {
         facingToPaintMap.remove(facing);
     }
 }

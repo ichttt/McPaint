@@ -1,12 +1,12 @@
 package ichttt.mods.mcpaint.client.delegators;
 
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IModelData;
@@ -24,8 +24,8 @@ public class DelegatingBakedModel extends BakedModelWrapper<IBakedModel> {
 
     @Nonnull
     @Override
-    public List<BakedQuad> getQuads(@Nullable IBlockState state, @Nullable EnumFacing side, @Nonnull Random rand, @Nonnull IModelData extraData) {
-        IBlockState newState = extraData.getData(TileEntityCanvas.BLOCK_STATE_PROPERTY);
+    public List<BakedQuad> getQuads(@Nullable BlockState state, @Nullable Direction side, @Nonnull Random rand, @Nonnull IModelData extraData) {
+        BlockState newState = extraData.getData(TileEntityCanvas.BLOCK_STATE_PROPERTY);
         if (newState == null)
             return super.getQuads(state, side, rand, extraData);
         return Minecraft.getInstance().getModelManager().getBlockModelShapes().getModel(newState).getQuads(newState, side, rand, EmptyModelData.INSTANCE);

@@ -2,10 +2,10 @@ package ichttt.mods.mcpaint.networking;
 
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -30,7 +30,7 @@ public class MessageDrawAbort {
 
         public static void onMessage(MessageDrawAbort message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context ctx = supplier.get();
-            EntityPlayerMP player = MCPaintUtil.checkServer(ctx);
+            ServerPlayerEntity player = MCPaintUtil.checkServer(ctx);
             ctx.enqueueWork(() -> {
                 if (MCPaintUtil.isPosInvalid(player, message.pos)) return;
 
@@ -38,7 +38,7 @@ public class MessageDrawAbort {
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     boolean hasData = false;
-                    for (EnumFacing facing : EnumFacing.values()) {
+                    for (Direction facing : Direction.values()) {
                         if (canvas.hasPaintFor(facing)) {
                             hasData = true;
                             break;

@@ -9,19 +9,19 @@ import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.player.EntityPlayer;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumActionResult;
-import net.minecraft.util.EnumFacing;
-import net.minecraft.util.EnumHand;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TextComponentTranslation;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -40,16 +40,16 @@ public class ItemStamp extends ItemBrush {
     }
 
     @Override
-    protected EnumActionResult processMiss(World world, EntityPlayer player, EnumHand hand, ItemStack stack, @Nullable RayTraceResult result) {
+    protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
         if (result == null && player.isSneaking()) {
             stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!")).clear(null, null);
-            return EnumActionResult.SUCCESS;
+            return ActionResultType.SUCCESS;
         }
-        return EnumActionResult.FAIL;
+        return ActionResultType.FAIL;
     }
 
     @Override
-    protected EnumActionResult processHit(World world, EntityPlayer player, ItemStack held, BlockPos pos, IBlockState state, EnumFacing facing) {
+    protected ActionResultType processHit(World world, PlayerEntity player, ItemStack held, BlockPos pos, BlockState state, Direction facing) {
         IPaintable paint = Objects.requireNonNull(held.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint on brush!")));
         if (paint.hasPaintData()) {
             return super.processHit(world, player, held, pos, state, facing);
@@ -61,16 +61,16 @@ public class ItemStamp extends ItemBrush {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     if (canvas.hasPaintFor(facing)) {
                         paint.copyFrom(canvas.getPaintFor(facing), canvas, facing);
-                        return EnumActionResult.SUCCESS;
+                        return ActionResultType.SUCCESS;
                     }
                 }
             }
         }
-        return EnumActionResult.FAIL;
+        return ActionResultType.FAIL;
     }
 
     @Override
-    protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, EnumFacing facing, IBlockState state) {
+    protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
         if (world.isRemote) {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
             if (MCPaintConfig.CLIENT.directApplyStamp.get()) {
@@ -93,9 +93,9 @@ public class ItemStamp extends ItemBrush {
     public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
         if (paintable != null && paintable.hasPaintData()) {
-            tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.paint"));
+            tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.paint"));
         } else {
-            tooltip.add(new TextComponentTranslation("mcpaint.tooltip.stamp.nopaint"));
+            tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.nopaint"));
         }
         super.addInformation(stack, worldIn, tooltip, flagIn);
     }

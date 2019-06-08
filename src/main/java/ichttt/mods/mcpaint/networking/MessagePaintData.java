@@ -7,12 +7,12 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.block.state.IBlockState;
+import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -28,13 +28,13 @@ import java.util.function.Supplier;
 
 public class MessagePaintData {
     private final BlockPos pos;
-    private final EnumFacing facing;
+    private final Direction facing;
     private final byte scale;
     private final byte part;
     private final byte maxParts;
     private final int[][] data;
 
-    public static void createAndSend(BlockPos pos, EnumFacing facing, byte scale, int[][] data, Consumer<MessagePaintData> sender) {
+    public static void createAndSend(BlockPos pos, Direction facing, byte scale, int[][] data, Consumer<MessagePaintData> sender) {
         int length = data.length;
         if (length > 0)
             length *= data[0].length;
@@ -58,7 +58,7 @@ public class MessagePaintData {
         }
     }
 
-    public MessagePaintData(BlockPos pos, EnumFacing facing, byte scale, int[][] data, byte part, byte maxParts) {
+    public MessagePaintData(BlockPos pos, Direction facing, byte scale, int[][] data, byte part, byte maxParts) {
         this.pos = pos;
         this.facing = facing;
         this.scale = scale;
@@ -70,7 +70,7 @@ public class MessagePaintData {
     public MessagePaintData(PacketBuffer buf) {
         this.pos = buf.readBlockPos();
         this.scale = buf.readByte();
-        this.facing = EnumFacing.byIndex(buf.readByte());
+        this.facing = Direction.byIndex(buf.readByte());
         this.part = buf.readByte();
         this.maxParts = buf.readByte();
         short max = buf.readShort();
@@ -133,11 +133,11 @@ public class MessagePaintData {
             }
         }
 
-        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
-            EntityPlayerMP player = MCPaintUtil.checkServer(ctx);
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
+            ServerPlayerEntity player = MCPaintUtil.checkServer(ctx);
             if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
-            IBlockState state = player.world.getBlockState(pos);
+            BlockState state = player.world.getBlockState(pos);
             if (!(state.getBlock() instanceof BlockCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - Block invalid");
                 return;
@@ -168,7 +168,7 @@ public class MessagePaintData {
 
         @OnlyIn(Dist.CLIENT)
         @Override
-        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, EnumFacing facing, byte scale, int[][] data) {
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
             MCPaintUtil.checkClient(ctx);
             World world = Minecraft.getInstance().world;
             if (!world.isBlockLoaded(pos)) {

@@ -4,7 +4,7 @@ import com.google.common.primitives.Shorts;
 import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
 
@@ -35,7 +35,7 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
+    public void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
         short pixelCountX = Shorts.checkedCast(pictureData == null ? 0 : (pictureData.length * scaleFactor));
         short pixelCountY = Shorts.checkedCast(pictureData == null ? 0 : (pictureData[0].length * scaleFactor));
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
@@ -74,7 +74,7 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
+    public void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
         this.setData(paint.getScaleFactor(), MCPaintUtil.copyOf(paint.getPictureData()), canvas, facing);
     }
 

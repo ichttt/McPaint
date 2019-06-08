@@ -2,17 +2,17 @@ package ichttt.mods.mcpaint.client.gui;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.gui.GuiButton;
-import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.block.BlockState;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 
 import java.awt.*;
 
-public class GuiSetupCanvas extends GuiScreen {
+public class GuiSetupCanvas extends Screen {
     private static final ResourceLocation BACKGROUND = GuiDraw.BACKGROUND;
     private static final int yOffset = 166;
     private static final int xSize = 106;
@@ -20,19 +20,19 @@ public class GuiSetupCanvas extends GuiScreen {
     private static final int MAX_MULTIPLIER = 16;
 
     private final BlockPos pos;
-    private final EnumFacing facing;
-    private final IBlockState state;
+    private final Direction facing;
+    private final BlockState state;
     private final int baseX;
     private final int baseY;
 
     private boolean handled = false;
-    private GuiButton moreSize;
-    private GuiButton lessSize;
+    private Button moreSize;
+    private Button lessSize;
     private int currentMulti;
     private int guiLeft;
     private int guiTop;
 
-    public GuiSetupCanvas(BlockPos pos, EnumFacing facing, IBlockState state, int baseX, int baseY) {
+    public GuiSetupCanvas(BlockPos pos, Direction facing, BlockState state, int baseX, int baseY) {
         this.pos = pos;
         this.facing = facing;
         this.state = state;
@@ -45,7 +45,7 @@ public class GuiSetupCanvas extends GuiScreen {
     public void initGui() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new GuiButton(1, this.guiLeft + 5, this.guiTop + 26, 20, 20, "<") {
+        this.lessSize = new Button(1, this.guiLeft + 5, this.guiTop + 26, 20, 20, "<") {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 GuiSetupCanvas.this.currentMulti /= 2;
@@ -53,7 +53,7 @@ public class GuiSetupCanvas extends GuiScreen {
                 super.onClick(mouseX, mouseY);
             }
         };
-        this.moreSize = new GuiButton(2, this.guiLeft + 83, this.guiTop + 26, 20, 20, ">") {
+        this.moreSize = new Button(2, this.guiLeft + 83, this.guiTop + 26, 20, 20, ">") {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 GuiSetupCanvas.this.currentMulti *= 2;
@@ -61,7 +61,7 @@ public class GuiSetupCanvas extends GuiScreen {
                 super.onClick(mouseX, mouseY);
             }
         };
-        addButton(new GuiButton(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")) {
+        addButton(new Button(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")) {
             @Override
             public void onClick(double mouseX, double mouseY) {
                 handled = true;

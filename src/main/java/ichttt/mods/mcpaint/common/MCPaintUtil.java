@@ -6,12 +6,12 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.EntityPlayer;
-import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -20,14 +20,14 @@ import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class MCPaintUtil {
-    public static boolean isPosInvalid(EntityPlayerMP player, BlockPos pos) {
+    public static boolean isPosInvalid(ServerPlayerEntity player, BlockPos pos) {
         if (!player.world.isBlockLoaded(pos)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is trying to write to unloaded block");
-            player.connection.disconnect(new TextComponentString("Trying to write to unloaded block"));
+            player.connection.disconnect(new StringTextComponent("Trying to write to unloaded block"));
             return true;
         }
 
-        if (player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(player.getAttribute(EntityPlayer.REACH_DISTANCE).getValue()) + 5)) {
+        if (player.getDistance(pos.getX(), pos.getY(), pos.getZ()) > (Math.round(player.getAttribute(PlayerEntity.REACH_DISTANCE).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }
@@ -50,10 +50,10 @@ public class MCPaintUtil {
         return copy;
     }
 
-    public static void uploadPictureToServer(@Nullable TileEntity te, EnumFacing facing, byte scaleFactor, int[][] picture, boolean clear) {
+    public static void uploadPictureToServer(@Nullable TileEntity te, Direction facing, byte scaleFactor, int[][] picture, boolean clear) {
         if (!(te instanceof TileEntityCanvas)) {
             MCPaint.LOGGER.error("Could not set paint! Found block " + (te == null ? "NONE" : te.getType()));
-            Minecraft.getInstance().player.sendStatusMessage(new TextComponentString("Could not set paint!"), true);
+            Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent("Could not set paint!"), true);
             return;
         }
         TileEntityCanvas canvas = (TileEntityCanvas) te;
@@ -68,7 +68,7 @@ public class MCPaintUtil {
     }
 
     @Nonnull
-    public static EntityPlayerMP checkServer(NetworkEvent.Context context) {
+    public static ServerPlayerEntity checkServer(NetworkEvent.Context context) {
         if (context.getDirection() != NetworkDirection.PLAY_TO_SERVER)
             throw new IllegalArgumentException("Wrong side for server packet handler " + context.getDirection());
         context.setPacketHandled(true);

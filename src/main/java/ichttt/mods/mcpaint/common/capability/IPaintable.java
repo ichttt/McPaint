@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 
 import javax.annotation.Nullable;
 
@@ -23,9 +23,9 @@ public interface IPaintable extends IPaintValidator {
     /**
      * @param canvas The canvas the cache should be cleared for
      */
-    void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing);
+    void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable Direction facing);
 
-    void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing);
+    void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable Direction facing);
 
     @Override
     int hashCode();
@@ -33,7 +33,7 @@ public interface IPaintable extends IPaintValidator {
     @Override
     boolean equals(Object other);
 
-    default void clear(@Nullable TileEntityCanvas canvas, @Nullable EnumFacing facing) {
+    default void clear(@Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
         setData((byte) 0, null, canvas, facing);
     }
 }

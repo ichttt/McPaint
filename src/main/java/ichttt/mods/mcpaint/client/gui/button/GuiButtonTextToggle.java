@@ -2,13 +2,13 @@ package ichttt.mods.mcpaint.client.gui.button;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
-import net.minecraft.client.gui.GuiButton;
+import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.resources.I18n;
 
 import java.awt.*;
 import java.util.Locale;
 
-public class GuiButtonTextToggle extends GuiButton {
+public class GuiButtonTextToggle extends Button {
     private final int color;
     public final EnumDrawType type;
     public boolean toggled = true;

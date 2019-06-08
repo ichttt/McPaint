@@ -6,10 +6,10 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.tileentity.TileEntityItemStackRenderer;
+import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.InputMappings;
-import net.minecraft.entity.EntityLivingBase;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
@@ -19,10 +19,10 @@ import org.lwjgl.opengl.GL11;
 import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
-public class TEISRStamp extends TileEntityItemStackRenderer implements IItemPropertyGetter {
+public class TEISRStamp extends ItemStackTileEntityRenderer implements IItemPropertyGetter {
     public static final TEISRStamp INSTANCE = new TEISRStamp();
 
-    public static Callable<TileEntityItemStackRenderer> getInstance() {
+    public static Callable<ItemStackTileEntityRenderer> getInstance() {
         return () -> INSTANCE;
     }
 
@@ -45,7 +45,7 @@ public class TEISRStamp extends TileEntityItemStackRenderer implements IItemProp
     }
 
     @Override
-    public float call(ItemStack stack, @Nullable World world, @Nullable EntityLivingBase entity) {
+    public float call(ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
         if (InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {

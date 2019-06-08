@@ -7,13 +7,13 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.util.EnumFacing;
+import net.minecraft.util.Direction;
 import org.lwjgl.opengl.GL11;
 
 import java.util.Objects;
 
 public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
-    private static final EnumFacing[] VALUES = EnumFacing.values();
+    private static final Direction[] VALUES = Direction.values();
     private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
     @Override
@@ -23,7 +23,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
         if (playerDistSq < (maxDist * maxDist)) {
             int light = Objects.requireNonNull(te.getWorld()).getCombinedLight(te.getPos(), 0);
-            for (EnumFacing facing : VALUES) {
+            for (Direction facing : VALUES) {
                 if (te.hasPaintFor(facing)) renderFace(x, y, z, te, facing, light, playerDistSq);
             }
         } else {
@@ -31,7 +31,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         }
     }
 
-    private static void renderFace(double x, double y, double z, TileEntityCanvas te, EnumFacing facing, int light, double playerDistSq) {
+    private static void renderFace(double x, double y, double z, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
         //Facing setup
         int xOffset = 0;
         int yOffset = 0;
@@ -124,8 +124,8 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         if (angle != 0)
             GlStateManager.rotatef(angle, 0, 1, 0);
         else if (facing.getAxis().isVertical()) {
-            GlStateManager.rotatef(facing == EnumFacing.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotatef(facing == EnumFacing.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            GlStateManager.rotatef(facing == Direction.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
+            GlStateManager.rotatef(facing == Direction.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
         }
 
         IPaintable paint = te.getPaintFor(facing);
