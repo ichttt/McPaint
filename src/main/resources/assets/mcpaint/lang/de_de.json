@@ -5,6 +5,8 @@
 
   "mcpaint.tooltip.stamp.paint": "Schleich-klick in die Luft zum löschen",
   "mcpaint.tooltip.stamp.nopaint": "Schleich-klick auf Block mit Farbe zum kopieren",
+  "mcpaint.drawsetup": "Setze die Auflösung des Bildes",
+  "mcpaint.drawgui": "Bild malen",
   "mcpaint.gui.pencil": "Stift",
   "mcpaint.gui.fill": "Füllen",
   "mcpaint.gui.eraser": "Radierer",

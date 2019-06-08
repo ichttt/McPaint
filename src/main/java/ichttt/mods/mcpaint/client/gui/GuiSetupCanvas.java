@@ -9,6 +9,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
 
@@ -33,6 +34,7 @@ public class GuiSetupCanvas extends Screen {
     private int guiTop;
 
     public GuiSetupCanvas(BlockPos pos, Direction facing, BlockState state, int baseX, int baseY) {
+        super(new TranslationTextComponent("mcpaint.drawsetup"));
         this.pos = pos;
         this.facing = facing;
         this.state = state;
@@ -42,34 +44,22 @@ public class GuiSetupCanvas extends Screen {
     }
 
     @Override
-    public void initGui() {
+    public void init() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new Button(1, this.guiLeft + 5, this.guiTop + 26, 20, 20, "<") {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, "<", button -> {
                 GuiSetupCanvas.this.currentMulti /= 2;
                 handleSizeChanged();
-                super.onClick(mouseX, mouseY);
-            }
-        };
-        this.moreSize = new Button(2, this.guiLeft + 83, this.guiTop + 26, 20, 20, ">") {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, ">", button -> {
                 GuiSetupCanvas.this.currentMulti *= 2;
                 handleSizeChanged();
-                super.onClick(mouseX, mouseY);
-            }
-        };
-        addButton(new Button(0, this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                handled = true;
-                mc.displayGuiScreen(null);
-                mc.displayGuiScreen(new GuiDraw((byte) (16 / GuiSetupCanvas.this.currentMulti), pos, facing, state));
-                super.onClick(mouseX, mouseY);
-            }
         });
+        addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done"), button -> {
+            handled = true;
+            minecraft.displayGuiScreen(null);
+            minecraft.displayGuiScreen(new GuiDraw((byte) (16 / GuiSetupCanvas.this.currentMulti), pos, facing, state));
+        }));
         addButton(this.lessSize);
         addButton(this.moreSize);
         handleSizeChanged();
@@ -77,15 +67,15 @@ public class GuiSetupCanvas extends Screen {
 
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
-        mc.getTextureManager().bindTexture(BACKGROUND);
+        minecraft.getTextureManager().bindTexture(BACKGROUND);
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
-        this.drawCenteredString(mc.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
-        this.drawCenteredString(mc.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
+        this.drawCenteredString(minecraft.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
+        this.drawCenteredString(minecraft.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
         super.render(mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void onGuiClosed() {
+    public void onClose() {
         if (!handled) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
         }
@@ -94,16 +84,16 @@ public class GuiSetupCanvas extends Screen {
     private void handleSizeChanged() {
         if (this.currentMulti >= MAX_MULTIPLIER) {
             this.currentMulti = MAX_MULTIPLIER;
-            this.moreSize.enabled = false;
+            this.moreSize.active = false;
         } else {
-            this.moreSize.enabled = true;
+            this.moreSize.active = true;
         }
 
         if (this.currentMulti <= 1) {
             this.currentMulti = 1;
-            this.lessSize.enabled = false;
+            this.lessSize.active = false;
         } else {
-            this.lessSize.enabled = true;
+            this.lessSize.active = true;
         }
     }
 }

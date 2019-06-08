@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 
 public class PictureRenderer {
     public static void renderInGui(double leftOffset, double topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
@@ -35,7 +35,7 @@ public class PictureRenderer {
     public static void setWorldGLState() {
         GlStateManager.pushMatrix();
         GlStateManager.enableDepthTest(); //Should be true
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.disableLighting();
         GlStateManager.enableBlend();
         GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -44,7 +44,7 @@ public class PictureRenderer {
 
     public static void resetWorldGLState() {
         GlStateManager.disableBlend();
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.enableLighting();
         GlStateManager.popMatrix();
     }

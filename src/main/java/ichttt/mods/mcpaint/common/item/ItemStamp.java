@@ -49,10 +49,11 @@ public class ItemStamp extends ItemBrush {
     }
 
     @Override
-    protected ActionResultType processHit(World world, PlayerEntity player, ItemStack held, BlockPos pos, BlockState state, Direction facing) {
+    protected ActionResultType processHit(World world, PlayerEntity player, Hand hand, BlockPos pos, BlockState state, Direction facing) {
+        ItemStack held = player == null ? ItemStack.EMPTY : player.getHeldItem(hand);
         IPaintable paint = Objects.requireNonNull(held.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint on brush!")));
         if (paint.hasPaintData()) {
-            return super.processHit(world, player, held, pos, state, facing);
+            return super.processHit(world, player, hand, pos, state, facing);
         } else if (player != null && player.isSneaking()) {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {

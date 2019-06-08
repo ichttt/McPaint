@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.platform.GlStateManager;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.button.GuiButtonTextToggle;
 import ichttt.mods.mcpaint.client.gui.button.GuiColorButton;
@@ -13,9 +14,9 @@ import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.client.gui.widget.button.Button;
 import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.model.BakedQuad;
 import net.minecraft.client.renderer.model.IBakedModel;
@@ -30,8 +31,8 @@ import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.fml.client.config.GuiSlider;
@@ -45,8 +46,13 @@ import java.io.File;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.*;
+import java.util.Objects;
+import java.util.Random;
 
 public class GuiDraw extends Screen implements GuiSlider.ISlider {
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
@@ -86,6 +92,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     private boolean updating = false;
 
     public GuiDraw(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, Direction facing, BlockState state) {
+        super(new TranslationTextComponent("mcpaint.drawgui"));
         Objects.requireNonNull(canvas, "Canvas is null");
         Preconditions.checkArgument(canvas.hasPaintData(), "No data in canvas");
         this.pos = pos;
@@ -99,6 +106,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     }
 
     protected GuiDraw(byte scaleFactor, BlockPos pos, Direction facing, BlockState state) {
+        super(new TranslationTextComponent("mcpaint.drawgui"));
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
         this.state = state;
@@ -110,28 +118,25 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         hadPaint = false;
     }
 
+
+
     @Override
-    public void initGui() {
+    public void init() {
         this.hasSizeWindow = false;
         this.textToggleList.clear();
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        Button saveImage = new Button(-12, this.guiLeft + xSize, this.guiTop + 96, 80, 20, "Export") {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, "Export", button -> {
                 try {
                     saveImage(true);
                 } catch (IOException e) {
                     MCPaint.LOGGER.error("Could not save image!", e);
-                    mc.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), true);
-                    mc.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), false);
+                    minecraft.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), true);
+                    minecraft.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), false);
                 }
-            }
-        };
-        Button rotateRight = new Button(-11, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"), button -> {
                 int[][] newData = new int[GuiDraw.this.currentState.picture.length][GuiDraw.this.currentState.picture[0].length];
                 for (int x = 0; x < GuiDraw.this.currentState.picture.length; x++) {
                     int[] yData = GuiDraw.this.currentState.picture[x];
@@ -140,11 +145,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
                     }
                 }
                 newPictureState(new PictureState(newData, GuiDraw.this.currentState.scaleFactor));
-            }
-        };
-        Button rotateLeft = new Button(-10, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"), button -> {
                 int[][] newData = new int[GuiDraw.this.currentState.picture.length][GuiDraw.this.currentState.picture[0].length];
                 for (int x = 0; x < GuiDraw.this.currentState.picture.length; x++) {
                     int[] yData = GuiDraw.this.currentState.picture[x];
@@ -153,70 +155,30 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
                     }
                 }
                 newPictureState(new PictureState(newData, GuiDraw.this.currentState.scaleFactor));
-            }
-        };
-        this.redo = new Button(-9, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                redo();
-            }
-        };
-        this.undo = new Button(-8, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                undo();
-            }
-        };
-        Button pickColor = new GuiButtonTextToggle(-7, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                GuiDraw.this.handleToolButton(this);
-            }
-        };
-        Button erase = new GuiButtonTextToggle(-6, this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                GuiDraw.this.handleToolButton(this);
-            }
-        };
-        Button fill = new GuiButtonTextToggle(-5, this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                GuiDraw.this.handleToolButton(this);
-            }
-        };
-        Button pencil = new GuiButtonTextToggle(-4, this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
-                GuiDraw.this.handleToolButton(this);
-            }
-        };
-        this.moreSize = new Button(-3, this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">") {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo"), button -> redo());
+        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo"), button -> undo());
+        Button pickColor = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR, GuiDraw.this::handleToolButton);
+        Button erase = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER, GuiDraw.this::handleToolButton);
+        Button fill = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL, GuiDraw.this::handleToolButton);
+        Button pencil = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL, GuiDraw.this::handleToolButton);
+        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">", button -> {
                 GuiDraw.this.toolSize++;
                 handleSizeChanged();
-            }
-        };
-        this.lessSize = new Button(-2, this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<") {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<", button -> {
                 GuiDraw.this.toolSize--;
                 handleSizeChanged();
-            }
-        };
-        Button done = new Button(-1, this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done")) {
-            @Override
-            public void onClick(double mouseX, double mouseY) {
+        });
+        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done"), button -> {
                 if (Arrays.stream(GuiDraw.this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != ZERO_ALPHA))) {
                     GuiDraw.this.noRevert = true;
-                    MCPaintUtil.uploadPictureToServer(GuiDraw.this.mc.world.getTileEntity(GuiDraw.this.pos), GuiDraw.this.facing, GuiDraw.this.currentState.scaleFactor, GuiDraw.this.currentState.picture, false);
+                    MCPaintUtil.uploadPictureToServer(GuiDraw.this.minecraft.world.getTileEntity(GuiDraw.this.pos), GuiDraw.this.facing, GuiDraw.this.currentState.scaleFactor, GuiDraw.this.currentState.picture, false);
                 } else if (hadPaint) {
-                    MCPaintUtil.uploadPictureToServer(GuiDraw.this.mc.world.getTileEntity(GuiDraw.this.pos), GuiDraw.this.facing, GuiDraw.this.currentState.scaleFactor, GuiDraw.this.currentState.picture, true);
+                    MCPaintUtil.uploadPictureToServer(GuiDraw.this.minecraft.world.getTileEntity(GuiDraw.this.pos), GuiDraw.this.facing, GuiDraw.this.currentState.scaleFactor, GuiDraw.this.currentState.picture, true);
                 }
-                GuiDraw.this.mc.displayGuiScreen(null);
-            }
-        };
+                GuiDraw.this.minecraft.displayGuiScreen(null);
+        });
 
         GuiColorButton black = new GuiColorButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
         GuiColorButton white = new GuiColorButton(1, this.guiLeft + 137 + 18, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
@@ -232,13 +194,13 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         GuiColorButton purple = new GuiColorButton(10, this.guiLeft + 137, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
         GuiColorButton pink = new GuiColorButton(11, this.guiLeft + 137 + 18, this.guiTop + 9 + 90, 16, 16, Color.BLACK.getRGB(), this::handleColorChange);
 
-        this.redSlider = make(100, this.guiLeft + xSize + 3, this.guiTop + 4, "mcpaint.gui.red");
+        this.redSlider = make(this.guiLeft + xSize + 3, this.guiTop + 4, "mcpaint.gui.red");
         this.redSlider.width = 74;
-        this.greenSlider = make(101, this.guiLeft + xSize + 3, this.guiTop + 26, "mcpaint.gui.green");
+        this.greenSlider = make(this.guiLeft + xSize + 3, this.guiTop + 26, "mcpaint.gui.green");
         this.greenSlider.width = 74;
-        this.blueSlider = make(102, this.guiLeft + xSize + 3, this.guiTop + 48,"mcpaint.gui.blue");
+        this.blueSlider = make(this.guiLeft + xSize + 3, this.guiTop + 48,"mcpaint.gui.blue");
         this.blueSlider.width = 74;
-        this.alphaSlider = make(103, this.guiLeft + xSize + 3, this.guiTop + 70, "mcpaint.gui.alpha");
+        this.alphaSlider = make(this.guiLeft + xSize + 3, this.guiTop + 70, "mcpaint.gui.alpha");
 
         addButton(saveImage);
         addButton(rotateRight);
@@ -266,7 +228,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         addButton(this.greenSlider);
         addButton(this.blueSlider);
         addButton(this.alphaSlider);
-        for (Button button : this.buttons) {
+        for (Widget button : this.buttons) {
             if (button instanceof GuiButtonTextToggle) {
                 this.textToggleList.add((GuiButtonTextToggle) button);
             }
@@ -280,7 +242,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
 
     @Override
     public void render(int mouseX, int mouseY, float partialTicks) {
-        mc.getTextureManager().bindTexture(BACKGROUND);
+        minecraft.getTextureManager().bindTexture(BACKGROUND);
         //main
         this.drawTexturedModalRect(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
         //color
@@ -290,7 +252,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         //size
         if (this.hasSizeWindow) {
             this.drawTexturedModalRect(this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
-            drawCenteredString(this.fontRenderer, toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
+            drawCenteredString(this.font, toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
 
@@ -302,11 +264,11 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.getSprite();
             GlStateManager.pushMatrix();
-            this.mc.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+            minecraft.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
             this.zLevel = -1F;
             //See BlockModelRenderer
             if (quad.hasTintIndex()) {
-                int color = mc.getBlockColors().getColor(state, mc.world, pos, quad.getTintIndex());
+                int color = minecraft.getBlockColors().func_216860_a(state, minecraft.world, pos, quad.getTintIndex());
                 float red = (float) (color >> 16 & 255) / 255.0F;
                 float green = (float) (color >> 8 & 255) / 255.0F;
                 float blue = (float) (color & 255) / 255.0F;
@@ -336,11 +298,11 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
         PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.currentState.scaleFactor, buffer, toDraw);
-        GlStateManager.disableTexture2D();
+        GlStateManager.disableTexture();
         GlStateManager.enableBlend();
         GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         tessellator.draw();
-        GlStateManager.enableTexture2D();
+        GlStateManager.enableTexture();
         GlStateManager.disableBlend();
     }
 
@@ -372,8 +334,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
 
     @Override
     public boolean keyPressed(int keyCode, int i1, int i2) {
-        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_CONTROL)) {
-            if (InputMappings.isKeyDown(GLFW.GLFW_KEY_LEFT_SHIFT))
+        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.func_216506_a(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            if (InputMappings.func_216506_a(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT))
                 redo();
             else
                 undo();
@@ -389,7 +351,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
 
     protected void handleToolButton(Button button) {
         for (GuiButtonTextToggle toggleButton : this.textToggleList) {
-            boolean toggled = toggleButton.id == button.id;
+            boolean toggled = toggleButton == button;
             toggleButton.toggled = toggled;
             if (toggled) {
                 this.activeDrawType = toggleButton.type;
@@ -406,7 +368,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     }
 
     @Override
-    public void onGuiClosed() {
+    public void onClose() {
         if (!noRevert) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
         }
@@ -440,8 +402,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     }
 
     private void updateUndoRedoButton() {
-        this.undo.enabled = !this.statesForUndo.isEmpty();
-        this.redo.enabled = !this.statesForRedo.isEmpty();
+        this.undo.active = !this.statesForUndo.isEmpty();
+        this.redo.active = !this.statesForRedo.isEmpty();
     }
 
     private boolean handleMouse(double mouseXD, double mouseYD, int mouseButton) {
@@ -468,8 +430,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         return offsetMouseX >= 0 && offsetMouseX < (this.currentState.picture.length * this.currentState.scaleFactor) && offsetMouseY >= 0 && offsetMouseY < (this.currentState.picture.length * this.currentState.scaleFactor);
     }
 
-    private GuiSlider make(int id, int xPos, int yPos, String key) {
-        return new GuiSlider(id, xPos, yPos, 74, 20, I18n.format(key), "", 0, 255, 0,false, true, this);
+    private GuiSlider make(int xPos, int yPos, String key) {
+        return new GuiSlider(xPos, yPos, 74, 20, I18n.format(key), "", 0, 255, 0,false, true, null, this);
     }
 
     private void updateSliders() {
@@ -488,15 +450,15 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     private void handleSizeChanged() {
         if (this.toolSize >= 10) {
             this.toolSize = 10;
-            this.moreSize.enabled = false;
+            this.moreSize.active = false;
         } else {
-            this.moreSize.enabled = true;
+            this.moreSize.active = true;
         }
         if (this.toolSize <= 1) {
             this.toolSize = 1;
-            this.lessSize.enabled = false;
+            this.lessSize.active = false;
         } else {
-            this.lessSize.enabled = true;
+            this.lessSize.active = true;
         }
     }
 
@@ -513,10 +475,10 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
             List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
             for (BakedQuad quad : quads) {
                 TextureAtlasSprite sprite = quad.getSprite();
-                try (IResource resource = mc.getResourceManager().getResource(getResourceLocation(sprite))) {
+                try (IResource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
                     Image image = ImageIO.read(resource.getInputStream());
                     if (quad.hasTintIndex()) {
-                        int color = mc.getBlockColors().getColor(state, mc.world, pos, quad.getTintIndex());
+                        int color = minecraft.getBlockColors().func_216860_a(state, minecraft.world, pos, quad.getTintIndex());
                         float red = (float) (color >> 16 & 255) / 255.0F;
                         float green = (float) (color >> 8 & 255) / 255.0F;
                         float blue = (float) (color & 255) / 255.0F;
@@ -538,7 +500,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
         }
         output.getGraphics().drawImage(paint, 0, 0, null);
 
-        File file = new File(this.mc.gameDir, "paintings");
+        File file = new File(this.minecraft.gameDir, "paintings");
         if (!file.exists() && !file.mkdir())
             throw new IOException("Could not create folder");
         final File finalFile = getTimestampedPNGFileForDirectory(file);
@@ -546,7 +508,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
             throw new IOException("Could not encode image as png!");
         ITextComponent component = new StringTextComponent(finalFile.getName());
         component = component.applyTextStyle(TextFormatting.UNDERLINE).applyTextStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
-        mc.player.sendStatusMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
+        minecraft.player.sendStatusMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
     }
 
     @Override
@@ -579,7 +541,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
     }
 
     @Override
-    public boolean doesGuiPauseGame() {
+    public boolean isPauseScreen() {
         return false;
     }
 }

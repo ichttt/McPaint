@@ -6,15 +6,21 @@ import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockRenderType;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.state.BlockFaceShape;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.util.*;
+import net.minecraft.util.ActionResult;
+import net.minecraft.util.ActionResultType;
+import net.minecraft.util.Direction;
+import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
+import net.minecraft.util.math.RayTraceContext;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
@@ -22,7 +28,11 @@ import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class ItemBrush extends Item {
     public static Item.Properties getProperties() {
@@ -41,35 +51,36 @@ public class ItemBrush extends Item {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, @Nonnull Hand hand) {
         ItemStack held = player.getHeldItem(hand);
-        RayTraceResult raytraceresult = this.rayTrace(world, player, false);
-        if (raytraceresult == null || raytraceresult.type != RayTraceResult.Type.BLOCK)
+        RayTraceResult raytraceresult = func_219968_a(world, player, RayTraceContext.FluidMode.NONE);
+        if (raytraceresult.getType() != RayTraceResult.Type.BLOCK)
             return new ActionResult<>(processMiss(world, player, hand, held, raytraceresult), held);
-        BlockPos pos = raytraceresult.getBlockPos();
+        BlockRayTraceResult blockRayTraceResult = (BlockRayTraceResult) raytraceresult;
+        BlockPos pos = blockRayTraceResult.getPos();
         BlockState state = world.getBlockState(pos);
-        Direction facing = raytraceresult.sideHit;
-        return new ActionResult<>(processHit(world, player, held, pos, state, facing), held);
+        Direction facing = blockRayTraceResult.getFace();
+        return new ActionResult<>(processHit(world, player, hand, pos, state, facing), held);
     }
 
     protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
         return ActionResultType.FAIL;
     }
 
-    protected ActionResultType processHit(World world, PlayerEntity player, ItemStack held, BlockPos pos, BlockState state, Direction facing) {
+    protected ActionResultType processHit(World world, PlayerEntity player, Hand hand, BlockPos pos, BlockState state, Direction facing) {
         if (state.getBlock() instanceof BlockCanvas) {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             //We need to cache getBlockFaceShape as the method takes a world as an argument
             if (canvas.isSideBlockedForPaint(facing)) return ActionResultType.FAIL;
+            ItemStack held = player.getHeldItem(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
-            held.damageItem(1, player);
+            held.func_222118_a(1, player, (p_220282_1_) -> p_220282_1_.func_213334_d(hand));
             return ActionResultType.SUCCESS;
         }
 
-        //TODO check isFullBlock
-        if (state.getBlockFaceShape(world, pos, facing) == BlockFaceShape.SOLID && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
-                state.isFullCube() == state.isBlockNormalCube() && state.getRenderType() == BlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
+        if (Block.func_220055_a(world, pos, facing) && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
+                /*state.isFullCube() == state.isBlockNormalCube() &&*/ state.getRenderType() == BlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
             Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
             for (Direction testFacing : Direction.values()) {
-                if (state.getBlockFaceShape(world, pos, testFacing) != BlockFaceShape.SOLID)
+                if (!Block.func_220055_a(world, pos, testFacing))
                     disallowedFaces.add(testFacing);
             }
             if (state.getMaterial().isFlammable())
@@ -81,8 +92,9 @@ public class ItemBrush extends Item {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setInitialData(state, disallowedFaces);
             canvas.markDirty();
+            ItemStack held = player.getHeldItem(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
-            held.damageItem(1, player);
+            held.func_222118_a(1, player, (p_220282_1_) -> p_220282_1_.func_213334_d(hand));
             return ActionResultType.SUCCESS;
         }
         return ActionResultType.FAIL;
