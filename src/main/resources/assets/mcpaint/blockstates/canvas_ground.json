@@ -1,8 +1,8 @@
 {
   "variants": {
-    "full_block=false,normal_cube=false": {"model": "minecraft:block/coal_ore"},
-    "full_block=false,normal_cube=true": {"model": "minecraft:block/coal_ore"},
-    "full_block=true,normal_cube=false": {"model": "minecraft:block/coal_ore"},
-    "full_block=true,normal_cube=true": {"model": "minecraft:block/coal_ore"}
+    "solid=false,normal_cube=false": {"model": "minecraft:block/coal_ore"},
+    "solid=false,normal_cube=true": {"model": "minecraft:block/coal_ore"},
+    "solid=true,normal_cube=false": {"model": "minecraft:block/coal_ore"},
+    "solid=true,normal_cube=true": {"model": "minecraft:block/coal_ore"}
   }
 }

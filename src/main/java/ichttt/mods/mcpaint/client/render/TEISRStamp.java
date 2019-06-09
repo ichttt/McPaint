@@ -30,7 +30,7 @@ public class TEISRStamp extends ItemStackTileEntityRenderer implements IItemProp
 
     @Override
     public void renderByItem(ItemStack itemStack) {
-        if (InputMappings.func_216506_a(Minecraft.getInstance().mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
                 Tessellator tessellator = Tessellator.getInstance();
@@ -46,7 +46,7 @@ public class TEISRStamp extends ItemStackTileEntityRenderer implements IItemProp
 
     @Override
     public float call(ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
-        if (InputMappings.func_216506_a(Minecraft.getInstance().mainWindow.getHandle(),GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().mainWindow.getHandle(),GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {
                 MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");

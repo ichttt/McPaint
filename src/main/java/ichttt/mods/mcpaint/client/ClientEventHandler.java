@@ -64,7 +64,7 @@ public class ClientEventHandler {
     @SubscribeEvent
     public static void onModelBake(ModelBakeEvent event) {
         String[] toReplace = new String[] {"canvas_ground", "canvas_rock", "canvas_wood"};
-        String[] variants = new String[] {"full_block=false,normal_cube=false", "full_block=false,normal_cube=true", "full_block=true,normal_cube=false", "full_block=true,normal_cube=true"};
+        String[] variants = new String[] {"solid=false,normal_cube=false", "solid=false,normal_cube=true", "solid=true,normal_cube=false", "solid=true,normal_cube=true"};
         for (String s : toReplace) {
             for (String variant : variants) {
                 ModelResourceLocation mrl = new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, s), variant);

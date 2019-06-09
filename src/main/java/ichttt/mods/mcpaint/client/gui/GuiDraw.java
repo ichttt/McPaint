@@ -264,13 +264,13 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
             minecraft.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
             //See BlockModelRenderer
             if (quad.hasTintIndex()) {
-                int color = minecraft.getBlockColors().func_216860_a(state, minecraft.world, pos, quad.getTintIndex());
+                int color = minecraft.getBlockColors().getColor(state, minecraft.world, pos, quad.getTintIndex());
                 float red = (float) (color >> 16 & 255) / 255.0F;
                 float green = (float) (color >> 8 & 255) / 255.0F;
                 float blue = (float) (color & 255) / 255.0F;
                 GlStateManager.color3f(red, green, blue);
             }
-            blit(this.guiLeft + PICTURE_START_LEFT, -1,this.guiTop + PICTURE_START_TOP, 128, 128, sprite);
+            blit(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, -1, 128, 128, sprite);
             GlStateManager.popMatrix();
         }
 
@@ -329,8 +329,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
 
     @Override
     public boolean keyPressed(int keyCode, int i1, int i2) {
-        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.func_216506_a(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL)) {
-            if (InputMappings.func_216506_a(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT))
+        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.isKeyDown(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            if (InputMappings.isKeyDown(minecraft.mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT))
                 redo();
             else
                 undo();
@@ -473,7 +473,7 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
                 try (IResource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
                     Image image = ImageIO.read(resource.getInputStream());
                     if (quad.hasTintIndex()) {
-                        int color = minecraft.getBlockColors().func_216860_a(state, minecraft.world, pos, quad.getTintIndex());
+                        int color = minecraft.getBlockColors().getColor(state, minecraft.world, pos, quad.getTintIndex());
                         float red = (float) (color >> 16 & 255) / 255.0F;
                         float green = (float) (color >> 8 & 255) / 255.0F;
                         float blue = (float) (color & 255) / 255.0F;

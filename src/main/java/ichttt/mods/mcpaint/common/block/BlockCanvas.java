@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.math.RayTraceResult;
 import net.minecraft.util.math.shapes.ISelectionContext;
 import net.minecraft.util.math.shapes.VoxelShape;
@@ -27,14 +28,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockCanvas extends Block {
-//    public static final BooleanProperty IS_FULL_BLOCK = BooleanProperty.create("full_block");
-//    public static final BooleanProperty IS_NORMAL_CUBE = BooleanProperty.create("normal_cube");
+    //change clienteventhandler as well
+    public static final BooleanProperty SOLID = BooleanProperty.create("solid");
+    public static final BooleanProperty NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
     //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
         super(Block.Properties.create(material).hardnessAndResistance(1F, 4F));
         setRegistryName(regNam);
-//        setDefaultState(stateContainer.getBaseState().with(IS_FULL_BLOCK, true).with(IS_NORMAL_CUBE, true));
+        setDefaultState(stateContainer.getBaseState().with(SOLID, true).with(NORMAL_CUBE, true));
     }
 
     @Override
@@ -160,7 +162,7 @@ public class BlockCanvas extends Block {
 
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
-//        builder.add(IS_FULL_BLOCK, IS_NORMAL_CUBE);
+        builder.add(SOLID, NORMAL_CUBE);
     }
 
     @Nonnull
@@ -185,26 +187,17 @@ public class BlockCanvas extends Block {
         return ItemStack.EMPTY;
     }
 
+    @Override
+    public boolean isSolid(BlockState state) {
+        return state.get(SOLID);
+    }
 
-//    @SuppressWarnings("deprecation")
-//    @Override TODO
-//    public boolean isFullCube(BlockState state) {
-//        return state.get(IS_FULL_BLOCK);
-//    }
-//
-//    @SuppressWarnings("deprecation")
-//    @Override
-//    public boolean isNormalCube(BlockState state) {
-//        return state.get(IS_NORMAL_CUBE);
-//    }
-//
-//    @SuppressWarnings("deprecation")
-//    @Override
-//    public boolean isBlockNormalCube(BlockState state) {
-//        return state.get(IS_FULL_BLOCK);
-//    }
+    @Override
+    public boolean isNormalCube(BlockState state, IBlockReader world, BlockPos pos) {
+        return state.get(NORMAL_CUBE);
+    }
 
-    public BlockState getStateFrom(BlockState state) {
-        return getDefaultState();//.with(IS_NORMAL_CUBE, state.isNormalCube()).with(IS_FULL_BLOCK, state.isBlockNormalCube());
+    public BlockState getStateFrom(IBlockReader world, BlockPos pos, BlockState state) {
+        return getDefaultState().with(SOLID, state.isSolid()).with(NORMAL_CUBE, state.isNormalCube(world, pos));
     }
 }

@@ -22,7 +22,7 @@ public class BlockColorDelegator implements IBlockColor {
             TileEntityCanvas canvas = (TileEntityCanvas) entity;
             BlockState contained = canvas.getContainedState();
             if (contained != null) {
-                return Minecraft.getInstance().getBlockColors().func_216860_a(contained, world, pos, tintIndex);
+                return Minecraft.getInstance().getBlockColors().getColor(contained, world, pos, tintIndex);
             }
         }
         return -1;

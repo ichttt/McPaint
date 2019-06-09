@@ -82,7 +82,7 @@ public class MCPaint {
     @SubscribeEvent
     @SuppressWarnings("ConstantConditions")
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
-        TileEntityType<?> type = (TileEntityType.Builder.func_223042_a(TileEntityCanvas::new).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
+        TileEntityType<?> type = (TileEntityType.Builder.create(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
         event.getRegistry().register(type);
     }
 }

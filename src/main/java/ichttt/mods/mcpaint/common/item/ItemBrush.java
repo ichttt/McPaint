@@ -51,7 +51,7 @@ public class ItemBrush extends Item {
     @Override
     public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, @Nonnull Hand hand) {
         ItemStack held = player.getHeldItem(hand);
-        RayTraceResult raytraceresult = func_219968_a(world, player, RayTraceContext.FluidMode.NONE);
+        RayTraceResult raytraceresult = rayTrace(world, player, RayTraceContext.FluidMode.NONE);
         if (raytraceresult.getType() != RayTraceResult.Type.BLOCK)
             return new ActionResult<>(processMiss(world, player, hand, held, raytraceresult), held);
         BlockRayTraceResult blockRayTraceResult = (BlockRayTraceResult) raytraceresult;
@@ -72,7 +72,7 @@ public class ItemBrush extends Item {
             if (canvas.isSideBlockedForPaint(facing)) return ActionResultType.FAIL;
             ItemStack held = player.getHeldItem(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
-            held.func_222118_a(1, player, (p_220282_1_) -> p_220282_1_.func_213334_d(hand));
+            held.damageItem(1, player, (p_220282_1_) -> p_220282_1_.sendBreakAnimation(hand));
             return ActionResultType.SUCCESS;
         }
 
@@ -84,17 +84,17 @@ public class ItemBrush extends Item {
                     disallowedFaces.add(testFacing);
             }
             if (state.getMaterial().isFlammable())
-                world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(state));
+                world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(world, pos, state));
             else if (state.getMaterial().isToolNotRequired())
-                world.setBlockState(pos, EventHandler.CANVAS_GROUND.getStateFrom(state));
+                world.setBlockState(pos, EventHandler.CANVAS_GROUND.getStateFrom(world, pos, state));
             else
-                world.setBlockState(pos, EventHandler.CANVAS_ROCK.getStateFrom(state));
+                world.setBlockState(pos, EventHandler.CANVAS_ROCK.getStateFrom(world, pos, state));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getTileEntity(pos));
             canvas.setInitialData(state, disallowedFaces);
             canvas.markDirty();
             ItemStack held = player.getHeldItem(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
-            held.func_222118_a(1, player, (p_220282_1_) -> p_220282_1_.func_213334_d(hand));
+            held.damageItem(1, player, (p_220282_1_) -> p_220282_1_.sendBreakAnimation(hand));
             return ActionResultType.SUCCESS;
         }
         return ActionResultType.FAIL;
