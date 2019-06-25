@@ -20,7 +20,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
     @Override
-    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void func_199341_a(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         if (destroyStage != -1) return;
         BlockPos pos = te.getPos();
         double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
@@ -123,7 +123,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         if (k > maxBrightness)
             k = maxBrightness;
         //lightmap
-        GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, j, k);
+        GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, 0, maxBrightness);
 
         if (angle != 0)
             GlStateManager.rotatef(angle, 0, 1, 0);

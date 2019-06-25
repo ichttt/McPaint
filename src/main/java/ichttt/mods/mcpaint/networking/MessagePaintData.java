@@ -15,6 +15,7 @@ import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.network.NetworkEvent;
@@ -154,7 +155,7 @@ public class MessagePaintData {
             else
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
             te.markDirty();
-            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> Objects.requireNonNull(te.getWorld()).getChunk(te.getPos()));
+            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (Chunk) Objects.requireNonNull(te.getWorld()).getChunk(te.getPos()));
             if (data == null) {
                 MCPaint.NETWORKING.send(target, new MessageClearSide.ClientMessage(pos, facing));
             } else {

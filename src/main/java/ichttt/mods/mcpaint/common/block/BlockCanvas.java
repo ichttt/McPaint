@@ -188,6 +188,11 @@ public class BlockCanvas extends Block {
     }
 
     @Override
+    public SoundType getSoundType(BlockState state) {
+        return super.getSoundType(state);
+    }
+
+    @Override
     public boolean isSolid(BlockState state) {
         return state.get(SOLID);
     }
