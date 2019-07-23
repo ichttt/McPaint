@@ -20,7 +20,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
     @Override
-    public void func_199341_a(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
+    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
         if (destroyStage != -1) return;
         BlockPos pos = te.getPos();
         double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());

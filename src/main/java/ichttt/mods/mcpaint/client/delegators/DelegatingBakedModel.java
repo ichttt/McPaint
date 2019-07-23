@@ -32,7 +32,10 @@ public class DelegatingBakedModel extends BakedModelWrapper<IBakedModel> {
     }
 
     @Override
-    public TextureAtlasSprite getParticleTexture() {
-        return super.getParticleTexture();
+    public TextureAtlasSprite getParticleTexture(@Nonnull IModelData data) {
+        BlockState newState = data.getData(TileEntityCanvas.BLOCK_STATE_PROPERTY);
+        if (newState == null)
+            return super.getParticleTexture(data);
+        return Minecraft.getInstance().getModelManager().getBlockModelShapes().getModel(newState).getParticleTexture(EmptyModelData.INSTANCE);
     }
 }

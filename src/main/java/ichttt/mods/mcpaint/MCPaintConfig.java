@@ -3,7 +3,6 @@ package ichttt.mods.mcpaint;
 import net.minecraftforge.common.ForgeConfigSpec;
 import org.apache.commons.lang3.tuple.Pair;
 
-//@Config(modid = MCPaint.MODID)
 public class MCPaintConfig {
     static final ForgeConfigSpec clientSpec;
     public static final MCPaintConfig.Client CLIENT;
