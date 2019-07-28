@@ -478,8 +478,8 @@ public class GuiDraw extends Screen implements GuiSlider.ISlider {
                         float green = (float) (color >> 8 & 255) / 255.0F;
                         float blue = (float) (color & 255) / 255.0F;
                         BufferedImage asBufferedImage = (BufferedImage) image;
-                        for (int x = 0; x < paint.getWidth(); x++) {
-                            for (int y = 0; y < paint.getHeight(); y++) {
+                        for (int x = 0; x < asBufferedImage.getWidth(); x++) {
+                            for (int y = 0; y < asBufferedImage.getHeight(); y++) {
                                 Color originalColor = new Color(asBufferedImage.getRGB(x, y), true);
                                 int newRed = Math.round(originalColor.getRed() * red);
                                 int newGreen = Math.round(originalColor.getGreen() * green);

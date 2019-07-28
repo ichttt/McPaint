@@ -1,0 +1,21 @@
+{
+  "item.mcpaint.brush": "刷子",
+  "item.mcpaint.stamp": "模子",
+  "block.mcpaint.canvas": "涂鸦方块",
+
+  "mcpaint.tooltip.stamp.paint": "蹲下对着空气右键取消复制",
+  "mcpaint.tooltip.stamp.nopaint": "蹲下对着涂鸦方块右键复制",
+  "mcpaint.gui.pencil": "铅笔",
+  "mcpaint.gui.fill": "填充",
+  "mcpaint.gui.eraser": "橡皮",
+  "mcpaint.gui.pick_color": "选颜色",
+  "mcpaint.gui.undo": "撤销",
+  "mcpaint.gui.redo": "恢复",
+  "mcpaint.gui.red": "红",
+  "mcpaint.gui.green": "绿",
+  "mcpaint.gui.blue": "蓝",
+  "mcpaint.gui.alpha": "透明度",
+
+  "mcpaint.gui.rright": "向右转",
+  "mcpaint.gui.rleft": "向左转"
+}

@@ -143,9 +143,12 @@ public class BlockCanvas extends Block {
 
     @Override
     public VoxelShape getRaytraceShape(BlockState state, IBlockReader world, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-        if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getRaytraceShape(world, pos);
+        TileEntity te = world.getTileEntity(pos);
+        if (te instanceof TileEntityCanvas) { // Got some crashes because decocraft seems to wrap tileentites
+            TileEntityCanvas canvas = (TileEntityCanvas) te;
+            if (canvas.getContainedState() != null) {
+                return canvas.getContainedState().getRaytraceShape(world, pos);
+            }
         }
         return super.getRaytraceShape(state, world, pos);
     }
