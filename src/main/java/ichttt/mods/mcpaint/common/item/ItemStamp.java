@@ -13,6 +13,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Direction;
@@ -99,5 +100,18 @@ public class ItemStamp extends ItemBrush {
             tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.nopaint"));
         }
         super.addInformation(stack, worldIn, tooltip, flagIn);
+    }
+
+    @Override
+    public void readShareTag(ItemStack stack, @Nullable CompoundNBT nbt) {
+        IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
+        CapabilityPaintable.readFromNBT(paint, Objects.requireNonNull(nbt, "Did not get share tag!"));
+    }
+
+    @Nullable
+    @Override
+    public CompoundNBT getShareTag(ItemStack stack) {
+        IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
+        return CapabilityPaintable.writeToNBT(paint, new CompoundNBT());
     }
 }

@@ -35,10 +35,8 @@ import org.apache.logging.log4j.Logger;
 public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
-    private static final String NETWORKING_MAJOR = "2.";
-    private static final String NETWORKING_MINOR = "0";
 
-    private static final String NETWORKING_VERSION = NETWORKING_MAJOR + NETWORKING_MINOR;
+    private static final String NETWORKING_VERSION = "3";
     public static SimpleChannel NETWORKING;
 
     public MCPaint() {
@@ -52,16 +50,17 @@ public class MCPaint {
 
     @SubscribeEvent
     public static void init(FMLCommonSetupEvent event) {
-        NETWORKING = NetworkRegistry.newSimpleChannel(
-                new ResourceLocation(MODID, "channel"),
-                () -> NETWORKING_VERSION,
-                s -> s.startsWith(NETWORKING_MAJOR),
-                s -> s.equals(NETWORKING_VERSION));
+        NETWORKING = NetworkRegistry.ChannelBuilder.named(new ResourceLocation(MODID, "channel"))
+                .networkProtocolVersion(() -> NETWORKING_VERSION)
+                .clientAcceptedVersions(s -> s.equals(NETWORKING_VERSION))
+                .serverAcceptedVersions(s -> s.equals(NETWORKING_VERSION))
+                .simpleChannel();
         NETWORKING.registerMessage(1, MessagePaintData.class, MessagePaintData::encode, MessagePaintData::new, MessagePaintData.ServerHandler.INSTANCE::onMessage);
         NETWORKING.registerMessage(2, MessageDrawAbort.class, MessageDrawAbort::encode, MessageDrawAbort::new, MessageDrawAbort.Handler::onMessage);
         NETWORKING.registerMessage(3, MessagePaintData.ClientMessage.class, MessagePaintData.ClientMessage::encode, MessagePaintData.ClientMessage::new, MessagePaintData.ClientHandler.INSTANCE::onMessage);
         NETWORKING.registerMessage(4, MessageClearSide.class, MessageClearSide::encode, MessageClearSide::new, MessageClearSide.ServerHandler::onMessage);
         NETWORKING.registerMessage(5, MessageClearSide.ClientMessage.class, MessageClearSide.ClientMessage::encode, MessageClearSide.ClientMessage::new, MessageClearSide.ClientHandler::onMessage);
+        LOGGER.info("Registered networking");
         CapabilityPaintable.register();
     }
 

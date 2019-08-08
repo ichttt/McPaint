@@ -14,13 +14,12 @@ import javax.annotation.Nullable;
 public class CapabilityProvider implements ICapabilitySerializable<CompoundNBT> {
     public static final ResourceLocation LOCATION = new ResourceLocation(MCPaint.MODID, "paintable");
     private final IPaintable paint = new Paint();
+    private final LazyOptional<IPaintable> optional = LazyOptional.of(() -> paint);
 
     @Nonnull
     @Override
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> cap, @Nullable Direction side) {
-        if (cap == CapabilityPaintable.PAINTABLE)
-            return LazyOptional.of(() -> (T) paint);
-        return LazyOptional.empty();
+        return CapabilityPaintable.PAINTABLE.orEmpty(cap, optional);
     }
 
     @Override
