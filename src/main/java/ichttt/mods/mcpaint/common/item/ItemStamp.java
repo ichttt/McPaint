@@ -104,8 +104,10 @@ public class ItemStamp extends ItemBrush {
 
     @Override
     public void readShareTag(ItemStack stack, @Nullable CompoundNBT nbt) {
-        IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
-        CapabilityPaintable.readFromNBT(paint, Objects.requireNonNull(nbt, "Did not get share tag!"));
+        if (nbt != null) {
+            IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
+            CapabilityPaintable.readFromNBT(paint, nbt);
+        }
     }
 
     @Nullable

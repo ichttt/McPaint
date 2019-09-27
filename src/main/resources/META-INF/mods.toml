@@ -22,6 +22,6 @@ The resolution can be changed from 8x8 up to 128x128 for a single block.'''
 [[dependencies.mcpaint]]
     modId="forge"
     mandatory=true
-    versionRange="[28.0.45,)"
+    versionRange="[28.1.0,)"
     ordering="NONE"
     side="BOTH"
