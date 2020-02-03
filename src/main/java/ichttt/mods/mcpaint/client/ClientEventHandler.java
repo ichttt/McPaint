@@ -58,13 +58,6 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onClientTick(TickEvent.ClientTickEvent event) {
-        if (event.phase == TickEvent.Phase.START && Minecraft.getInstance().world != null && Minecraft.getInstance().world.getGameTime() % 200 == 0) {
-            RenderCache.scheduleCleanup();
-        }
-    }
-
-    @SubscribeEvent
     public static void onConfigChange(ModConfig.Reloading event) {
         ClientHooks.onConfigReload();
     }

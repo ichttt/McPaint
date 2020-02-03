@@ -43,11 +43,14 @@ public class ItemStamp extends ItemBrush {
 
     @Override
     protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
-        if (result == null && player.getPose() == Pose.CROUCHING) {
-            stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!")).clear(null, null);
+        if ((result == null || result.getType() == RayTraceResult.Type.MISS) && player.getPose() == Pose.CROUCHING) {
+            IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!"));
+            if (paint.getPictureData() == null)
+                return ActionResultType.PASS;
+            paint.clear(null, null);
             return ActionResultType.SUCCESS;
         }
-        return ActionResultType.FAIL;
+        return ActionResultType.PASS;
     }
 
     @Override

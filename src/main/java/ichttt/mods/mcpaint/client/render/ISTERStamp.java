@@ -34,7 +34,7 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
             if (paint != null && paint.hasPaintData()) {
                 matrixStack.push();
                 IVertexBuilder vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
-                RenderUtil.renderInGame(matrixStack.getLast().getPositionMatrix(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData());
+                RenderUtil.renderInGame(matrixStack.getLast().getPositionMatrix(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), combinedLightIn);
                 matrixStack.pop();
             }
         }

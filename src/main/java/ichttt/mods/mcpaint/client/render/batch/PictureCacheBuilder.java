@@ -9,6 +9,7 @@ import ichttt.mods.mcpaint.client.render.OptimizedPictureData;
 import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;

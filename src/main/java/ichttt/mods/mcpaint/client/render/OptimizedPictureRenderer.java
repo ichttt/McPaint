@@ -10,9 +10,9 @@ public class OptimizedPictureRenderer {
         this.dataArray = dataArray;
     }
 
-    public void renderPicture(Matrix4f matrix4f, IVertexBuilder builder) {
+    public void renderPicture(Matrix4f matrix4f, IVertexBuilder builder, int light) {
         for (OptimizedPictureData data : dataArray) {
-            if (RenderUtil.drawToBuffer(matrix4f, data.color, builder, data.left, data.top, data.right, data.bottom))
+            if (RenderUtil.drawToBuffer(matrix4f, data.color, builder, data.left, data.top, data.right, data.bottom, light))
                 throw new RuntimeException("Not filtered out a pixel!");
         }
     }

@@ -26,6 +26,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.client.util.InputMappings;
+import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.resources.IResource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
@@ -262,7 +263,7 @@ public class DrawScreen extends Screen implements Slider.ISlider {
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.func_187508_a();
             RenderSystem.pushMatrix();
-            minecraft.getTextureManager().bindTexture(AtlasTexture.LOCATION_BLOCKS_TEXTURE);
+            minecraft.getTextureManager().bindTexture(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
             //See BlockModelRenderer
             if (quad.hasTintIndex()) {
                 int color = minecraft.getBlockColors().getColor(state, minecraft.world, pos, quad.getTintIndex());

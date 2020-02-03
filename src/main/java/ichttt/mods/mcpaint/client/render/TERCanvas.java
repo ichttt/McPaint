@@ -12,12 +12,13 @@ import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.LightType;
 
 import javax.annotation.Nonnull;
+import java.util.Objects;
 
 public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
     private static final Direction[] VALUES = Direction.values();
-    private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
     public TERCanvas(TileEntityRendererDispatcher p_i226006_1_) {
         super(p_i226006_1_);
@@ -131,11 +132,11 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
                 if (playerDistSq < (maxDistOffset * maxDistOffset))
                     slow = true;
             } else {
-                builder.get(getRes(playerDistSq)).renderPicture(matrix4f, vertexBuilder);
+                builder.get(getRes(playerDistSq)).renderPicture(matrix4f, vertexBuilder, light);
             }
         }
         if (slow) {
-            RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData());
+            RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), light);
         }
 
         matrix.pop();
@@ -163,7 +164,10 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
         IVertexBuilder builder = iRenderTypeBuffer.getBuffer(RenderTypeHandler.CANVAS);
         if (playerDistSq < (maxDist * maxDist)) {
             for (Direction facing : VALUES) {
-                if (te.hasPaintFor(facing)) renderFace(matrixStack, builder, te, facing, light, playerDistSq);
+                if (te.hasPaintFor(facing)) {
+                    int lightPacked = WorldRenderer.getPackedLightmapCoords(te.getWorld(), te.getWorld().getBlockState(te.getPos()), te.getPos().offset(facing.getOpposite()));
+                    renderFace(matrixStack, builder, te, facing, lightPacked, playerDistSq);
+                }
             }
         } else {
             te.unbindBuffers(); //We stay in the global cache for a little longer
