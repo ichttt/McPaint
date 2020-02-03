@@ -1,10 +1,12 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.BufferBuilder;
+import net.minecraft.client.renderer.IRenderTypeBuffer;
 import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
@@ -19,18 +21,18 @@ import org.lwjgl.opengl.GL11;
 import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
-public class TEISRStamp extends ItemStackTileEntityRenderer implements IItemPropertyGetter {
-    public static final TEISRStamp INSTANCE = new TEISRStamp();
+public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemPropertyGetter {
+    public static final ISTERStamp INSTANCE = new ISTERStamp();
 
     public static Callable<ItemStackTileEntityRenderer> getInstance() {
         return () -> INSTANCE;
     }
 
-    private TEISRStamp() {}
+    private ISTERStamp() {}
 
     @Override
-    public void renderByItem(ItemStack itemStack) {
-        if (InputMappings.isKeyDown(Minecraft.getInstance().mainWindow.getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
+    public void render(ItemStack itemStack, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
                 Tessellator tessellator = Tessellator.getInstance();
@@ -46,7 +48,7 @@ public class TEISRStamp extends ItemStackTileEntityRenderer implements IItemProp
 
     @Override
     public float call(ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
-        if (InputMappings.isKeyDown(Minecraft.getInstance().mainWindow.getHandle(),GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(),GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {
                 MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");

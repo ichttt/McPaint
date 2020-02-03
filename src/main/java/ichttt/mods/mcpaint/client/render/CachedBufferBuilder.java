@@ -15,11 +15,6 @@ public class CachedBufferBuilder extends BufferBuilder {
     }
 
     @Override
-    public void setTranslation(double x, double y, double z) {
-        throw new UnsupportedOperationException("We don't support translations");
-    }
-
-    @Override
     public void endVertex() {
         if (!building) throw new IllegalStateException("Not in building pass!");
         super.endVertex();
@@ -32,8 +27,8 @@ public class CachedBufferBuilder extends BufferBuilder {
 
     public void finishBuilding() {
         building = false;
-        this.byteBuffer = this.byteBuffer.compact();
-        this.size = this.getByteBuffer().position();
+//        this.byteBuffer = this.byteBuffer.compact();
+//        this.size = this.getByteBuffer().position(); TODO not working right now!
     }
 
     public int getSize() {

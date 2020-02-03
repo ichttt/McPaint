@@ -12,7 +12,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.state.BooleanProperty;
 import net.minecraft.state.StateContainer;
 import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.BlockRenderLayer;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.RayTraceResult;
@@ -56,11 +55,11 @@ public class BlockCanvas extends Block {
         return BlockRenderType.MODEL;
     }
 
-    @Nonnull
-    @Override
-    public BlockRenderLayer getRenderLayer() {
-        return BlockRenderLayer.CUTOUT_MIPPED;
-    }
+//    @Nonnull TODO render layer
+//    @Override
+//    public BlockRenderLayer getRenderLayer() {
+//        return BlockRenderLayer.CUTOUT_MIPPED;
+//    }
 
     //Delegating methods
 
@@ -193,11 +192,11 @@ public class BlockCanvas extends Block {
     public SoundType getSoundType(BlockState state) {
         return super.getSoundType(state);
     }
-
-    @Override
-    public boolean isSolid(BlockState state) {
-        return state.get(SOLID);
-    }
+//
+//    @Override
+//    public boolean isSolid(BlockState state) { TODO no longer there?
+//        return state.get(SOLID);
+//    }
 
     @Override
     public boolean isNormalCube(BlockState state, IBlockReader world, BlockPos pos) {

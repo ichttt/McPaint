@@ -1,13 +1,16 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GLX;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
+import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
@@ -19,20 +22,8 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     private static final Direction[] VALUES = Direction.values();
     private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
-    @Override
-    public void render(TileEntityCanvas te, double x, double y, double z, float partialTicks, int destroyStage) {
-        if (destroyStage != -1) return;
-        BlockPos pos = te.getPos();
-        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
-        int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
-        if (playerDistSq < (maxDist * maxDist)) {
-            int light = Objects.requireNonNull(te.getWorld()).getCombinedLight(te.getPos(), 0);
-            for (Direction facing : VALUES) {
-                if (te.hasPaintFor(facing)) renderFace(x, y, z, te, facing, light, playerDistSq);
-            }
-        } else {
-            te.unbindBuffers(); //We stay in the global cache for a little longer
-        }
+    public TESRCanvas(TileEntityRendererDispatcher p_i226006_1_) {
+        super(p_i226006_1_);
     }
 
     private static void renderFace(double x, double y, double z, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
@@ -123,7 +114,7 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         if (k > maxBrightness)
             k = maxBrightness;
         //lightmap
-        GLX.glMultiTexCoord2f(GLX.GL_TEXTURE1, 0, maxBrightness);
+        RenderSystem.glMultiTexCoord2f(33986, 0, maxBrightness);
 
         if (angle != 0)
             GlStateManager.rotatef(angle, 0, 1, 0);
@@ -168,5 +159,19 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         if (playerDistSq < 128 * 128)
             return 16;
         return 8;
+    }
+
+    @Override
+    public void render(TileEntityCanvas te, float v, MatrixStack matrixStack, IRenderTypeBuffer iRenderTypeBuffer, int light, int otherlight) {
+        BlockPos pos = te.getPos();
+        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
+        int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
+        if (playerDistSq < (maxDist * maxDist)) {
+            for (Direction facing : VALUES) {
+                if (te.hasPaintFor(facing)) renderFace(0, 0, 0, te, facing, light, playerDistSq);
+            }
+        } else {
+            te.unbindBuffers(); //We stay in the global cache for a little longer
+        }
     }
 }

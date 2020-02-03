@@ -3,7 +3,7 @@ package ichttt.mods.mcpaint.common.item;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.ClientHooks;
-import ichttt.mods.mcpaint.client.render.TEISRStamp;
+import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
@@ -11,6 +11,7 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.entity.Pose;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
@@ -37,12 +38,12 @@ public class ItemStamp extends ItemBrush {
 
     public ItemStamp(ResourceLocation registryName) {
         super(registryName);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE));
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE));
     }
 
     @Override
     protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
-        if (result == null && player.isSneaking()) {
+        if (result == null && player.getPose() == Pose.CROUCHING) {
             stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!")).clear(null, null);
             return ActionResultType.SUCCESS;
         }
@@ -55,7 +56,7 @@ public class ItemStamp extends ItemBrush {
         IPaintable paint = Objects.requireNonNull(held.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint on brush!")));
         if (paint.hasPaintData()) {
             return super.processHit(world, player, hand, pos, state, facing);
-        } else if (player != null && player.isSneaking()) {
+        } else if (player != null && player.getPose() == Pose.CROUCHING) {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {
                 TileEntity te = world.getTileEntity(pos);

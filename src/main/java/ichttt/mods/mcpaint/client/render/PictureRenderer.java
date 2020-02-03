@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.systems.RenderSystem;
 import net.minecraft.client.renderer.BufferBuilder;
 
 public class PictureRenderer {
@@ -33,20 +34,20 @@ public class PictureRenderer {
     }
 
     public static void setWorldGLState() {
-        GlStateManager.pushMatrix();
-        GlStateManager.enableDepthTest(); //Should be true
-        GlStateManager.disableTexture();
-        GlStateManager.disableLighting();
-        GlStateManager.enableBlend();
-        GlStateManager.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        GlStateManager.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        RenderSystem.pushMatrix();
+        RenderSystem.enableDepthTest(); //Should be true
+        RenderSystem.disableTexture();
+        RenderSystem.disableLighting();
+        RenderSystem.enableBlend();
+        RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
     }
 
     public static void resetWorldGLState() {
-        GlStateManager.disableBlend();
-        GlStateManager.enableTexture();
-        GlStateManager.enableLighting();
-        GlStateManager.popMatrix();
+        RenderSystem.disableBlend();
+        RenderSystem.enableTexture();
+        RenderSystem.enableLighting();
+        RenderSystem.popMatrix();
     }
 
     public static boolean drawToBuffer(int color, BufferBuilder builder, double left, double top, double right, double bottom) {

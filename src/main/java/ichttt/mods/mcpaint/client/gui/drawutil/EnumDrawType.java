@@ -1,6 +1,6 @@
 package ichttt.mods.mcpaint.client.gui.drawutil;
 
-import ichttt.mods.mcpaint.client.gui.GuiDraw;
+import ichttt.mods.mcpaint.client.gui.DrawScreen;
 
 import javax.annotation.Nonnull;
 import java.awt.*;
@@ -27,7 +27,7 @@ public enum EnumDrawType {
         @Nonnull
         @Override
         public Color draw(int[][] picture, Color color, int pixelX, int pixelY, int size) {
-            drawInSize(picture, GuiDraw.ZERO_ALPHA, pixelX, pixelY, size);
+            drawInSize(picture, DrawScreen.ZERO_ALPHA, pixelX, pixelY, size);
             return color;
         }
     }, PICK_COLOR(false) {

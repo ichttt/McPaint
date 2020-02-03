@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.common.item;
 
 import ichttt.mods.mcpaint.client.ClientHooks;
-import ichttt.mods.mcpaint.client.render.TEISRStamp;
+import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
@@ -37,7 +37,7 @@ import java.util.Set;
 public class ItemBrush extends Item {
     public static Item.Properties getProperties() {
         Item.Properties properties = new Item.Properties(); //Workaround for classloading issues
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> properties.setTEISR(TEISRStamp::getInstance));
+        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> properties.setISTER(ISTERStamp::getInstance));
         properties.group(ItemGroup.DECORATIONS).maxStackSize(1).defaultMaxDamage(32);
         return properties;
     }
@@ -76,11 +76,11 @@ public class ItemBrush extends Item {
             return ActionResultType.SUCCESS;
         }
 
-        if (Block.func_220055_a(world, pos, facing) && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
+        if (Block.hasEnoughSolidSide(world, pos, facing) && state.getMaterial().isOpaque() /*&& state.isFullBlock() == state.isFullCube()*/ &&
                 /*state.isFullCube() == state.isBlockNormalCube() &&*/ state.getRenderType() == BlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
             Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
             for (Direction testFacing : Direction.values()) {
-                if (!Block.func_220055_a(world, pos, testFacing))
+                if (!Block.hasEnoughSolidSide(world, pos, testFacing))
                     disallowedFaces.add(testFacing);
             }
             if (state.getMaterial().isFlammable())

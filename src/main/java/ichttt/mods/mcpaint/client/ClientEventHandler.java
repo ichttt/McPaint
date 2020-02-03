@@ -3,11 +3,10 @@ package ichttt.mods.mcpaint.client;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.delegators.BlockColorDelegator;
 import ichttt.mods.mcpaint.client.delegators.DelegatingBakedModel;
-import ichttt.mods.mcpaint.client.render.TEISRStamp;
+import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.client.render.TESRCanvas;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.EventHandler;
-import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
@@ -19,8 +18,8 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
-import net.minecraftforge.fml.client.event.ConfigChangedEvent;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
+import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -33,12 +32,12 @@ public class ClientEventHandler {
     public static void setupClient(FMLClientSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::onModelBake);
-        ClientRegistry.bindTileEntitySpecialRenderer(TileEntityCanvas.class, new TESRCanvas());
+        ClientRegistry.bindTileEntityRenderer(EventHandler.CANVAS_TE, TESRCanvas::new);
     }
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
-        Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), TEISRStamp.INSTANCE);
+        Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
     }
 
     @SubscribeEvent
@@ -56,7 +55,12 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onConfigChange(ConfigChangedEvent event) {
+    public static void onConfigChange(ModConfig.Reloading event) {
+        ClientHooks.onConfigReload();
+    }
+
+    @SubscribeEvent
+    public static void onConfigLoad(ModConfig.Loading event) {
         ClientHooks.onConfigReload();
     }
 
