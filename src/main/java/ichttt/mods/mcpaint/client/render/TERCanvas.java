@@ -1,32 +1,29 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.platform.GLX;
-import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import ichttt.mods.mcpaint.MCPaintConfig;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
 import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
 import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import org.lwjgl.opengl.GL11;
 
-import java.util.Objects;
+import javax.annotation.Nonnull;
 
-public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
+public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
     private static final Direction[] VALUES = Direction.values();
     private static final WorldVertexBufferUploader vboUploader = new WorldVertexBufferUploader();
 
-    public TESRCanvas(TileEntityRendererDispatcher p_i226006_1_) {
+    public TERCanvas(TileEntityRendererDispatcher p_i226006_1_) {
         super(p_i226006_1_);
     }
 
-    private static void renderFace(double x, double y, double z, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
+    private static void renderFace(MatrixStack matrix, IVertexBuilder vertexBuilder, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
         //Facing setup
         int xOffset = 0;
         int yOffset = 0;
@@ -106,24 +103,25 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
         }
 
         //GL setup
-        PictureRenderer.setWorldGLState();
-        GlStateManager.translated(x + translationXOffset + xOffset, y + translationYOffset + yOffset, z + translationZOffset + zOffset);
+        matrix.push();
+        matrix.translate(translationXOffset + xOffset, translationYOffset + yOffset, translationZOffset + zOffset);
         int j = light % 65536;
         int k = light / 65536;
         int maxBrightness = MCPaintConfig.CLIENT.maxPaintBrightness.get();
         if (k > maxBrightness)
             k = maxBrightness;
         //lightmap
-        RenderSystem.glMultiTexCoord2f(33986, 0, maxBrightness);
+//        RenderSystem.glMultiTexCoord2f(33986, 0, maxBrightness); TODO???
 
         if (angle != 0)
-            GlStateManager.rotatef(angle, 0, 1, 0);
+            matrix.rotate(Vector3f.YP.rotationDegrees((angle)));
         else if (facing.getAxis().isVertical()) {
-            GlStateManager.rotatef(facing == Direction.DOWN ? -90.0F : 90.0F, 1.0F, 0.0F, 0.0F);
-            GlStateManager.rotatef(facing == Direction.UP ? 180.0F : 0.0F, 0.0F, 0.0F, 1.0F);
+            matrix.rotate(Vector3f.XP.rotationDegrees(facing == Direction.DOWN ? -90.0F : 90.0F));
+            matrix.rotate(Vector3f.ZP.rotationDegrees(facing == Direction.UP ? 180.0F : 0.0F));
         }
 
         IPaintable paint = te.getPaintFor(facing);
+        Matrix4f matrix4f = matrix.getLast().getPositionMatrix();
         //Render picture
         boolean slow = !MCPaintConfig.CLIENT.optimizePictures.get();
         if (!slow) {
@@ -133,18 +131,14 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
                 if (playerDistSq < (maxDistOffset * maxDistOffset))
                     slow = true;
             } else {
-                vboUploader.draw(builder.get(getRes(playerDistSq)));
+                builder.get(getRes(playerDistSq)).renderPicture(matrix4f, vertexBuilder);
             }
         }
         if (slow) {
-            Tessellator tessellator = Tessellator.getInstance();
-            BufferBuilder builder = tessellator.getBuffer();
-            builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-            PictureRenderer.renderInGame(paint.getScaleFactor(), builder, paint.getPictureData());
-            tessellator.draw();
+            RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData());
         }
 
-        PictureRenderer.resetWorldGLState();
+        matrix.pop();
 
         //GL cleanup
     }
@@ -162,13 +156,14 @@ public class TESRCanvas extends TileEntityRenderer<TileEntityCanvas> {
     }
 
     @Override
-    public void render(TileEntityCanvas te, float v, MatrixStack matrixStack, IRenderTypeBuffer iRenderTypeBuffer, int light, int otherlight) {
+    public void render(TileEntityCanvas te, float v, @Nonnull MatrixStack matrixStack, @Nonnull IRenderTypeBuffer iRenderTypeBuffer, int light, int otherlight) {
         BlockPos pos = te.getPos();
         double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
+        IVertexBuilder builder = iRenderTypeBuffer.getBuffer(RenderTypeHandler.CANVAS);
         if (playerDistSq < (maxDist * maxDist)) {
             for (Direction facing : VALUES) {
-                if (te.hasPaintFor(facing)) renderFace(0, 0, 0, te, facing, light, playerDistSq);
+                if (te.hasPaintFor(facing)) renderFace(matrixStack, builder, te, facing, light, playerDistSq);
             }
         } else {
             te.unbindBuffers(); //We stay in the global cache for a little longer

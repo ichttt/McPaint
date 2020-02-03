@@ -2,8 +2,8 @@ package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.BufferManager;
-import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
+import ichttt.mods.mcpaint.client.render.buffer.GatheringBufferBuilder;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.client.render.batch.SimpleCallback;
@@ -195,7 +195,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         Object obj = bufferMap.remove(facing);
         if (obj instanceof SimpleCallback) {
             ((SimpleCallback) obj).invalidate();
-        } else if (obj instanceof CachedBufferBuilder) {
+        } else if (obj instanceof GatheringBufferBuilder) {
             RenderCache.uncache(getPaintFor(facing));
         }
     }

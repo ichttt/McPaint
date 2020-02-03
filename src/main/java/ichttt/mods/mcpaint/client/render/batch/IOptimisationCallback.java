@@ -1,6 +1,6 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
-import ichttt.mods.mcpaint.client.render.BufferManager;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 
 public interface IOptimisationCallback {
 

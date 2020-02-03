@@ -112,6 +112,7 @@ public class MessagePaintData {
 
         public void onMessage(MessagePaintData message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context ctx = supplier.get();
+            ctx.setPacketHandled(true);
             if (message.maxParts == 0) //single message
                 ctx.enqueueWork(() -> handleSide(ctx, message.pos, message.facing, message.scale, message.data));
             else {

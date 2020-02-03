@@ -8,7 +8,7 @@ import ichttt.mods.mcpaint.client.gui.button.GuiButtonTextToggle;
 import ichttt.mods.mcpaint.client.gui.button.GuiColorButton;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
-import ichttt.mods.mcpaint.client.render.PictureRenderer;
+import ichttt.mods.mcpaint.client.render.RenderUtil;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
@@ -293,7 +293,7 @@ public class DrawScreen extends Screen implements Slider.ISlider {
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        PictureRenderer.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.currentState.scaleFactor, buffer, toDraw);
+        RenderUtil.renderInGui(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, this.currentState.scaleFactor, buffer, toDraw);
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);

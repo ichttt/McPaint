@@ -1,22 +1,19 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.IVertexBuilder;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.util.InputMappings;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
 import net.minecraft.world.World;
 import org.lwjgl.glfw.GLFW;
-import org.lwjgl.opengl.GL11;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
@@ -35,13 +32,10 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
         if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
-                Tessellator tessellator = Tessellator.getInstance();
-                BufferBuilder builder = tessellator.getBuffer();
-                builder.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-                PictureRenderer.renderInGame(paint.getScaleFactor(), builder, paint.getPictureData());
-                PictureRenderer.setWorldGLState();
-                tessellator.draw();
-                PictureRenderer.resetWorldGLState();
+                matrixStack.push();
+                IVertexBuilder vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
+                RenderUtil.renderInGame(matrixStack.getLast().getPositionMatrix(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData());
+                matrixStack.pop();
             }
         }
     }

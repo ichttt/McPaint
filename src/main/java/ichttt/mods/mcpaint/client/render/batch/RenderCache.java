@@ -4,7 +4,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.BufferManager;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 import javax.annotation.Nonnull;
@@ -20,7 +20,7 @@ public class RenderCache {
             .expireAfterAccess(30L, TimeUnit.SECONDS)
             .build();
 
-    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors() >= 8 ? 4 : 2, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
+    private static final ThreadPoolExecutor POOL_EXECUTOR = new ThreadPoolExecutor(1, Runtime.getRuntime().availableProcessors() > 8 ? 4 : 2, 30L, TimeUnit.SECONDS, new LinkedBlockingQueue<>(), new ThreadFactory() {
         private final AtomicInteger count = new AtomicInteger(1);
 
         @Override

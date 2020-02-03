@@ -4,13 +4,16 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.delegators.BlockColorDelegator;
 import ichttt.mods.mcpaint.client.delegators.DelegatingBakedModel;
 import ichttt.mods.mcpaint.client.render.ISTERStamp;
-import ichttt.mods.mcpaint.client.render.TESRCanvas;
+import ichttt.mods.mcpaint.client.render.RenderTypeHandler;
+import ichttt.mods.mcpaint.client.render.TERCanvas;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.EventHandler;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
 import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -18,6 +21,7 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DeferredWorkQueue;
+import net.minecraftforge.fml.DistExecutor;
 import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
@@ -32,12 +36,18 @@ public class ClientEventHandler {
     public static void setupClient(FMLClientSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::onModelBake);
-        ClientRegistry.bindTileEntityRenderer(EventHandler.CANVAS_TE, TESRCanvas::new);
+        ClientRegistry.bindTileEntityRenderer(EventHandler.CANVAS_TE, TERCanvas::new);
+        //Just to classload this ot init to avoid lag spikes
+        //noinspection ResultOfMethodCallIgnored,Convert2MethodRef
+        DeferredWorkQueue.runLater(() -> DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> RenderTypeHandler.CANVAS.toString()));
     }
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
+        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_GROUND, RenderTypeHandler.CANVAS);
+        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_ROCK, RenderTypeHandler.CANVAS);
+        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_WOOD, RenderTypeHandler.CANVAS);
     }
 
     @SubscribeEvent

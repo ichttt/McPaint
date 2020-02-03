@@ -1,12 +1,11 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.BufferManager;
-import ichttt.mods.mcpaint.client.render.CachedBufferBuilder;
-import ichttt.mods.mcpaint.client.render.TESRCanvas;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
+import ichttt.mods.mcpaint.client.render.TERCanvas;
+import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import org.apache.commons.lang3.tuple.Pair;
 
 public class PictureOptimizationJob implements Runnable {
     private final IPaintable paintable;
@@ -27,22 +26,22 @@ public class PictureOptimizationJob implements Runnable {
         }
         int[][] pictureData = MCPaintUtil.copyOf(paintable.getPictureData());
         byte scaleFactor = paintable.getScaleFactor();
-        Pair<CachedBufferBuilder, Integer> pair = PictureCacheBuilder.batch(pictureData, scaleFactor, callback, val -> false, 0, 0);
-        if (pair == null)
+        OptimizedPictureRenderer renderer = PictureCacheBuilder.batch(pictureData, scaleFactor, callback, val -> false, 0, 0);
+        if (renderer == null)
             return;
         int maxMips = MCPaintConfig.CLIENT.enableMipMaps.get() ? getMaxPass(pictureData.length) : 0;
-        BufferManager manager = new BufferManager(pair.getLeft(), pair.getRight(), maxMips, pictureData.length);
+        BufferManager manager = new BufferManager(renderer, maxMips, pictureData.length);
         callback.provideFinishedBuffer(manager);
         if (maxMips > 0) {
             for (int i = 1; i <= maxMips; i++) {
                 int[][] newPicture = LossyCompression.mipMap(pictureData, i);
                 byte newScaleFactor = (byte) (scaleFactor * Math.pow(2, i));
                 final int currentMip = i;
-                pair = PictureCacheBuilder.batch(newPicture, newScaleFactor, callback, val -> manager.needDiscard(val, currentMip), MCPaintConfig.CLIENT.maxTotalColorDiffPerMip.get() * i, MCPaintConfig.CLIENT.maxSingleColorDiffPerMip.get() * i);
-                if (pair != null)
-                    manager.putMips(pair.getLeft(), pair.getRight(), i - 1);
+                renderer = PictureCacheBuilder.batch(newPicture, newScaleFactor, callback, val -> manager.needDiscard(val, currentMip), MCPaintConfig.CLIENT.maxTotalColorDiffPerMip.get() * i, MCPaintConfig.CLIENT.maxSingleColorDiffPerMip.get() * i);
+                if (renderer != null)
+                    manager.putMips(renderer, i - 1);
                 else
-                    manager.putMips(null, -1, i - 1);
+                    manager.putMips(null, i - 1);
             }
         }
         manager.complete();
@@ -50,7 +49,7 @@ public class PictureOptimizationJob implements Runnable {
 
     private static int getMaxPass(int res) {
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
-        int lowestRes = (TESRCanvas.getRes(maxDist * maxDist));
+        int lowestRes = (TERCanvas.getRes(maxDist * maxDist));
         int mips = 0;
         while (lowestRes < res) {
             lowestRes *= 2;

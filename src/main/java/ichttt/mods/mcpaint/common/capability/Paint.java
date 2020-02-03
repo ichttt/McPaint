@@ -40,7 +40,12 @@ public class Paint implements IPaintable {
         short pixelCountY = Shorts.checkedCast(pictureData == null ? 0 : (pictureData[0].length * scaleFactor));
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
             throw new IllegalArgumentException("Invalid pixel count: x:" + pixelCountX + " y:" + pixelCountY);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> ClientHooks.invalidateCache(this, canvas, facing));
+        if (canvas == null || canvas.getWorld() == null || canvas.getWorld().isRemote) {
+            DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> {
+                if (!Arrays.deepEquals(this.pictureData, pictureData))
+                    ClientHooks.invalidateCache(this, canvas, facing);
+            });
+        }
         this.pixelCountX = pixelCountX;
         this.pixelCountY = pixelCountY;
         this.scaleFactor = scaleFactor;

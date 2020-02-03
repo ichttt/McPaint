@@ -31,6 +31,7 @@ public class MessageDrawAbort {
         public static void onMessage(MessageDrawAbort message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context ctx = supplier.get();
             ServerPlayerEntity player = MCPaintUtil.checkServer(ctx);
+            ctx.setPacketHandled(true);
             ctx.enqueueWork(() -> {
                 if (MCPaintUtil.isPosInvalid(player, message.pos)) return;
 
