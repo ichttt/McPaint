@@ -99,7 +99,7 @@ public class PictureCacheBuilder {
             return null;
         }
         stopwatch.stop();
-        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        MCPaint.LOGGER.info("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         allRects = LossyCompression.colorCompress(maxTotalVar, maxSingleVar, allRects);
         if (shouldDiscard.apply(allRects.size())) return null;
         List<List<PixelInfo>> mergedDrawList = allRects.stream().map(PixelRect::getMergedLines).collect(Collectors.toList());
@@ -131,7 +131,7 @@ public class PictureCacheBuilder {
 //                MCPaint.LOGGER.warn("Region left={} right={} top={} bottom={} color{} has not been filtered out from batched picture!", left, right, top, bottom, color);
         }
         stopwatch.stop();
-        MCPaint.LOGGER.info("Reduced {} instructions to {} instructions in {} us", picture.length * picture.length, dataArray.length, stopwatch.elapsed(TimeUnit.MICROSECONDS));
+        MCPaint.LOGGER.debug("Build {} instructions in {} us", dataArray.length, stopwatch.elapsed(TimeUnit.MICROSECONDS));
         return new OptimizedPictureRenderer(dataArray);
     }
 }

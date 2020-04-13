@@ -122,7 +122,7 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
         }
 
         IPaintable paint = te.getPaintFor(facing);
-        Matrix4f matrix4f = matrix.getLast().getPositionMatrix();
+        Matrix4f matrix4f = matrix.getLast().getMatrix();
         //Render picture
         boolean slow = !MCPaintConfig.CLIENT.optimizePictures.get();
         if (!slow) {

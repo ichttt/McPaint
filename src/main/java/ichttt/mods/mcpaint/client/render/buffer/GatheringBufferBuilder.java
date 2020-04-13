@@ -32,7 +32,7 @@ public class GatheringBufferBuilder extends BufferBuilder {
     }
 
     @Override
-    public Pair<DrawState, ByteBuffer> getAndResetData() {
+    public Pair<DrawState, ByteBuffer> getNextBuffer() {
         throw new UnsupportedOperationException();
     }
 

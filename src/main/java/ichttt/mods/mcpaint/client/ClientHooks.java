@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client;
 
 import ichttt.mods.mcpaint.client.gui.DrawScreen;
-import ichttt.mods.mcpaint.client.gui.GuiSetupCanvas;
+import ichttt.mods.mcpaint.client.gui.SetupCanvasScreen;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -19,7 +19,7 @@ public class ClientHooks {
     }
 
     public static void showGuiDraw(BlockPos pos, Direction facing, BlockState state) {
-        Minecraft.getInstance().displayGuiScreen(new GuiSetupCanvas(pos, facing, state, 8, 8));
+        Minecraft.getInstance().displayGuiScreen(new SetupCanvasScreen(pos, facing, state, 8, 8));
     }
 
     public static void onConfigReload() {

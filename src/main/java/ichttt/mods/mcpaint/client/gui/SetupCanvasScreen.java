@@ -13,7 +13,7 @@ import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
 
-public class GuiSetupCanvas extends Screen {
+public class SetupCanvasScreen extends Screen {
     private static final ResourceLocation BACKGROUND = DrawScreen.BACKGROUND;
     private static final int yOffset = 166;
     private static final int xSize = 106;
@@ -33,7 +33,7 @@ public class GuiSetupCanvas extends Screen {
     private int guiLeft;
     private int guiTop;
 
-    public GuiSetupCanvas(BlockPos pos, Direction facing, BlockState state, int baseX, int baseY) {
+    public SetupCanvasScreen(BlockPos pos, Direction facing, BlockState state, int baseX, int baseY) {
         super(new TranslationTextComponent("mcpaint.drawsetup"));
         this.pos = pos;
         this.facing = facing;
@@ -48,17 +48,17 @@ public class GuiSetupCanvas extends Screen {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
         this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, "<", button -> {
-                GuiSetupCanvas.this.currentMulti /= 2;
+                SetupCanvasScreen.this.currentMulti /= 2;
                 handleSizeChanged();
         });
         this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, ">", button -> {
-                GuiSetupCanvas.this.currentMulti *= 2;
+                SetupCanvasScreen.this.currentMulti *= 2;
                 handleSizeChanged();
         });
         addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done"), button -> {
             handled = true;
             minecraft.displayGuiScreen(null);
-            minecraft.displayGuiScreen(new DrawScreen((byte) (16 / GuiSetupCanvas.this.currentMulti), pos, facing, state));
+            minecraft.displayGuiScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
         }));
         addButton(this.lessSize);
         addButton(this.moreSize);
