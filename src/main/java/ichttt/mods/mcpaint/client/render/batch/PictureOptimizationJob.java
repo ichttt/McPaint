@@ -38,10 +38,7 @@ public class PictureOptimizationJob implements Runnable {
                 byte newScaleFactor = (byte) (scaleFactor * Math.pow(2, i));
                 final int currentMip = i;
                 renderer = PictureCacheBuilder.batch(newPicture, newScaleFactor, callback, val -> manager.needDiscard(val, currentMip), MCPaintConfig.CLIENT.maxTotalColorDiffPerMip.get() * i, MCPaintConfig.CLIENT.maxSingleColorDiffPerMip.get() * i);
-                if (renderer != null)
-                    manager.putMips(renderer, i - 1);
-                else
-                    manager.putMips(null, i - 1);
+                manager.putMips(renderer, i - 1);
             }
         }
         manager.complete();

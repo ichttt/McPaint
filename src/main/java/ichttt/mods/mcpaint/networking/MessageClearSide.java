@@ -8,8 +8,8 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import java.util.function.Supplier;
 
 public class MessageClearSide {
-    private BlockPos pos;
-    private Direction facing;
+    private final BlockPos pos;
+    private final Direction facing;
 
     public MessageClearSide(PacketBuffer buffer) {
         this(buffer.readBlockPos(), Direction.byIndex(buffer.readByte()));

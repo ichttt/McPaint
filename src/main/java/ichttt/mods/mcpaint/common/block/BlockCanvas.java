@@ -55,12 +55,6 @@ public class BlockCanvas extends Block {
         return BlockRenderType.MODEL;
     }
 
-//    @Nonnull TODO render layer
-//    @Override
-//    public BlockRenderLayer getRenderLayer() {
-//        return BlockRenderLayer.CUTOUT_MIPPED;
-//    }
-
     //Delegating methods
 
     @SuppressWarnings("deprecation")

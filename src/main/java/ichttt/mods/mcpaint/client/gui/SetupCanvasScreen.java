@@ -48,7 +48,7 @@ public class SetupCanvasScreen extends Screen {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
         this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, "<", button -> {
-                SetupCanvasScreen.this.currentMulti /= 2;
+                currentMulti /= 2;
                 handleSizeChanged();
         });
         this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, ">", button -> {

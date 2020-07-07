@@ -42,7 +42,7 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
 
     @Override
     public float call(ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
-        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(),GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {
                 MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");

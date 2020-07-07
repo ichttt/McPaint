@@ -49,7 +49,7 @@ public class ItemBrush extends Item {
 
     @Nonnull
     @Override
-    public ActionResult<ItemStack> onItemRightClick(World world, PlayerEntity player, @Nonnull Hand hand) {
+    public ActionResult<ItemStack> onItemRightClick(@Nonnull World world, @Nonnull PlayerEntity player, @Nonnull Hand hand) {
         ItemStack held = player.getHeldItem(hand);
         RayTraceResult raytraceresult = rayTrace(world, player, RayTraceContext.FluidMode.NONE);
         if (raytraceresult.getType() != RayTraceResult.Type.BLOCK)
