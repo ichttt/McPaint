@@ -12,6 +12,7 @@ import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.NBTUtil;
 import net.minecraft.network.NetworkManager;
@@ -25,6 +26,7 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
+import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -51,7 +53,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public CompoundNBT write(CompoundNBT tag) {
         tag = super.write(tag);
-        tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
+        if (this.containedState != null)
+            tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
         CompoundNBT faces = new CompoundNBT();
         for (Map.Entry<Direction, IPaintable> entry : this.facingToPaintMap.entrySet()) {
             faces.put(entry.getKey().getName2(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
@@ -69,7 +72,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     @Override
     public void read(BlockState state, CompoundNBT tag) {
         super.read(state, tag);
-        this.containedState = NBTUtil.readBlockState(tag.getCompound("blockState"));
+        this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NBTUtil.readBlockState(tag.getCompound("blockState")) : null;
         CompoundNBT faces = tag.getCompound("faces");
         for (String key : faces.keySet()) {
             Paint paint = new Paint(this);

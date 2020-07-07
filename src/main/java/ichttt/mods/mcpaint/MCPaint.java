@@ -43,8 +43,8 @@ public class MCPaint {
     public MCPaint() {
         MinecraftForge.EVENT_BUS.register(EventHandler.class);
         FMLJavaModLoadingContext.get().getModEventBus().register(MCPaint.class);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::setupClient));
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::lateSetup));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::setupClient));
+        DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::lateSetup));
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, MCPaintConfig.clientSpec);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MCPaintConfig.generalSpec);
     }

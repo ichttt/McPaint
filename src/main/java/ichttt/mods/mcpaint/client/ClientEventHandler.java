@@ -38,18 +38,15 @@ public class ClientEventHandler {
     public static void setupClient(FMLClientSetupEvent event) {
         MinecraftForge.EVENT_BUS.register(ClientEventHandler.class);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::onModelBake);
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::registerModels);
         ClientRegistry.bindTileEntityRenderer(EventHandler.CANVAS_TE, TERCanvas::new);
         //Just to classload this ot init to avoid lag spikes
         //noinspection ResultOfMethodCallIgnored,Convert2MethodRef
         DeferredWorkQueue.runLater(() -> DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> RenderTypeHandler.CANVAS.toString()));
     }
 
-    @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
         ItemModelsProperties.func_239418_a_(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
-        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_GROUND, RenderTypeHandler.CANVAS);
-        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_ROCK, RenderTypeHandler.CANVAS);
-        RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_WOOD, RenderTypeHandler.CANVAS);
     }
 
     @SubscribeEvent
