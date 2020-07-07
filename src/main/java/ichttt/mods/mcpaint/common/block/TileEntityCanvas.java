@@ -54,21 +54,21 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
         CompoundNBT faces = new CompoundNBT();
         for (Map.Entry<Direction, IPaintable> entry : this.facingToPaintMap.entrySet()) {
-            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
+            faces.put(entry.getKey().getName2(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
         }
         tag.put("faces", faces);
         if (!disallowedFaces.isEmpty()) {
             CompoundNBT blockedFaces = new CompoundNBT();
             for (Direction facing : Direction.values())
-                blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
+                blockedFaces.putBoolean(facing.getName2(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
         return tag;
     }
 
     @Override
-    public void read(CompoundNBT tag) {
-        super.read(tag);
+    public void read(BlockState state, CompoundNBT tag) {
+        super.read(state, tag);
         this.containedState = NBTUtil.readBlockState(tag.getCompound("blockState"));
         CompoundNBT faces = tag.getCompound("faces");
         for (String key : faces.keySet()) {
@@ -87,8 +87,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void handleUpdateTag(@Nonnull CompoundNBT tag) {
-        this.read(tag);
+    public void handleUpdateTag(BlockState state, @Nonnull CompoundNBT tag) {
+        this.read(state, tag);
     }
 
     @Nonnull
@@ -186,7 +186,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        this.read(pkt.getNbtCompound());
+        this.read(null, pkt.getNbtCompound());
         unbindBuffers();
     }
 

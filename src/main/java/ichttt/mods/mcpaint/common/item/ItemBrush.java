@@ -85,7 +85,7 @@ public class ItemBrush extends Item {
             }
             if (state.getMaterial().isFlammable())
                 world.setBlockState(pos, EventHandler.CANVAS_WOOD.getStateFrom(world, pos, state));
-            else if (state.getMaterial().isToolNotRequired())
+            else if (!state.getRequiresTool())
                 world.setBlockState(pos, EventHandler.CANVAS_GROUND.getStateFrom(world, pos, state));
             else
                 world.setBlockState(pos, EventHandler.CANVAS_ROCK.getStateFrom(world, pos, state));

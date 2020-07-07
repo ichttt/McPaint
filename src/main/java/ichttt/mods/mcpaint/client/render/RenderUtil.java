@@ -1,12 +1,13 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.LightTexture;
-import net.minecraft.client.renderer.Matrix4f;
+import net.minecraft.util.math.vector.Matrix4f;
 
 public class RenderUtil {
-    public static void renderInGui(float leftOffset, float topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
+    public static void renderInGui(Matrix4f matrix4f, float leftOffset, float topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
         int light = LightTexture.packLight(15, 15);
         for (int x = 0; x < picture.length; x++) {
             int[] yPos = picture[x];
@@ -16,7 +17,7 @@ public class RenderUtil {
                 float top = topOffset + (y * scaleFactor);
                 float right = left + scaleFactor;
                 float bottom = top + scaleFactor;
-                drawToBuffer(Matrix4f.makeTranslate(0,0,0), color, builder, left, top, right, bottom, light);
+                drawToBuffer(matrix4f, color, builder, left, top, right, bottom, light);
             }
         }
     }

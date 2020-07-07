@@ -7,8 +7,10 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.IRenderTypeBuffer;
+import net.minecraft.client.renderer.model.ItemCameraTransforms;
 import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
 import net.minecraft.client.util.InputMappings;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.item.IItemPropertyGetter;
 import net.minecraft.item.ItemStack;
@@ -28,7 +30,7 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
     private ISTERStamp() {}
 
     @Override
-    public void render(ItemStack itemStack, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) {
+    public void func_239207_a_(ItemStack itemStack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) { //render
         if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
@@ -41,7 +43,7 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
     }
 
     @Override
-    public float call(ItemStack stack, @Nullable World world, @Nullable LivingEntity entity) {
+    public float call(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
         if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {

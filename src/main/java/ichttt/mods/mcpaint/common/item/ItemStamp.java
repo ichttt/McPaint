@@ -38,7 +38,7 @@ public class ItemStamp extends ItemBrush {
 
     public ItemStamp(ResourceLocation registryName) {
         super(registryName);
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE));
+//        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE)); TODO validate
     }
 
     @Override

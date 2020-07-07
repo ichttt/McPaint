@@ -32,7 +32,7 @@ public class BlockCanvas extends Block {
 
     //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
-        super(Block.Properties.create(material).hardnessAndResistance(1F, 4F));
+        super(Block.Properties.create(material).hardnessAndResistance(1F, 4F).setOpaque((state, world, pos) -> state.get(NORMAL_CUBE)));
         setRegistryName(regNam);
         setDefaultState(stateContainer.getBaseState().with(SOLID, true).with(NORMAL_CUBE, true));
     }
@@ -57,23 +57,22 @@ public class BlockCanvas extends Block {
 
     //Delegating methods
 
-    @SuppressWarnings("deprecation")
     @Override
-    public float getBlockHardness(BlockState blockState, IBlockReader world, BlockPos pos) {
+    public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBlockHardness(world, pos);
+            return canvas.getContainedState().getPlayerRelativeBlockHardness(player, world, pos);
         }
-        return super.getBlockHardness(blockState, world, pos);
+        return super.getPlayerRelativeBlockHardness(state, player, world, pos);
     }
 
     @Override
-    public float getExplosionResistance(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity exploder, Explosion explosion) {
+    public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getBlock().getExplosionResistance(canvas.getContainedState(), world, pos, exploder, explosion);
+            return canvas.getContainedState().getBlock().getExplosionResistance(canvas.getContainedState(), world, pos, explosion);
         }
-        return super.getExplosionResistance(state, world, pos, exploder, explosion);
+        return super.getExplosionResistance(state, world, pos, explosion);
     }
 
     @Override
@@ -134,41 +133,32 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getRaytraceShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape func_230322_a_(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
         TileEntity te = world.getTileEntity(pos);
         if (te instanceof TileEntityCanvas) { // Got some crashes because decocraft seems to wrap tileentites
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             if (canvas.getContainedState() != null) {
-                return canvas.getContainedState().getRaytraceShape(world, pos);
+                return canvas.getContainedState().getRaytraceShape(world, pos, context);
             }
         }
         return super.getRaytraceShape(state, world, pos);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public MaterialColor getMaterialColor(BlockState state, IBlockReader world, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-        if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getMaterialColor(world, pos);
-        }
-        return super.getMaterialColor(state, world, pos);
-    }
+
+
+//    @SuppressWarnings("deprecation")
+//    @Override
+//    public MaterialColor getMaterialColor(BlockState state, IBlockReader world, BlockPos pos) {
+//        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+//        if (canvas != null && canvas.getContainedState() != null) {
+//            return canvas.getContainedState().getMaterialColor(world, pos);
+//        }
+//        return super.getMaterialColor(state, world, pos);
+//    }
 
     @Override
     protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(SOLID, NORMAL_CUBE);
-    }
-
-    @Nonnull
-    @Override
-    public BlockState getExtendedState(@Nonnull BlockState state, IBlockReader world, BlockPos pos) {
-        //Return the contained state, needed for rendering
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
-        if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState();
-        }
-        return state;
     }
 
     @Nonnull
@@ -185,16 +175,6 @@ public class BlockCanvas extends Block {
     @Override
     public SoundType getSoundType(BlockState state) {
         return super.getSoundType(state);
-    }
-//
-//    @Override
-//    public boolean isSolid(BlockState state) { TODO no longer there?
-//        return state.get(SOLID);
-//    }
-
-    @Override
-    public boolean isNormalCube(BlockState state, IBlockReader world, BlockPos pos) {
-        return state.get(NORMAL_CUBE);
     }
 
     public BlockState getStateFrom(IBlockReader world, BlockPos pos, BlockState state) {

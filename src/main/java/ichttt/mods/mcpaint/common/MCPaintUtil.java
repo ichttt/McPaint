@@ -13,6 +13,7 @@ import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
+import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
 
@@ -28,7 +29,7 @@ public class MCPaintUtil {
             return true;
         }
 
-        if (MathHelper.sqrt(player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(PlayerEntity.REACH_DISTANCE).getValue()) + 5)) {
+        if (MathHelper.sqrt(player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }

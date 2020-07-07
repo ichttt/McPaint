@@ -20,6 +20,7 @@
 
   "mcpaint.gui.rright": "Dreh R",
   "mcpaint.gui.rleft": "Dreh L",
+  "mcpaint.gui.export": "Export",
 
   "mcpaint.gui.saved": "Gemälde gepeichert unter %s"
 }

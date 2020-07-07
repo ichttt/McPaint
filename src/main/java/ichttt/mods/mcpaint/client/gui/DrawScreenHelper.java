@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import ichttt.mods.mcpaint.MCPaint;
@@ -24,6 +25,7 @@ import net.minecraft.resources.IResource;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.IFormattableTextComponent;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TextFormatting;
@@ -152,7 +154,7 @@ public class DrawScreenHelper {
         }
     }
 
-    public void renderBackgroundBlock(int startLeft, int startTop) {
+    public void renderBackgroundBlock(MatrixStack stack, int startLeft, int startTop) {
         Minecraft mc = Minecraft.getInstance();
         List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
         for (BakedQuad quad : quads) {
@@ -167,18 +169,18 @@ public class DrawScreenHelper {
                 float blue = (float) (color & 255) / 255.0F;
                 RenderSystem.color3f(red, green, blue);
             }
-            AbstractGui.blit(startLeft, startTop, -1, 128, 128, sprite);
+            AbstractGui.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
             RenderSystem.popMatrix();
         }
     }
 
-    public void renderImage(int startLeft, int startTop, int[][] toDraw) {
+    public void renderImage(MatrixStack stack, int startLeft, int startTop, int[][] toDraw) {
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder buffer = tessellator.getBuffer();
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        RenderUtil.renderInGui(startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
+        RenderUtil.renderInGui(stack.getLast().getMatrix(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
@@ -312,8 +314,8 @@ public class DrawScreenHelper {
         final File finalFile = getTimestampedPNGFileForDirectory(file);
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
-        ITextComponent component = new StringTextComponent(finalFile.getName());
-        component = component.applyTextStyle(TextFormatting.UNDERLINE).applyTextStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
+        IFormattableTextComponent component = new StringTextComponent(finalFile.getName());
+        component = component.func_240701_a_(TextFormatting.UNDERLINE).func_240700_a_(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
         minecraft.player.sendStatusMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
     }
 

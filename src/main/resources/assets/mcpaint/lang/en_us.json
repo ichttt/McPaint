@@ -19,6 +19,7 @@
   "mcpaint.gui.alpha": "alpha",
   "mcpaint.gui.rright": "Turn R",
   "mcpaint.gui.rleft": "Turn L",
+  "mcpaint.gui.export": "Export",
 
   "mcpaint.gui.saved": "Saved painting as %s"
 }

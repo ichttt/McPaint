@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.button.GuiButtonTextToggle;
 import ichttt.mods.mcpaint.client.gui.button.GuiColorButton;
@@ -16,6 +17,7 @@ import net.minecraft.client.util.InputMappings;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraftforge.fml.client.gui.widget.Slider;
 import org.lwjgl.glfw.GLFW;
@@ -60,30 +62,30 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, "Export", button -> {
+        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, new TranslationTextComponent("mcpaint.gui.export"), button -> {
             DrawScreen.this.helper.saveImage();
         });
-        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rright"), button -> {
+        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, new TranslationTextComponent("mcpaint.gui.rright"), button -> {
             DrawScreen.this.helper.rotateRight();
         });
-        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.rleft"), button -> {
+        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, new TranslationTextComponent("mcpaint.gui.rleft"), button -> {
             DrawScreen.this.helper.rotateLeft();
         });
-        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.redo"), button -> helper.redo());
-        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, I18n.format("mcpaint.gui.undo"), button -> helper.undo());
+        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, new TranslationTextComponent("mcpaint.gui.redo"), button -> helper.redo());
+        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, new TranslationTextComponent("mcpaint.gui.undo"), button -> helper.undo());
         Button pickColor = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR, DrawScreen.this::handleToolButton);
         Button erase = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER, DrawScreen.this::handleToolButton);
         Button fill = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL, DrawScreen.this::handleToolButton);
         Button pencil = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL, DrawScreen.this::handleToolButton);
-        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, ">", button -> {
+        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, new StringTextComponent(">"), button -> {
                 DrawScreen.this.helper.toolSize++;
                 handleSizeChanged();
         });
-        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, "<", button -> {
+        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, new StringTextComponent("<"), button -> {
                 DrawScreen.this.helper.toolSize--;
                 handleSizeChanged();
         });
-        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, I18n.format("gui.done"), button -> {
+        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, new TranslationTextComponent("gui.done"), button -> {
             DrawScreen.this.helper.saveAndClose();
         });
 
@@ -145,26 +147,26 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         minecraft.getTextureManager().bindTexture(BACKGROUND);
         //main
-        this.blit(this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
+        this.blit(stack, this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
         //color
-        this.blit(this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        this.blit(stack, this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //tools
-        this.blit(this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        this.blit(stack, this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //size
         if (this.helper.hasSizeWindow()) {
-            this.blit(this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
-            drawCenteredString(this.font, helper.toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
+            this.blit(stack, this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
+            drawCenteredString(stack, this.font, helper.toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
         //Background block
-        helper.renderBackgroundBlock(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP);
+        helper.renderBackgroundBlock(stack, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP);
 
-        super.render(mouseX, mouseY, partialTicks);
+        super.render(stack, mouseX, mouseY, partialTicks);
 
-        fill(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.helper.color.getRGB());
+        fill(stack, this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.helper.color.getRGB());
 
         int offsetMouseX = offsetMouseX(mouseX) ;
         int offsetMouseY = offsetMouseY(mouseY);
@@ -179,7 +181,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
 
         //draw picture
         //we batch everything together to increase the performance
-        helper.renderImage(this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, toDraw);
+        helper.renderImage(stack, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, toDraw);
     }
 
     @Override
@@ -242,7 +244,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
     }
 
     private Slider makeSlider(int xPos, int yPos, String key) {
-        return new Slider(xPos, yPos, 74, 20, I18n.format(key), "", 0, 255, 0,false, true, null, this);
+        return new Slider(xPos, yPos, 74, 20, new TranslationTextComponent(key), StringTextComponent.EMPTY, 0, 255, 0,false, true, null, this);
     }
 
 

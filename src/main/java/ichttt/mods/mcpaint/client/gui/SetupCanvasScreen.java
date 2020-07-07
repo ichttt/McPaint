@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.block.BlockState;
@@ -9,6 +10,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.util.Direction;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 
 import java.awt.*;
@@ -47,15 +49,15 @@ public class SetupCanvasScreen extends Screen {
     public void init() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, "<", button -> {
+        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, new StringTextComponent("<"), button -> {
                 currentMulti /= 2;
                 handleSizeChanged();
         });
-        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, ">", button -> {
+        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, new StringTextComponent(">"), button -> {
                 SetupCanvasScreen.this.currentMulti *= 2;
                 handleSizeChanged();
         });
-        addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, I18n.format("gui.done"), button -> {
+        addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, new TranslationTextComponent("gui.done"), button -> {
             handled = true;
             minecraft.displayGuiScreen(null);
             minecraft.displayGuiScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
@@ -66,12 +68,12 @@ public class SetupCanvasScreen extends Screen {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         minecraft.getTextureManager().bindTexture(BACKGROUND);
-        blit(this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
-        this.drawCenteredString(minecraft.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
-        this.drawCenteredString(minecraft.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
-        super.render(mouseX, mouseY, partialTicks);
+        blit(stack, this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
+        this.drawCenteredString(stack, minecraft.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
+        this.drawCenteredString(stack, minecraft.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
+        super.render(stack, mouseX, mouseY, partialTicks);
     }
 
     @Override

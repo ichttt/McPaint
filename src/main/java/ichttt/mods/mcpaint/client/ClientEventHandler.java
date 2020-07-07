@@ -12,6 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderTypeLookup;
 import net.minecraft.client.renderer.model.IBakedModel;
 import net.minecraft.client.renderer.model.ModelResourceLocation;
+import net.minecraft.data.ItemModelProvider;
+import net.minecraft.item.ItemModelsProperties;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
@@ -44,7 +46,7 @@ public class ClientEventHandler {
 
     @SubscribeEvent
     public static void registerModels(ModelRegistryEvent event) {
-        Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp").addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
+        ItemModelsProperties.func_239418_a_(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
         RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_GROUND, RenderTypeHandler.CANVAS);
         RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_ROCK, RenderTypeHandler.CANVAS);
         RenderTypeLookup.setRenderLayer(EventHandler.CANVAS_WOOD, RenderTypeHandler.CANVAS);

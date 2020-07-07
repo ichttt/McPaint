@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.gui.button;
 
+import com.mojang.blaze3d.matrix.MatrixStack;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
 import net.minecraft.client.gui.widget.button.AbstractButton;
 
@@ -19,14 +20,14 @@ public class GuiColorButton extends AbstractButton {
     }
 
     @Override
-    public void render(int mouseX, int mouseY, float partialTicks) {
+    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
         this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
         if (this.isHovered) {
-            this.vLine(this.x - 1, this.y - 1, this.y + this.height, this.borderColor);
-            this.vLine(this.x + this.width, this.y - 1, this.y + this.height, this.borderColor);
-            this.hLine(this.x - 1, this.x + this.width, this.y - 1, this.borderColor);
-            this.hLine(this.x - 1, this.x + this.width, this.y + this.height, this.borderColor);
+            this.vLine(stack, this.x - 1, this.y - 1, this.y + this.height, this.borderColor);
+            this.vLine(stack, this.x + this.width, this.y - 1, this.y + this.height, this.borderColor);
+            this.hLine(stack, this.x - 1, this.x + this.width, this.y - 1, this.borderColor);
+            this.hLine(stack, this.x - 1, this.x + this.width, this.y + this.height, this.borderColor);
         }
     }
 
