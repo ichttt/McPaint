@@ -12,15 +12,6 @@ public class MCPaintConfig {
         CLIENT = specPair.getLeft();
     }
 
-
-    static final ForgeConfigSpec generalSpec;
-    public static final MCPaintConfig.General GENERAL;
-    static {
-        final Pair<MCPaintConfig.General, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(MCPaintConfig.General::new);
-        generalSpec = specPair.getRight();
-        GENERAL = specPair.getLeft();
-    }
-
     @SuppressWarnings("CanBeFinal")
     public static class Client {
         Client(ForgeConfigSpec.Builder builder) {
@@ -80,21 +71,5 @@ public class MCPaintConfig {
         public final ForgeConfigSpec.DoubleValue maxMipSize;
         public final ForgeConfigSpec.IntValue maxTotalColorDiffPerMip;
         public final ForgeConfigSpec.IntValue maxSingleColorDiffPerMip;
-    }
-
-    public static class General {
-
-        General(ForgeConfigSpec.Builder builder) {
-            builder.comment("General configuration settings").push("General");
-
-            enableOneProbeCompat = builder
-                    .comment("Enables additional OneProbe compat if the mod is loaded. If you notice errors or log spam, disable this")
-                    .translation("mcpaint.config.enableoneprobecompat")
-                    .define("enableOneProbeCompat", true);
-
-            builder.pop();
-        }
-
-        public final ForgeConfigSpec.BooleanValue enableOneProbeCompat;
     }
 }

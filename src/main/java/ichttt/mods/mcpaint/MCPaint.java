@@ -46,7 +46,6 @@ public class MCPaint {
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::setupClient));
         DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> FMLJavaModLoadingContext.get().getModEventBus().addListener(ClientEventHandler::lateSetup));
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, MCPaintConfig.clientSpec);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, MCPaintConfig.generalSpec);
     }
 
     @SubscribeEvent

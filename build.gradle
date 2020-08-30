@@ -2,6 +2,7 @@ buildscript {
     repositories {
         maven { url = 'https://files.minecraftforge.net/maven' }
         jcenter()
+        mavenLocal()
         mavenCentral()
     }
     dependencies {
@@ -9,6 +10,7 @@ buildscript {
     }
 }
 repositories {
+    mavenLocal()
     maven { // TOP
         name 'tterrag maven'
         url "https://maven.tterrag.com/"
@@ -70,9 +72,9 @@ dependencies {
     // that the dep is a ForgeGradle 'patcher' dependency. And it's patches will be applied.
     // The userdev artifact is a special name and will get all sorts of transformations applied to it.
     minecraft 'net.minecraftforge:forge:1.16.1-32.0.57'
-//    implementation fg.deobf(project.dependencies.create("mcjty.theoneprobe:TheOneProbe-1.15:1.15-2.0.0-3") {
-//        transitive = false
-//    })
+    implementation fg.deobf(project.dependencies.create("ichttt.mods:sodiumlight:1.0.1") {
+        transitive = false
+    })
 }
 
 // Example for how to get properties into the manifest for reading by the runtime..

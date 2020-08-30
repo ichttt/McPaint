@@ -199,7 +199,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
             ((SimpleCallback) obj).invalidate();
         } else if (obj instanceof BufferManager) {
             RenderCache.uncache(getPaintFor(facing));
-        } else {
+        } else if (obj != null){
             MCPaint.LOGGER.warn("Unknown obj " + obj);
         }
     }
