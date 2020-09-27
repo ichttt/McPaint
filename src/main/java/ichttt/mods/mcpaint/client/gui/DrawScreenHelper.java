@@ -158,7 +158,7 @@ public class DrawScreenHelper {
         Minecraft mc = Minecraft.getInstance();
         List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
         for (BakedQuad quad : quads) {
-            TextureAtlasSprite sprite = quad.func_187508_a();
+            TextureAtlasSprite sprite = quad.getSprite();
             RenderSystem.pushMatrix();
             mc.getTextureManager().bindTexture(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
             //See BlockModelRenderer
@@ -282,7 +282,7 @@ public class DrawScreenHelper {
         if (background) {
             List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
             for (BakedQuad quad : quads) {
-                TextureAtlasSprite sprite = quad.func_187508_a();
+                TextureAtlasSprite sprite = quad.getSprite();
                 try (IResource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
                     Image image = ImageIO.read(resource.getInputStream());
                     if (quad.hasTintIndex()) {
@@ -315,7 +315,7 @@ public class DrawScreenHelper {
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
         IFormattableTextComponent component = new StringTextComponent(finalFile.getName());
-        component = component.func_240701_a_(TextFormatting.UNDERLINE).func_240700_a_(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
+        component = component.mergeStyle(TextFormatting.UNDERLINE).modifyStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
         minecraft.player.sendStatusMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
     }
 

@@ -5,6 +5,7 @@ issueTrackerURL="https://github.com/ichttt/mcpaint"
 displayURL="https://minecraft.curseforge.com/projects/mc-paint"
 logoFile="mcpaint_logo.png" #optional
 authors="ichttt"
+license="GPL Version 3"
 [[mods]]
     modId="mcpaint"
     version="${file.jarVersion}"
@@ -16,7 +17,7 @@ The resolution can be changed from 8x8 up to 128x128 for a single block.'''
 [[dependencies.mcpaint]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.1,1.17)"
+    versionRange="[1.16.2,1.17)"
     ordering="NONE"
     side="BOTH"
 #[[dependencies.mcpaint]]
