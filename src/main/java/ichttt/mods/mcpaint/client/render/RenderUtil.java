@@ -1,6 +1,5 @@
 package ichttt.mods.mcpaint.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import net.minecraft.client.renderer.BufferBuilder;
 import net.minecraft.client.renderer.LightTexture;
@@ -38,11 +37,11 @@ public class RenderUtil {
 
     public static boolean drawToBuffer(Matrix4f matrix4f, int color, IVertexBuilder builder, float left, float top, float right, float bottom, int light) {
         //See drawRect(int left, int top, int right, int bottom, int color
-        float a = (float) (color >> 24 & 255) / 255.0F;
-        if (a <= 0.01F) return true;
-        float r = (float) (color >> 16 & 255) / 255.0F;
-        float g = (float) (color >> 8 & 255) / 255.0F;
-        float b = (float) (color & 255) / 255.0F;
+        int a = (color >> 24 & 255);
+        if (a <= 2) return true;
+        int r = (color >> 16 & 255);
+        int g = (color >> 8 & 255);
+        int b = (color & 255);
         builder.pos(matrix4f, left, bottom, 0).color(r, g, b, a).lightmap(light).endVertex();
         builder.pos(matrix4f, right, bottom, 0).color(r, g, b, a).lightmap(light).endVertex();
         builder.pos(matrix4f, right, top, 0).color(r, g, b, a).lightmap(light).endVertex();

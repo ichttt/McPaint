@@ -1,6 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.IVertexBuilder;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
@@ -107,13 +108,6 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
         //GL setup
         matrix.push();
         matrix.translate(translationXOffset + xOffset, translationYOffset + yOffset, translationZOffset + zOffset);
-        int j = light % 65536;
-        int k = light / 65536;
-        int maxBrightness = MCPaintConfig.CLIENT.maxPaintBrightness.get();
-        if (k > maxBrightness)
-            k = maxBrightness;
-        //lightmap
-//        RenderSystem.glMultiTexCoord2f(33986, 0, maxBrightness); TODO???
 
         if (angle != 0)
             matrix.rotate(Vector3f.YP.rotationDegrees((angle)));
@@ -141,8 +135,6 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
         }
 
         matrix.pop();
-
-        //GL cleanup
     }
 
     public static int getRes(double playerDistSq) {

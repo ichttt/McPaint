@@ -226,11 +226,11 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
             boolean toggled = toggleButton == button;
             toggleButton.toggled = toggled;
             if (toggled) {
-                helper.switchToolButton(toggleButton.type);
-                if (this.helper.activeDrawType().hasSizeRegulator && !this.helper.hasSizeWindow()) {
+                boolean hadSizeWindow = helper.switchToolButton(toggleButton.type);
+                if (this.helper.activeDrawType().hasSizeRegulator && !hadSizeWindow) {
                     addButton(moreSize);
                     addButton(lessSize);
-                } else if (!this.helper.activeDrawType().hasSizeRegulator && this.helper.hasSizeWindow()) {
+                } else if (!this.helper.activeDrawType().hasSizeRegulator && hadSizeWindow) {
                     this.buttons.remove(this.moreSize);
                     this.buttons.remove(this.lessSize);
                 }

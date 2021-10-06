@@ -189,9 +189,11 @@ public class DrawScreenHelper {
         RenderSystem.disableBlend();
     }
 
-    public void switchToolButton(EnumDrawType newDrawType) {
+    public boolean switchToolButton(EnumDrawType newDrawType) {
         this.activeDrawType = newDrawType;
+        boolean hadSizeWindow = this.hasSizeWindow;
         this.hasSizeWindow = this.activeDrawType.hasSizeRegulator;
+        return hadSizeWindow;
     }
 
     public boolean handleMouseClick(double mouseX, double mouseY, int mouseButton) {

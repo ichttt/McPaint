@@ -60,7 +60,7 @@ public class MCPaint {
         NETWORKING.registerMessage(3, MessagePaintData.ClientMessage.class, MessagePaintData.ClientMessage::encode, MessagePaintData.ClientMessage::new, MessagePaintData.ClientHandler.INSTANCE::onMessage);
         NETWORKING.registerMessage(4, MessageClearSide.class, MessageClearSide::encode, MessageClearSide::new, MessageClearSide.ServerHandler::onMessage);
         NETWORKING.registerMessage(5, MessageClearSide.ClientMessage.class, MessageClearSide.ClientMessage::encode, MessageClearSide.ClientMessage::new, MessageClearSide.ClientHandler::onMessage);
-        LOGGER.info("Registered networking");
+        LOGGER.debug("Registered networking");
         CapabilityPaintable.register();
     }
 
