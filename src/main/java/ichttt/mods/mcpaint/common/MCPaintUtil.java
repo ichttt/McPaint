@@ -6,30 +6,29 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.util.Mth;
+import net.minecraft.network.chat.TextComponent;
 import net.minecraftforge.common.ForgeMod;
-import net.minecraftforge.fml.network.NetworkDirection;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.NetworkDirection;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.Objects;
 
 public class MCPaintUtil {
-    public static boolean isPosInvalid(ServerPlayerEntity player, BlockPos pos) {
+    public static boolean isPosInvalid(ServerPlayer player, BlockPos pos) {
         if (!player.level.hasChunkAt(pos)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is trying to write to unloaded block");
-            player.connection.disconnect(new StringTextComponent("Trying to write to unloaded block"));
+            player.connection.disconnect(new TextComponent("Trying to write to unloaded block"));
             return true;
         }
 
-        if (MathHelper.sqrt(player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
+        if (Math.sqrt(player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }
@@ -52,10 +51,10 @@ public class MCPaintUtil {
         return copy;
     }
 
-    public static void uploadPictureToServer(@Nullable TileEntity te, Direction facing, byte scaleFactor, int[][] picture, boolean clear) {
+    public static void uploadPictureToServer(@Nullable BlockEntity te, Direction facing, byte scaleFactor, int[][] picture, boolean clear) {
         if (!(te instanceof TileEntityCanvas)) {
             MCPaint.LOGGER.error("Could not set paint! Found block " + (te == null ? "NONE" : te.getType()));
-            Minecraft.getInstance().player.displayClientMessage(new StringTextComponent("Could not set paint!"), true);
+            Minecraft.getInstance().player.displayClientMessage(new TextComponent("Could not set paint!"), true);
             return;
         }
         TileEntityCanvas canvas = (TileEntityCanvas) te;
@@ -70,7 +69,7 @@ public class MCPaintUtil {
     }
 
     @Nonnull
-    public static ServerPlayerEntity checkServer(NetworkEvent.Context context) {
+    public static ServerPlayer checkServer(NetworkEvent.Context context) {
         if (context.getDirection() != NetworkDirection.PLAY_TO_SERVER)
             throw new IllegalArgumentException("Wrong side for server packet handler " + context.getDirection());
         context.setPacketHandled(true);

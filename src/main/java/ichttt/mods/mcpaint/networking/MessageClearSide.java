@@ -1,9 +1,9 @@
 package ichttt.mods.mcpaint.networking;
 
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
 
 import java.util.function.Supplier;
 
@@ -11,7 +11,7 @@ public class MessageClearSide {
     private final BlockPos pos;
     private final Direction facing;
 
-    public MessageClearSide(PacketBuffer buffer) {
+    public MessageClearSide(FriendlyByteBuf buffer) {
         this(buffer.readBlockPos(), Direction.from3DDataValue(buffer.readByte()));
     }
 
@@ -20,7 +20,7 @@ public class MessageClearSide {
         this.facing = facing;
     }
 
-    public void encode(PacketBuffer buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(pos);
         buf.writeByte(facing.get3DDataValue());
     }
@@ -43,7 +43,7 @@ public class MessageClearSide {
 
     public static class ClientMessage extends MessageClearSide {
 
-        public ClientMessage(PacketBuffer buffer) {
+        public ClientMessage(FriendlyByteBuf buffer) {
             super(buffer);
         }
 

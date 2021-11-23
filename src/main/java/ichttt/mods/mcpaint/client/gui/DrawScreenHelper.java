@@ -1,9 +1,10 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
@@ -11,26 +12,25 @@ import ichttt.mods.mcpaint.client.render.RenderUtil;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.AbstractGui;
-import net.minecraft.client.renderer.BufferBuilder;
-import net.minecraft.client.renderer.Tessellator;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
+import net.minecraft.client.gui.GuiComponent;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
-import net.minecraft.inventory.container.PlayerContainer;
-import net.minecraft.resources.IResource;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.IFormattableTextComponent;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TextFormatting;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.util.text.event.ClickEvent;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.server.packs.resources.Resource;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import org.lwjgl.opengl.GL11;
 
@@ -55,7 +55,7 @@ public class DrawScreenHelper {
     public final BlockPos pos;
     public final Direction facing;
     public final BlockState state;
-    public final IBakedModel model;
+    public final BakedModel model;
     public final LinkedList<PictureState> statesForUndo = new LinkedList<>();
     public final LinkedList<PictureState> statesForRedo = new LinkedList<>();
     public final boolean hadPaint;
@@ -110,8 +110,8 @@ public class DrawScreenHelper {
         } catch (IOException e) {
             MCPaint.LOGGER.error("Could not save image!", e);
             Minecraft minecraft = Minecraft.getInstance();
-            minecraft.player.displayClientMessage(new StringTextComponent("Failed to save file!"), true);
-            minecraft.player.displayClientMessage(new StringTextComponent("Failed to save file!"), false);
+            minecraft.player.displayClientMessage(new TextComponent("Failed to save file!"), true);
+            minecraft.player.displayClientMessage(new TextComponent("Failed to save file!"), false);
         }
     }
 
@@ -154,32 +154,32 @@ public class DrawScreenHelper {
         }
     }
 
-    public void renderBackgroundBlock(MatrixStack stack, int startLeft, int startTop) {
+    public void renderBackgroundBlock(PoseStack stack, int startLeft, int startTop) {
         Minecraft mc = Minecraft.getInstance();
         List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.getSprite();
-            RenderSystem.pushMatrix();
-            mc.getTextureManager().bind(PlayerContainer.BLOCK_ATLAS);
+            stack.pushPose();
+            RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
             //See BlockModelRenderer
             if (quad.isTinted()) {
                 int color = mc.getBlockColors().getColor(state, mc.level, pos, quad.getTintIndex());
                 float red = (float) (color >> 16 & 255) / 255.0F;
                 float green = (float) (color >> 8 & 255) / 255.0F;
                 float blue = (float) (color & 255) / 255.0F;
-                RenderSystem.color3f(red, green, blue);
+                RenderSystem.setShaderColor(red, green, blue, 1F);
             }
-            AbstractGui.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
-            RenderSystem.popMatrix();
+            GuiComponent.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
+            stack.popPose();
         }
     }
 
-    public void renderImage(MatrixStack stack, int startLeft, int startTop, int[][] toDraw) {
-        Tessellator tessellator = Tessellator.getInstance();
+    public void renderImage(PoseStack stack, int startLeft, int startTop, int[][] toDraw) {
+        Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
         //draw picture
         //we batch everything together to increase the performance
-        buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
+        buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         RenderUtil.renderInGui(stack.last().pose(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
@@ -285,7 +285,7 @@ public class DrawScreenHelper {
             List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
             for (BakedQuad quad : quads) {
                 TextureAtlasSprite sprite = quad.getSprite();
-                try (IResource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
+                try (Resource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
                     Image image = ImageIO.read(resource.getInputStream());
                     if (quad.isTinted()) {
                         int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
@@ -316,9 +316,9 @@ public class DrawScreenHelper {
         final File finalFile = getTimestampedPNGFileForDirectory(file);
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
-        IFormattableTextComponent component = new StringTextComponent(finalFile.getName());
-        component = component.withStyle(TextFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
-        minecraft.player.displayClientMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
+        MutableComponent component = new TextComponent(finalFile.getName());
+        component = component.withStyle(ChatFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
+        minecraft.player.displayClientMessage(new TranslatableComponent("mcpaint.gui.saved", component), false);
     }
 
     //See ScreenShotHelper

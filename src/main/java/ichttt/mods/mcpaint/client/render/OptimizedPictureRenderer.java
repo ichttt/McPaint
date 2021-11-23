@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
-import com.mojang.blaze3d.vertex.IVertexBuilder;
-import net.minecraft.util.math.vector.Matrix4f;
+import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Matrix4f;
 
 public class OptimizedPictureRenderer {
     private final OptimizedPictureData[] dataArray;
@@ -10,7 +10,7 @@ public class OptimizedPictureRenderer {
         this.dataArray = dataArray;
     }
 
-    public void renderPicture(Matrix4f matrix4f, IVertexBuilder builder, int light) {
+    public void renderPicture(Matrix4f matrix4f, VertexConsumer builder, int light) {
         for (OptimizedPictureData data : dataArray) {
             if (RenderUtil.drawToBuffer(matrix4f, data.color, builder, data.left, data.top, data.right, data.bottom, light))
                 throw new RuntimeException("Not filtered out a pixel!");

@@ -17,7 +17,7 @@ The resolution can be changed from 8x8 up to 128x128 for a single block.'''
 [[dependencies.mcpaint]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.16.2,1.17)"
+    versionRange="[1.17.1,1.18)"
     ordering="NONE"
     side="BOTH"
 #[[dependencies.mcpaint]]

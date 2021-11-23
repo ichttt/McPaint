@@ -1,31 +1,31 @@
 package ichttt.mods.mcpaint.common.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.SoundType;
-import net.minecraft.block.material.Material;
-import net.minecraft.block.material.MaterialColor;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.BooleanProperty;
-import net.minecraft.state.StateContainer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.math.shapes.ISelectionContext;
-import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.world.Explosion;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.IWorldReader;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.Level;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class BlockCanvas extends Block {
+public class BlockCanvas extends Block implements EntityBlock {
     //change clienteventhandler as well
     public static final BooleanProperty SOLID = BooleanProperty.create("solid");
     public static final BooleanProperty NORMAL_CUBE = BooleanProperty.create("normal_cube");
@@ -37,28 +37,23 @@ public class BlockCanvas extends Block {
         registerDefaultState(stateDefinition.any().setValue(SOLID, true).setValue(NORMAL_CUBE, true));
     }
 
-    @Override
-    public boolean hasTileEntity(BlockState state) {
-        return true;
-    }
-
     @Nullable
     @Override
-    public TileEntity createTileEntity(BlockState state, IBlockReader world) {
-        return new TileEntityCanvas();
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new TileEntityCanvas(pos, state);
     }
 
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
-    public BlockRenderType getRenderShape(BlockState state) {
-        return BlockRenderType.MODEL;
+    public RenderShape getRenderShape(BlockState state) {
+        return RenderShape.MODEL;
     }
 
     //Delegating methods
 
     @Override
-    public float getDestroyProgress(BlockState state, PlayerEntity player, IBlockReader world, BlockPos pos) {
+    public float getDestroyProgress(BlockState state, Player player, BlockGetter world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getDestroyProgress(player, world, pos);
@@ -67,7 +62,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
+    public float getExplosionResistance(BlockState state, BlockGetter world, BlockPos pos, Explosion explosion) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlock().getExplosionResistance(canvas.getContainedState(), world, pos, explosion);
@@ -76,7 +71,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
+    public SoundType getSoundType(BlockState state, LevelReader world, BlockPos pos, @Nullable Entity entity) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlock().getSoundType(canvas.getContainedState(), world, pos, entity);
@@ -85,7 +80,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public void playerDestroy(@Nonnull World world, PlayerEntity player, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable TileEntity te, ItemStack stack) {
+    public void playerDestroy(@Nonnull Level world, Player player, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable BlockEntity te, ItemStack stack) {
         if (te instanceof TileEntityCanvas && ((TileEntityCanvas) te).getContainedState() != null) {
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             state = canvas.getContainedState();
@@ -96,7 +91,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public boolean canHarvestBlock(BlockState state, IBlockReader world, BlockPos pos, PlayerEntity player) {
+    public boolean canHarvestBlock(BlockState state, BlockGetter world, BlockPos pos, Player player) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
@@ -106,7 +101,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getCollisionShape(world, pos, context);
@@ -115,7 +110,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getShape(world, pos, context);
@@ -124,7 +119,7 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getOcclusionShape(BlockState state, IBlockReader world, BlockPos pos) {
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter world, BlockPos pos) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlockSupportShape(world, pos);
@@ -133,8 +128,8 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getVisualShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntity te = world.getBlockEntity(pos);
+    public VoxelShape getVisualShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        BlockEntity te = world.getBlockEntity(pos);
         if (te instanceof TileEntityCanvas) { // Got some crashes because decocraft seems to wrap tileentites
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             if (canvas.getContainedState() != null) {
@@ -157,13 +152,13 @@ public class BlockCanvas extends Block {
 //    }
 
     @Override
-    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(SOLID, NORMAL_CUBE);
     }
 
     @Nonnull
     @Override
-    public ItemStack getPickBlock(@Nonnull BlockState state, RayTraceResult target, @Nonnull IBlockReader world, @Nonnull BlockPos pos, PlayerEntity player) {
+    public ItemStack getPickBlock(@Nonnull BlockState state, HitResult target, @Nonnull BlockGetter world, @Nonnull BlockPos pos, Player player) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
@@ -177,7 +172,7 @@ public class BlockCanvas extends Block {
         return super.getSoundType(state);
     }
 
-    public BlockState getStateFrom(IBlockReader world, BlockPos pos, BlockState state) {
+    public BlockState getStateFrom(BlockGetter world, BlockPos pos, BlockState state) {
         return defaultBlockState().setValue(SOLID, state.canOcclude()).setValue(NORMAL_CUBE, state.isRedstoneConductor(world, pos));
     }
 }

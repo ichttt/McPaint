@@ -1,41 +1,46 @@
 package ichttt.mods.mcpaint.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.IRenderTypeBuffer;
-import net.minecraft.client.renderer.model.ItemCameraTransforms;
-import net.minecraft.client.renderer.tileentity.ItemStackTileEntityRenderer;
-import net.minecraft.client.util.InputMappings;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.IItemPropertyGetter;
-import net.minecraft.item.ItemStack;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.block.model.ItemTransforms;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import com.mojang.blaze3d.platform.InputConstants;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 import javax.annotation.Nullable;
 import java.util.concurrent.Callable;
 
-public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemPropertyGetter {
+public class ISTERStamp extends BlockEntityWithoutLevelRenderer implements ItemPropertyFunction {
     public static final ISTERStamp INSTANCE = new ISTERStamp();
 
-    public static Callable<ItemStackTileEntityRenderer> getInstance() {
+    public static Callable<BlockEntityWithoutLevelRenderer> getInstance() {
         return () -> INSTANCE;
     }
 
-    private ISTERStamp() {}
+    private ISTERStamp() {
+        super(null, null);
+    }
 
     @Override
-    public void renderByItem(ItemStack itemStack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) { //render
-        if (InputMappings.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
+    public void onResourceManagerReload(ResourceManager pResourceManager) {}
+
+    @Override
+    public void renderByItem(ItemStack itemStack, ItemTransforms.TransformType transformType, PoseStack matrixStack, MultiBufferSource buffer, int combinedLightIn, int combinedOverlayIn) { //render
+        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
                 matrixStack.pushPose();
-                IVertexBuilder vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
+                VertexConsumer vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
                 RenderUtil.renderInGame(matrixStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), combinedLightIn);
                 matrixStack.popPose();
             }
@@ -43,8 +48,8 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
     }
 
     @Override
-    public float call(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
-        if (InputMappings.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
+    public float call(ItemStack stack, @Nullable ClientLevel pLevel, @Nullable LivingEntity entity, int pSeed) {
+        if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {
                 MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");

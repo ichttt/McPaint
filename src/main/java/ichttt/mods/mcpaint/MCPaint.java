@@ -10,11 +10,11 @@ import ichttt.mods.mcpaint.common.item.ItemStamp;
 import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
-import net.minecraft.block.Block;
-import net.minecraft.block.material.Material;
-import net.minecraft.item.Item;
-import net.minecraft.tileentity.TileEntityType;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
@@ -26,8 +26,8 @@ import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.LoadingModList;
-import net.minecraftforge.fml.network.NetworkRegistry;
-import net.minecraftforge.fml.network.simple.SimpleChannel;
+import net.minecraftforge.fmllegacy.network.NetworkRegistry;
+import net.minecraftforge.fmllegacy.network.simple.SimpleChannel;
 import net.minecraftforge.registries.IForgeRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +37,7 @@ public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
-    private static final String NETWORKING_VERSION = "3";
+    private static final String NETWORKING_VERSION = "4";
     public static SimpleChannel NETWORKING;
 
     public MCPaint() {
@@ -80,8 +80,8 @@ public class MCPaint {
 
     @SubscribeEvent
     @SuppressWarnings("ConstantConditions")
-    public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
-        TileEntityType<?> type = (TileEntityType.Builder.of(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
+    public static void registerTileEntity(RegistryEvent.Register<BlockEntityType<?>> event) {
+        BlockEntityType<?> type = (BlockEntityType.Builder.of(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
         event.getRegistry().register(type);
     }
 }

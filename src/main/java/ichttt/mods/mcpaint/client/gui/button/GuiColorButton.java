@@ -1,8 +1,9 @@
 package ichttt.mods.mcpaint.client.gui.button;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
-import net.minecraft.client.gui.widget.button.AbstractButton;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.narration.NarrationElementOutput;
 
 import java.awt.*;
 import java.util.function.Consumer;
@@ -20,7 +21,7 @@ public class GuiColorButton extends AbstractButton {
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
         this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
         if (this.isHovered) {
@@ -34,5 +35,10 @@ public class GuiColorButton extends AbstractButton {
     @Override
     public void onPress() {
         consumer.accept(color);
+    }
+
+    @Override
+    public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
+        this.defaultButtonNarrationText(pNarrationElementOutput);
     }
 }

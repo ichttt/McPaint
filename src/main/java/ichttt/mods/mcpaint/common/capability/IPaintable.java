@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 
 import javax.annotation.Nullable;
 

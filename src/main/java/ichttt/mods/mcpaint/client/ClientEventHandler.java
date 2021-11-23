@@ -8,28 +8,26 @@ import ichttt.mods.mcpaint.client.render.RenderTypeHandler;
 import ichttt.mods.mcpaint.client.render.TERCanvas;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.RenderTypeLookup;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelResourceLocation;
-import net.minecraft.data.ItemModelProvider;
-import net.minecraft.item.ItemModelsProperties;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.renderer.item.ItemProperties;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.ModelBakeEvent;
 import net.minecraftforge.client.event.ModelRegistryEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.DeferredWorkQueue;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.client.registry.ClientRegistry;
 import net.minecraftforge.fml.config.ModConfig;
+import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
-import net.minecraftforge.fml.event.lifecycle.IModBusEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 
@@ -47,14 +45,14 @@ public class ClientEventHandler {
     }
 
     public static void setupClient(FMLClientSetupEvent event) {
-        ClientRegistry.bindTileEntityRenderer(EventHandler.CANVAS_TE, TERCanvas::new);
+        BlockEntityRenderers.register(EventHandler.CANVAS_TE, TERCanvas::new);
         //Just to classload this ot init to avoid lag spikes
         //noinspection ResultOfMethodCallIgnored,Convert2MethodRef
         event.enqueueWork(() -> DistExecutor.unsafeRunWhenOn(Dist.CLIENT, () -> () -> RenderTypeHandler.CANVAS.toString()));
     }
 
     public static void registerModels(ModelRegistryEvent event) {
-        ItemModelsProperties.register(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
+        ItemProperties.register(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
     }
 
     @SubscribeEvent
@@ -65,12 +63,12 @@ public class ClientEventHandler {
     }
 
     @SubscribeEvent
-    public static void onConfigChange(ModConfig.Reloading event) {
+    public static void onConfigChange(ModConfigEvent.Reloading event) {
         ClientHooks.onConfigReload();
     }
 
     @SubscribeEvent
-    public static void onConfigLoad(ModConfig.Loading event) {
+    public static void onConfigLoad(ModConfigEvent.Loading event) {
         ClientHooks.onConfigReload();
     }
 
@@ -80,7 +78,7 @@ public class ClientEventHandler {
         for (String s : toReplace) {
             for (String variant : variants) {
                 ModelResourceLocation mrl = new ModelResourceLocation(new ResourceLocation(MCPaint.MODID, s), variant);
-                IBakedModel model = event.getModelRegistry().get(mrl);
+                BakedModel model = event.getModelRegistry().get(mrl);
                 if (model == null) throw new NullPointerException("Model for " + mrl);
                 model = new DelegatingBakedModel(model);
                 event.getModelRegistry().put(mrl, model);

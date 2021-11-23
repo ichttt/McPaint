@@ -1,17 +1,17 @@
 package ichttt.mods.mcpaint.client.gui;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.button.Button;
-import net.minecraft.client.resources.I18n;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.TextComponent;
+import net.minecraft.network.chat.TranslatableComponent;
 
 import java.awt.*;
 
@@ -36,7 +36,7 @@ public class SetupCanvasScreen extends Screen {
     private int guiTop;
 
     public SetupCanvasScreen(BlockPos pos, Direction facing, BlockState state, int baseX, int baseY) {
-        super(new TranslationTextComponent("mcpaint.drawsetup"));
+        super(new TranslatableComponent("mcpaint.drawsetup"));
         this.pos = pos;
         this.facing = facing;
         this.state = state;
@@ -49,27 +49,27 @@ public class SetupCanvasScreen extends Screen {
     public void init() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, new StringTextComponent("<"), button -> {
+        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, new TextComponent("<"), button -> {
                 currentMulti /= 2;
                 handleSizeChanged();
         });
-        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, new StringTextComponent(">"), button -> {
+        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, new TextComponent(">"), button -> {
                 SetupCanvasScreen.this.currentMulti *= 2;
                 handleSizeChanged();
         });
-        addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, new TranslationTextComponent("gui.done"), button -> {
+        addRenderableWidget(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, new TranslatableComponent("gui.done"), button -> {
             handled = true;
             minecraft.setScreen(null);
             minecraft.setScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
         }));
-        addButton(this.lessSize);
-        addButton(this.moreSize);
+        addRenderableWidget(this.lessSize);
+        addRenderableWidget(this.moreSize);
         handleSizeChanged();
     }
 
     @Override
-    public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
-        minecraft.getTextureManager().bind(BACKGROUND);
+    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+        RenderSystem.setShaderTexture(0, BACKGROUND);
         blit(stack, this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
         this.drawCenteredString(stack, minecraft.font, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
         this.drawCenteredString(stack, minecraft.font, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());

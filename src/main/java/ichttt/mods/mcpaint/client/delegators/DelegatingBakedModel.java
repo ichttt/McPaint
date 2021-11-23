@@ -1,14 +1,13 @@
 package ichttt.mods.mcpaint.client.delegators;
 
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.BlockModelShapes;
-import net.minecraft.client.renderer.model.BakedQuad;
-import net.minecraft.client.renderer.model.IBakedModel;
-import net.minecraft.client.renderer.model.ModelManager;
+import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.resources.model.BakedModel;
+import net.minecraft.client.resources.model.ModelManager;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import net.minecraft.util.Direction;
+import net.minecraft.core.Direction;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.EmptyModelData;
 import net.minecraftforge.client.model.data.IModelData;
@@ -18,13 +17,13 @@ import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Random;
 
-public class DelegatingBakedModel extends BakedModelWrapper<IBakedModel> {
+public class DelegatingBakedModel extends BakedModelWrapper<BakedModel> {
 
-    public DelegatingBakedModel(IBakedModel originalModel) {
+    public DelegatingBakedModel(BakedModel originalModel) {
         super(originalModel);
     }
 
-    private static IBakedModel getModel(BlockState newState) {
+    private static BakedModel getModel(BlockState newState) {
         ModelManager shapes = Minecraft.getInstance().getModelManager();
         if (newState == null)
             return shapes.getMissingModel();
@@ -40,8 +39,8 @@ public class DelegatingBakedModel extends BakedModelWrapper<IBakedModel> {
     }
 
     @Override
-    public TextureAtlasSprite getParticleTexture(@Nonnull IModelData data) {
+    public TextureAtlasSprite getParticleIcon(@Nonnull IModelData data) {
         BlockState newState = data.getData(TileEntityCanvas.BLOCK_STATE_PROPERTY);
-        return getModel(newState).getParticleTexture(EmptyModelData.INSTANCE);
+        return getModel(newState).getParticleIcon(EmptyModelData.INSTANCE);
     }
 }

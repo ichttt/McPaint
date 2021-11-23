@@ -3,9 +3,9 @@ package ichttt.mods.mcpaint.common;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityProvider;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.registries.ObjectHolder;
@@ -24,7 +24,7 @@ public class EventHandler {
     @ObjectHolder("mcpaint:canvas_ground")
     public static BlockCanvas CANVAS_GROUND = getNull();
     @ObjectHolder("mcpaint:canvas_te")
-    public static TileEntityType<TileEntityCanvas> CANVAS_TE = getNull();
+    public static BlockEntityType<TileEntityCanvas> CANVAS_TE = getNull();
 
     //Avoids warnings of a field being null because it is populated by the ObjectHolder
     //So Nonnull despite returning null

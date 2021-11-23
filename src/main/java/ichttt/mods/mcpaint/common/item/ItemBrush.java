@@ -6,24 +6,27 @@ import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockRenderType;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.BlockRayTraceResult;
-import net.minecraft.util.math.RayTraceContext;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.world.World;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.CreativeModeTab;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.level.ClipContext;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.IItemRenderProperties;
 import net.minecraftforge.fml.DistExecutor;
 
 import javax.annotation.Nonnull;
@@ -33,12 +36,12 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ItemBrush extends Item {
     public static Item.Properties getProperties() {
-        Item.Properties properties = new Item.Properties(); //Workaround for classloading issues
-        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> properties.setISTER(ISTERStamp::getInstance));
-        properties.tab(ItemGroup.TAB_DECORATIONS).stacksTo(1).defaultDurability(32);
+        Item.Properties properties = new Item.Properties();
+        properties.tab(CreativeModeTab.TAB_DECORATIONS).stacksTo(1).defaultDurability(32);
         return properties;
     }
 
@@ -47,37 +50,48 @@ public class ItemBrush extends Item {
         setRegistryName(registryName);
     }
 
+    @Override
+    public void initializeClient(Consumer<IItemRenderProperties> consumer) {
+        super.initializeClient(consumer);
+        consumer.accept(new IItemRenderProperties() {
+            @Override
+            public BlockEntityWithoutLevelRenderer getItemStackRenderer() {
+                return ISTERStamp.INSTANCE;
+            }
+        });
+    }
+
     @Nonnull
     @Override
-    public ActionResult<ItemStack> use(@Nonnull World world, @Nonnull PlayerEntity player, @Nonnull Hand hand) {
+    public InteractionResultHolder<ItemStack> use(@Nonnull Level world, @Nonnull Player player, @Nonnull InteractionHand hand) {
         ItemStack held = player.getItemInHand(hand);
-        RayTraceResult raytraceresult = getPlayerPOVHitResult(world, player, RayTraceContext.FluidMode.NONE);
-        if (raytraceresult.getType() != RayTraceResult.Type.BLOCK)
-            return new ActionResult<>(processMiss(world, player, hand, held, raytraceresult), held);
-        BlockRayTraceResult blockRayTraceResult = (BlockRayTraceResult) raytraceresult;
+        HitResult raytraceresult = getPlayerPOVHitResult(world, player, ClipContext.Fluid.NONE);
+        if (raytraceresult.getType() != HitResult.Type.BLOCK)
+            return new InteractionResultHolder<>(processMiss(world, player, hand, held, raytraceresult), held);
+        BlockHitResult blockRayTraceResult = (BlockHitResult) raytraceresult;
         BlockPos pos = blockRayTraceResult.getBlockPos();
         BlockState state = world.getBlockState(pos);
         Direction facing = blockRayTraceResult.getDirection();
-        return new ActionResult<>(processHit(world, player, hand, pos, state, facing), held);
+        return new InteractionResultHolder<>(processHit(world, player, hand, pos, state, facing), held);
     }
 
-    protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
-        return ActionResultType.FAIL;
+    protected InteractionResult processMiss(Level world, Player player, InteractionHand hand, ItemStack stack, @Nullable HitResult result) {
+        return InteractionResult.FAIL;
     }
 
-    protected ActionResultType processHit(World world, PlayerEntity player, Hand hand, BlockPos pos, BlockState state, Direction facing) {
+    protected InteractionResult processHit(Level world, Player player, InteractionHand hand, BlockPos pos, BlockState state, Direction facing) {
         if (state.getBlock() instanceof BlockCanvas) {
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getBlockEntity(pos));
             //We need to cache getBlockFaceShape as the method takes a world as an argument
-            if (canvas.isSideBlockedForPaint(facing)) return ActionResultType.FAIL;
+            if (canvas.isSideBlockedForPaint(facing)) return InteractionResult.FAIL;
             ItemStack held = player.getItemInHand(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
             held.hurtAndBreak(1, player, (p_220282_1_) -> p_220282_1_.broadcastBreakEvent(hand));
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
         if (Block.canSupportCenter(world, pos, facing) && state.getMaterial().isSolidBlocking() /*&& state.isFullBlock() == state.isFullCube()*/ &&
-                /*state.isFullCube() == state.isBlockNormalCube() &&*/ state.getRenderShape() == BlockRenderType.MODEL && !state.getBlock().hasTileEntity(state)) {
+                /*state.isFullCube() == state.isBlockNormalCube() &&*/ state.getRenderShape() == RenderShape.MODEL && !(state.getBlock() instanceof EntityBlock)) {
             Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
             for (Direction testFacing : Direction.values()) {
                 if (!Block.canSupportCenter(world, pos, testFacing))
@@ -95,12 +109,12 @@ public class ItemBrush extends Item {
             ItemStack held = player.getItemInHand(hand);
             startPainting(canvas, world, held, pos, facing.getOpposite(), state);
             held.hurtAndBreak(1, player, (p_220282_1_) -> p_220282_1_.broadcastBreakEvent(hand));
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResultType.FAIL;
+        return InteractionResult.FAIL;
     }
 
-    protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
+    protected void startPainting(TileEntityCanvas canvas, Level world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
         if (world.isClientSide) {
             if (canvas.hasPaintFor(facing)) {
                 List<IPaintable> list = new ArrayList<>(1);

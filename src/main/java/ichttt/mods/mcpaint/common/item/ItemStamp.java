@@ -9,22 +9,22 @@ import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import net.minecraft.block.BlockState;
-import net.minecraft.client.util.ITooltipFlag;
-import net.minecraft.entity.Pose;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.ActionResultType;
-import net.minecraft.util.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.RayTraceResult;
-import net.minecraft.util.text.ITextComponent;
-import net.minecraft.util.text.TranslationTextComponent;
-import net.minecraft.world.World;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.entity.Pose;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.phys.HitResult;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
@@ -42,19 +42,19 @@ public class ItemStamp extends ItemBrush {
     }
 
     @Override
-    protected ActionResultType processMiss(World world, PlayerEntity player, Hand hand, ItemStack stack, @Nullable RayTraceResult result) {
-        if ((result == null || result.getType() == RayTraceResult.Type.MISS) && player.getPose() == Pose.CROUCHING) {
+    protected InteractionResult processMiss(Level world, Player player, InteractionHand hand, ItemStack stack, @Nullable HitResult result) {
+        if ((result == null || result.getType() == HitResult.Type.MISS) && player.getPose() == Pose.CROUCHING) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!"));
             if (paint.getPictureData() == null)
-                return ActionResultType.PASS;
+                return InteractionResult.PASS;
             paint.clear(null, null);
-            return ActionResultType.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResultType.PASS;
+        return InteractionResult.PASS;
     }
 
     @Override
-    protected ActionResultType processHit(World world, PlayerEntity player, Hand hand, BlockPos pos, BlockState state, Direction facing) {
+    protected InteractionResult processHit(Level world, Player player, InteractionHand hand, BlockPos pos, BlockState state, Direction facing) {
         ItemStack held = player == null ? ItemStack.EMPTY : player.getItemInHand(hand);
         IPaintable paint = Objects.requireNonNull(held.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint on brush!")));
         if (paint.hasPaintData()) {
@@ -62,21 +62,21 @@ public class ItemStamp extends ItemBrush {
         } else if (player != null && player.getPose() == Pose.CROUCHING) {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {
-                TileEntity te = world.getBlockEntity(pos);
+                BlockEntity te = world.getBlockEntity(pos);
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     if (canvas.hasPaintFor(facing)) {
                         paint.copyFrom(canvas.getPaintFor(facing), canvas, facing);
-                        return ActionResultType.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
             }
         }
-        return ActionResultType.FAIL;
+        return InteractionResult.FAIL;
     }
 
     @Override
-    protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
+    protected void startPainting(TileEntityCanvas canvas, Level world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
         if (world.isClientSide) {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
             if (MCPaintConfig.CLIENT.directApplyStamp.get()) {
@@ -96,18 +96,18 @@ public class ItemStamp extends ItemBrush {
     @SuppressWarnings("ConstantConditions")
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void appendHoverText(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
         if (paintable != null && paintable.hasPaintData()) {
-            tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.paint"));
+            tooltip.add(new TranslatableComponent("mcpaint.tooltip.stamp.paint"));
         } else {
-            tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.nopaint"));
+            tooltip.add(new TranslatableComponent("mcpaint.tooltip.stamp.nopaint"));
         }
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
     }
 
     @Override
-    public void readShareTag(ItemStack stack, @Nullable CompoundNBT nbt) {
+    public void readShareTag(ItemStack stack, @Nullable CompoundTag nbt) {
         if (nbt != null) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
             CapabilityPaintable.readFromNBT(paint, nbt);
@@ -116,8 +116,8 @@ public class ItemStamp extends ItemBrush {
 
     @Nullable
     @Override
-    public CompoundNBT getShareTag(ItemStack stack) {
+    public CompoundTag getShareTag(ItemStack stack) {
         IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE).orElseThrow(() -> new IllegalArgumentException("Missing paintable on brush!"));
-        return CapabilityPaintable.writeToNBT(paint, new CompoundNBT());
+        return CapabilityPaintable.writeToNBT(paint, new CompoundTag());
     }
 }

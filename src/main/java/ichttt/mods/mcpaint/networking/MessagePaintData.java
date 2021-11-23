@@ -7,19 +7,19 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.block.BlockState;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.entity.player.ServerPlayerEntity;
-import net.minecraft.network.PacketBuffer;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.fml.network.NetworkEvent;
-import net.minecraftforge.fml.network.PacketDistributor;
+import net.minecraftforge.fmllegacy.network.NetworkEvent;
+import net.minecraftforge.fmllegacy.network.PacketDistributor;
 
 import java.util.Collection;
 import java.util.Comparator;
@@ -68,7 +68,7 @@ public class MessagePaintData {
         this.maxParts = maxParts;
     }
 
-    public MessagePaintData(PacketBuffer buf) {
+    public MessagePaintData(FriendlyByteBuf buf) {
         this.pos = buf.readBlockPos();
         this.scale = buf.readByte();
         this.facing = Direction.from3DDataValue(buf.readByte());
@@ -85,7 +85,7 @@ public class MessagePaintData {
         }
     }
 
-    public void encode(PacketBuffer buf) {
+    public void encode(FriendlyByteBuf buf) {
         buf.writeBlockPos(this.pos);
         buf.writeByte(scale);
         buf.writeByte(facing.get3DDataValue());
@@ -136,7 +136,7 @@ public class MessagePaintData {
         }
 
         public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
-            ServerPlayerEntity player = MCPaintUtil.checkServer(ctx);
+            ServerPlayer player = MCPaintUtil.checkServer(ctx);
             if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
             BlockState state = player.level.getBlockState(pos);
@@ -145,7 +145,7 @@ public class MessagePaintData {
                 return;
             }
 
-            TileEntity te = player.level.getBlockEntity(pos);
+            BlockEntity te = player.level.getBlockEntity(pos);
             if (!(te instanceof TileEntityCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - TE invalid");
                 return;
@@ -156,7 +156,7 @@ public class MessagePaintData {
             else
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
             te.setChanged();
-            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (Chunk) Objects.requireNonNull(te.getLevel()).getChunk(te.getBlockPos()));
+            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (LevelChunk) Objects.requireNonNull(te.getLevel()).getChunk(te.getBlockPos()));
             if (data == null) {
                 MCPaint.NETWORKING.send(target, new MessageClearSide.ClientMessage(pos, facing));
             } else {
@@ -172,12 +172,12 @@ public class MessagePaintData {
         @Override
         public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
             MCPaintUtil.checkClient(ctx);
-            World world = Minecraft.getInstance().level;
+            Level world = Minecraft.getInstance().level;
             if (!world.hasChunkAt(pos)) {
                 MCPaint.LOGGER.warn("Invalid pos " + pos + " when updating data - Not loaded");
             }
 
-            TileEntity te = world.getBlockEntity(pos);
+            BlockEntity te = world.getBlockEntity(pos);
             if (!(te instanceof TileEntityCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
                 return;
@@ -193,7 +193,7 @@ public class MessagePaintData {
             super(msg.pos, msg.facing, msg.scale, msg.data, msg.part, msg.maxParts);
         }
 
-        public ClientMessage(PacketBuffer buf) {
+        public ClientMessage(FriendlyByteBuf buf) {
             super(buf);
         }
     }

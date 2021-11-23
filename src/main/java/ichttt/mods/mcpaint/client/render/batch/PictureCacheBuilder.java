@@ -9,7 +9,6 @@ import ichttt.mods.mcpaint.client.render.OptimizedPictureData;
 import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,7 +98,7 @@ public class PictureCacheBuilder {
             return null;
         }
         stopwatch.stop();
-        MCPaint.LOGGER.info("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
+        MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         allRects = LossyCompression.colorCompress(maxTotalVar, maxSingleVar, allRects);
         if (shouldDiscard.apply(allRects.size())) return null;
         List<List<PixelInfo>> mergedDrawList = allRects.stream().map(PixelRect::getMergedLines).collect(Collectors.toList());

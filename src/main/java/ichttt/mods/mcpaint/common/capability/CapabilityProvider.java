@@ -1,9 +1,9 @@
 package ichttt.mods.mcpaint.common.capability;
 
 import ichttt.mods.mcpaint.MCPaint;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.util.Direction;
-import net.minecraft.util.ResourceLocation;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.core.Direction;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilitySerializable;
 import net.minecraftforge.common.util.LazyOptional;
@@ -11,7 +11,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class CapabilityProvider implements ICapabilitySerializable<CompoundNBT> {
+public class CapabilityProvider implements ICapabilitySerializable<CompoundTag> {
     public static final ResourceLocation LOCATION = new ResourceLocation(MCPaint.MODID, "paintable");
     private final IPaintable paint = new Paint();
     private final LazyOptional<IPaintable> optional = LazyOptional.of(() -> paint);
@@ -23,12 +23,12 @@ public class CapabilityProvider implements ICapabilitySerializable<CompoundNBT> 
     }
 
     @Override
-    public CompoundNBT serializeNBT() {
-        return CapabilityPaintable.writeToNBT(paint, new CompoundNBT());
+    public CompoundTag serializeNBT() {
+        return CapabilityPaintable.writeToNBT(paint, new CompoundTag());
     }
 
     @Override
-    public void deserializeNBT(CompoundNBT nbt) {
+    public void deserializeNBT(CompoundTag nbt) {
         CapabilityPaintable.readFromNBT(paint, nbt);
     }
 }

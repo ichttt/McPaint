@@ -11,14 +11,14 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.nbt.CompoundNBT;
-import net.minecraft.nbt.NBTUtil;
-import net.minecraft.network.NetworkManager;
-import net.minecraft.network.play.server.SUpdateTileEntityPacket;
-import net.minecraft.tileentity.TileEntity;
-import net.minecraft.util.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.ModelDataManager;
@@ -29,7 +29,7 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
-import net.minecraftforge.fml.common.thread.EffectiveSide;
+import net.minecraftforge.fml.util.thread.EffectiveSide;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,30 +38,30 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.Set;
 
-public class TileEntityCanvas extends TileEntity implements IPaintValidator {
+public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     public static final ModelProperty<BlockState> BLOCK_STATE_PROPERTY = new ModelProperty<>();
     private final Map<Direction, IPaintable> facingToPaintMap = new EnumMap<>(Direction.class);
     private BlockState containedState;
     private final Map<Direction, Object> bufferMap = new EnumMap<>(Direction.class);
     private final Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
 
-    public TileEntityCanvas() {
-        super(EventHandler.CANVAS_TE);
+    public TileEntityCanvas(BlockPos pos, BlockState state) {
+        super(EventHandler.CANVAS_TE, pos, state);
     }
 
     @Nonnull
     @Override
-    public CompoundNBT save(CompoundNBT tag) {
+    public CompoundTag save(CompoundTag tag) {
         tag = super.save(tag);
         if (this.containedState != null)
-            tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
-        CompoundNBT faces = new CompoundNBT();
+            tag.put("blockState", NbtUtils.writeBlockState(this.containedState));
+        CompoundTag faces = new CompoundTag();
         for (Map.Entry<Direction, IPaintable> entry : this.facingToPaintMap.entrySet()) {
-            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
+            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundTag()));
         }
         tag.put("faces", faces);
         if (!disallowedFaces.isEmpty()) {
-            CompoundNBT blockedFaces = new CompoundNBT();
+            CompoundTag blockedFaces = new CompoundTag();
             for (Direction facing : Direction.values())
                 blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
@@ -70,10 +70,10 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void load(BlockState state, CompoundNBT tag) {
-        super.load(state, tag);
-        this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NBTUtil.readBlockState(tag.getCompound("blockState")) : null;
-        CompoundNBT faces = tag.getCompound("faces");
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NbtUtils.readBlockState(tag.getCompound("blockState")) : null;
+        CompoundTag faces = tag.getCompound("faces");
         for (String key : faces.getAllKeys()) {
             Paint paint = new Paint(this);
             CapabilityPaintable.readFromNBT(paint, faces.getCompound(key));
@@ -81,7 +81,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         }
         disallowedFaces.clear();
         if (tag.contains("blocked")) {
-            CompoundNBT blockedFaces = tag.getCompound("blocked");
+            CompoundTag blockedFaces = tag.getCompound("blocked");
             for (String key : blockedFaces.getAllKeys()) {
                 if (blockedFaces.getBoolean(key))
                     disallowedFaces.add(Direction.byName(key));
@@ -90,20 +90,20 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void handleUpdateTag(BlockState state, @Nonnull CompoundNBT tag) {
-        this.load(state, tag);
+    public void handleUpdateTag(@Nonnull CompoundTag tag) {
+        this.load(tag);
     }
 
     @Nonnull
     @Override
-    public CompoundNBT getUpdateTag() {
-        return this.save(new CompoundNBT());
+    public CompoundTag getUpdateTag() {
+        return this.save(new CompoundTag());
     }
 
     @Nullable
     @Override
-    public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(this.worldPosition, 0, this.getUpdateTag());
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return new ClientboundBlockEntityDataPacket(this.worldPosition, 0, this.getUpdateTag());
     }
 
     @Nonnull
@@ -182,14 +182,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public double getViewDistance() { //add 8 so we catch when were are no longer rendered
-        int distOffset = MCPaintConfig.CLIENT.maxPaintRenderDistance.get() + 8;
-        return distOffset * distOffset;
-    }
-
-    @Override
-    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        this.load(null, pkt.getTag());
+    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt) {
+        this.load(pkt.getTag());
         unbindBuffers();
     }
 
@@ -205,7 +199,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public void onChunkUnloaded() {
+    public void setRemoved() {
+        super.setRemoved();
         if (EffectiveSide.get() == LogicalSide.CLIENT) {
             unbindBuffers();
         }

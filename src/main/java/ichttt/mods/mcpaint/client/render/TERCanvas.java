@@ -1,32 +1,31 @@
 package ichttt.mods.mcpaint.client.render;
 
-import com.mojang.blaze3d.matrix.MatrixStack;
+import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
-import com.mojang.blaze3d.vertex.IVertexBuilder;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.*;
-import net.minecraft.client.renderer.tileentity.TileEntityRenderer;
-import net.minecraft.client.renderer.tileentity.TileEntityRendererDispatcher;
-import net.minecraft.util.Direction;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.vector.Matrix4f;
-import net.minecraft.util.math.vector.Vector3f;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import com.mojang.math.Matrix4f;
+import com.mojang.math.Vector3f;
 
 import javax.annotation.Nonnull;
 import java.util.Objects;
 
-public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
+public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
     private static final Direction[] VALUES = Direction.values();
 
-    public TERCanvas(TileEntityRendererDispatcher p_i226006_1_) {
-        super(p_i226006_1_);
-    }
+    public TERCanvas(BlockEntityRendererProvider.Context pContext) {}
 
-    private static void renderFace(MatrixStack matrix, IVertexBuilder vertexBuilder, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
+    private static void renderFace(PoseStack matrix, VertexConsumer vertexBuilder, TileEntityCanvas te, Direction facing, int light, double playerDistSq) {
         //Facing setup
         int xOffset = 0;
         int yOffset = 0;
@@ -150,20 +149,26 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
     }
 
     @Override
-    public void render(TileEntityCanvas te, float v, @Nonnull MatrixStack matrixStack, @Nonnull IRenderTypeBuffer iRenderTypeBuffer, int light, int otherlight) {
+    public void render(TileEntityCanvas te, float v, @Nonnull PoseStack matrixStack, @Nonnull MultiBufferSource iRenderTypeBuffer, int light, int otherlight) {
         BlockPos pos = te.getBlockPos();
         double playerDistSq = Minecraft.getInstance().player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
-        IVertexBuilder builder = iRenderTypeBuffer.getBuffer(RenderTypeHandler.CANVAS);
+        VertexConsumer builder = iRenderTypeBuffer.getBuffer(RenderTypeHandler.CANVAS);
         if (playerDistSq < (maxDist * maxDist)) {
             for (Direction facing : VALUES) {
                 if (te.hasPaintFor(facing)) {
-                    int lightPacked = WorldRenderer.getLightColor(te.getLevel(), te.getLevel().getBlockState(te.getBlockPos()), te.getBlockPos().relative(facing.getOpposite()));
+                    int lightPacked = LevelRenderer.getLightColor(te.getLevel(), te.getLevel().getBlockState(te.getBlockPos()), te.getBlockPos().relative(facing.getOpposite()));
                     renderFace(matrixStack, builder, te, facing, lightPacked, playerDistSq);
                 }
             }
         } else {
             te.unbindBuffers(); //We stay in the global cache for a little longer
         }
+    }
+
+    @Override
+    public int getViewDistance() { //add 8 so we catch when were are no longer rendered
+        int distOffset = MCPaintConfig.CLIENT.maxPaintRenderDistance.get() + 8;
+        return distOffset * distOffset;
     }
 }
