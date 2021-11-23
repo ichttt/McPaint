@@ -16,7 +16,7 @@ public class BlockColorDelegator implements IBlockColor {
     @Override
     public int getColor(@Nonnull BlockState blockState, @Nullable IBlockDisplayReader world, @Nullable BlockPos pos, int tintIndex) {
         if (world == null || pos == null) return -1;
-        TileEntity entity = world.getTileEntity(pos);
+        TileEntity entity = world.getBlockEntity(pos);
         if (entity instanceof TileEntityCanvas) {
             TileEntityCanvas canvas = (TileEntityCanvas) entity;
             BlockState contained = canvas.getContainedState();

@@ -71,7 +71,7 @@ public class MessagePaintData {
     public MessagePaintData(PacketBuffer buf) {
         this.pos = buf.readBlockPos();
         this.scale = buf.readByte();
-        this.facing = Direction.byIndex(buf.readByte());
+        this.facing = Direction.from3DDataValue(buf.readByte());
         this.part = buf.readByte();
         this.maxParts = buf.readByte();
         short max = buf.readShort();
@@ -88,7 +88,7 @@ public class MessagePaintData {
     public void encode(PacketBuffer buf) {
         buf.writeBlockPos(this.pos);
         buf.writeByte(scale);
-        buf.writeByte(facing.getIndex());
+        buf.writeByte(facing.get3DDataValue());
         buf.writeByte(this.part);
         buf.writeByte(this.maxParts);
         short max = Shorts.checkedCast(this.maxParts == 0 ? data.length : data.length / this.maxParts);
@@ -139,13 +139,13 @@ public class MessagePaintData {
             ServerPlayerEntity player = MCPaintUtil.checkServer(ctx);
             if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
-            BlockState state = player.world.getBlockState(pos);
+            BlockState state = player.level.getBlockState(pos);
             if (!(state.getBlock() instanceof BlockCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - Block invalid");
                 return;
             }
 
-            TileEntity te = player.world.getTileEntity(pos);
+            TileEntity te = player.level.getBlockEntity(pos);
             if (!(te instanceof TileEntityCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - TE invalid");
                 return;
@@ -155,8 +155,8 @@ public class MessagePaintData {
                 canvas.removePaint(facing);
             else
                 canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
-            te.markDirty();
-            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (Chunk) Objects.requireNonNull(te.getWorld()).getChunk(te.getPos()));
+            te.setChanged();
+            PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (Chunk) Objects.requireNonNull(te.getLevel()).getChunk(te.getBlockPos()));
             if (data == null) {
                 MCPaint.NETWORKING.send(target, new MessageClearSide.ClientMessage(pos, facing));
             } else {
@@ -172,19 +172,19 @@ public class MessagePaintData {
         @Override
         public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
             MCPaintUtil.checkClient(ctx);
-            World world = Minecraft.getInstance().world;
-            if (!world.isBlockLoaded(pos)) {
+            World world = Minecraft.getInstance().level;
+            if (!world.hasChunkAt(pos)) {
                 MCPaint.LOGGER.warn("Invalid pos " + pos + " when updating data - Not loaded");
             }
 
-            TileEntity te = world.getTileEntity(pos);
+            TileEntity te = world.getBlockEntity(pos);
             if (!(te instanceof TileEntityCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
                 return;
             }
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
-            te.markDirty();
+            te.setChanged();
         }
     }
 

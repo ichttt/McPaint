@@ -54,12 +54,12 @@ public class ClientEventHandler {
     }
 
     public static void registerModels(ModelRegistryEvent event) {
-        ItemModelsProperties.registerProperty(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
+        ItemModelsProperties.register(Objects.requireNonNull(ForgeRegistries.ITEMS.getValue(new ResourceLocation(MCPaint.MODID, "stamp")), "Did not find stamp"), new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE);
     }
 
     @SubscribeEvent
     public static void onWorldUnload(WorldEvent.Unload event) {
-        if (event.getWorld().isRemote()) {
+        if (event.getWorld().isClientSide()) {
             RenderCache.clear();
         }
     }

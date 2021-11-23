@@ -30,21 +30,21 @@ public class ISTERStamp extends ItemStackTileEntityRenderer implements IItemProp
     private ISTERStamp() {}
 
     @Override
-    public void func_239207_a_(ItemStack itemStack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) { //render
-        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
+    public void renderByItem(ItemStack itemStack, ItemCameraTransforms.TransformType transformType, MatrixStack matrixStack, IRenderTypeBuffer buffer, int combinedLightIn, int combinedOverlayIn) { //render
+        if (InputMappings.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
-                matrixStack.push();
+                matrixStack.pushPose();
                 IVertexBuilder vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
-                RenderUtil.renderInGame(matrixStack.getLast().getMatrix(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), combinedLightIn);
-                matrixStack.pop();
+                RenderUtil.renderInGame(matrixStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), combinedLightIn);
+                matrixStack.popPose();
             }
         }
     }
 
     @Override
     public float call(ItemStack stack, @Nullable ClientWorld world, @Nullable LivingEntity entity) {
-        if (InputMappings.isKeyDown(Minecraft.getInstance().getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
+        if (InputMappings.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT) && entity != null && Minecraft.getInstance().player != null && entity.getName().equals(Minecraft.getInstance().player.getName())) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint == null) {
                 MCPaint.LOGGER.warn(stack.getItem() + " is missing paint!");

@@ -29,7 +29,7 @@ public class DelegatingBakedModel extends BakedModelWrapper<IBakedModel> {
         if (newState == null)
             return shapes.getMissingModel();
         else
-            return shapes.getBlockModelShapes().getModel(newState);
+            return shapes.getBlockModelShaper().getBlockModel(newState);
     }
 
     @Nonnull

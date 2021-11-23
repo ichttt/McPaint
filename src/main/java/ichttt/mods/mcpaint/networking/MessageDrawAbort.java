@@ -35,7 +35,7 @@ public class MessageDrawAbort {
             ctx.enqueueWork(() -> {
                 if (MCPaintUtil.isPosInvalid(player, message.pos)) return;
 
-                TileEntity te = player.world.getTileEntity(message.pos);
+                TileEntity te = player.level.getBlockEntity(message.pos);
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     boolean hasData = false;
@@ -46,7 +46,7 @@ public class MessageDrawAbort {
                         }
                     }
                     if (!hasData && canvas.getContainedState() != null) {
-                        player.world.setBlockState(message.pos, canvas.getContainedState());
+                        player.level.setBlockAndUpdate(message.pos, canvas.getContainedState());
                     }
                 }
             });

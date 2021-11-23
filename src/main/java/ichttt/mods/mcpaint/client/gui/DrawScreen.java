@@ -148,7 +148,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
 
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
-        minecraft.getTextureManager().bindTexture(BACKGROUND);
+        minecraft.getTextureManager().bind(BACKGROUND);
         //main
         this.blit(stack, this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
         //color
@@ -206,8 +206,8 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
 
     @Override
     public boolean keyPressed(int keyCode, int i1, int i2) {
-        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.isKeyDown(minecraft.getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_CONTROL)) {
-            if (InputMappings.isKeyDown(minecraft.getMainWindow().getHandle(), GLFW.GLFW_KEY_LEFT_SHIFT))
+        if (keyCode == GLFW.GLFW_KEY_Z && InputMappings.isKeyDown(minecraft.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_CONTROL)) {
+            if (InputMappings.isKeyDown(minecraft.getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT))
                 helper.redo();
             else
                 helper.undo();
@@ -239,7 +239,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
     }
 
     @Override
-    public void onClose() {
+    public void removed() {
         helper.onClose();
     }
 

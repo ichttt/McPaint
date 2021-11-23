@@ -32,9 +32,9 @@ public class BlockCanvas extends Block {
 
     //TODO register a block for each common material
     public BlockCanvas(Material material, ResourceLocation regNam) {
-        super(Block.Properties.create(material).hardnessAndResistance(1F, 4F).setOpaque((state, world, pos) -> state.get(NORMAL_CUBE)));
+        super(Block.Properties.of(material).strength(1F, 4F).isRedstoneConductor((state, world, pos) -> state.getValue(NORMAL_CUBE)));
         setRegistryName(regNam);
-        setDefaultState(stateContainer.getBaseState().with(SOLID, true).with(NORMAL_CUBE, true));
+        registerDefaultState(stateDefinition.any().setValue(SOLID, true).setValue(NORMAL_CUBE, true));
     }
 
     @Override
@@ -51,24 +51,24 @@ public class BlockCanvas extends Block {
     @SuppressWarnings("deprecation")
     @Nonnull
     @Override
-    public BlockRenderType getRenderType(BlockState state) {
+    public BlockRenderType getRenderShape(BlockState state) {
         return BlockRenderType.MODEL;
     }
 
     //Delegating methods
 
     @Override
-    public float getPlayerRelativeBlockHardness(BlockState state, PlayerEntity player, IBlockReader world, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+    public float getDestroyProgress(BlockState state, PlayerEntity player, IBlockReader world, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getPlayerRelativeBlockHardness(player, world, pos);
+            return canvas.getContainedState().getDestroyProgress(player, world, pos);
         }
-        return super.getPlayerRelativeBlockHardness(state, player, world, pos);
+        return super.getDestroyProgress(state, player, world, pos);
     }
 
     @Override
     public float getExplosionResistance(BlockState state, IBlockReader world, BlockPos pos, Explosion explosion) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlock().getExplosionResistance(canvas.getContainedState(), world, pos, explosion);
         }
@@ -77,7 +77,7 @@ public class BlockCanvas extends Block {
 
     @Override
     public SoundType getSoundType(BlockState state, IWorldReader world, BlockPos pos, @Nullable Entity entity) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getBlock().getSoundType(canvas.getContainedState(), world, pos, entity);
         }
@@ -85,19 +85,19 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public void harvestBlock(@Nonnull World world, PlayerEntity player, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable TileEntity te, ItemStack stack) {
+    public void playerDestroy(@Nonnull World world, PlayerEntity player, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable TileEntity te, ItemStack stack) {
         if (te instanceof TileEntityCanvas && ((TileEntityCanvas) te).getContainedState() != null) {
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             state = canvas.getContainedState();
-            state.getBlock().harvestBlock(world, player, pos, state, te, stack);
+            state.getBlock().playerDestroy(world, player, pos, state, te, stack);
             return;
         }
-        super.harvestBlock(world, player, pos, state, te, stack);
+        super.playerDestroy(world, player, pos, state, te, stack);
     }
 
     @Override
     public boolean canHarvestBlock(BlockState state, IBlockReader world, BlockPos pos, PlayerEntity player) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
             return state.getBlock().canHarvestBlock(state, world, pos, player);
@@ -107,7 +107,7 @@ public class BlockCanvas extends Block {
 
     @Override
     public VoxelShape getCollisionShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getCollisionShape(world, pos, context);
         }
@@ -116,7 +116,7 @@ public class BlockCanvas extends Block {
 
     @Override
     public VoxelShape getShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             return canvas.getContainedState().getShape(world, pos, context);
         }
@@ -124,24 +124,24 @@ public class BlockCanvas extends Block {
     }
 
     @Override
-    public VoxelShape getRenderShape(BlockState state, IBlockReader world, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+    public VoxelShape getOcclusionShape(BlockState state, IBlockReader world, BlockPos pos) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
-            return canvas.getContainedState().getRenderShape(world, pos);
+            return canvas.getContainedState().getBlockSupportShape(world, pos);
         }
-        return super.getRenderShape(state, world, pos);
+        return super.getOcclusionShape(state, world, pos);
     }
 
     @Override
-    public VoxelShape getRayTraceShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
-        TileEntity te = world.getTileEntity(pos);
+    public VoxelShape getVisualShape(BlockState state, IBlockReader world, BlockPos pos, ISelectionContext context) {
+        TileEntity te = world.getBlockEntity(pos);
         if (te instanceof TileEntityCanvas) { // Got some crashes because decocraft seems to wrap tileentites
             TileEntityCanvas canvas = (TileEntityCanvas) te;
             if (canvas.getContainedState() != null) {
-                return canvas.getContainedState().getRaytraceShape(world, pos, context);
+                return canvas.getContainedState().getVisualShape(world, pos, context);
             }
         }
-        return super.getRayTraceShape(state, world, pos, context);
+        return super.getVisualShape(state, world, pos, context);
     }
 
 
@@ -157,14 +157,14 @@ public class BlockCanvas extends Block {
 //    }
 
     @Override
-    protected void fillStateContainer(StateContainer.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateContainer.Builder<Block, BlockState> builder) {
         builder.add(SOLID, NORMAL_CUBE);
     }
 
     @Nonnull
     @Override
     public ItemStack getPickBlock(@Nonnull BlockState state, RayTraceResult target, @Nonnull IBlockReader world, @Nonnull BlockPos pos, PlayerEntity player) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
             return state.getBlock().getPickBlock(canvas.getContainedState(), target, world, pos, player);
@@ -178,6 +178,6 @@ public class BlockCanvas extends Block {
     }
 
     public BlockState getStateFrom(IBlockReader world, BlockPos pos, BlockState state) {
-        return getDefaultState().with(SOLID, state.isSolid()).with(NORMAL_CUBE, state.isNormalCube(world, pos));
+        return defaultBlockState().setValue(SOLID, state.canOcclude()).setValue(NORMAL_CUBE, state.isRedstoneConductor(world, pos));
     }
 }

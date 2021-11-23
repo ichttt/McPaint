@@ -15,11 +15,11 @@ import java.util.List;
 public class ClientHooks {
 
     public static void showGuiDraw(List<IPaintable> canvasList, BlockPos pos, Direction facing, BlockState state) {
-        Minecraft.getInstance().displayGuiScreen(new DrawScreen(canvasList.remove(canvasList.size() - 1), canvasList, pos, facing, state));
+        Minecraft.getInstance().setScreen(new DrawScreen(canvasList.remove(canvasList.size() - 1), canvasList, pos, facing, state));
     }
 
     public static void showGuiDraw(BlockPos pos, Direction facing, BlockState state) {
-        Minecraft.getInstance().displayGuiScreen(new SetupCanvasScreen(pos, facing, state, 8, 8));
+        Minecraft.getInstance().setScreen(new SetupCanvasScreen(pos, facing, state, 8, 8));
     }
 
     public static void onConfigReload() {

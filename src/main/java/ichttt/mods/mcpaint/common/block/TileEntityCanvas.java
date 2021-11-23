@@ -51,30 +51,30 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Nonnull
     @Override
-    public CompoundNBT write(CompoundNBT tag) {
-        tag = super.write(tag);
+    public CompoundNBT save(CompoundNBT tag) {
+        tag = super.save(tag);
         if (this.containedState != null)
             tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
         CompoundNBT faces = new CompoundNBT();
         for (Map.Entry<Direction, IPaintable> entry : this.facingToPaintMap.entrySet()) {
-            faces.put(entry.getKey().getName2(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
+            faces.put(entry.getKey().getName(), CapabilityPaintable.writeToNBT(entry.getValue(), new CompoundNBT()));
         }
         tag.put("faces", faces);
         if (!disallowedFaces.isEmpty()) {
             CompoundNBT blockedFaces = new CompoundNBT();
             for (Direction facing : Direction.values())
-                blockedFaces.putBoolean(facing.getName2(), disallowedFaces.contains(facing));
+                blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
         return tag;
     }
 
     @Override
-    public void read(BlockState state, CompoundNBT tag) {
-        super.read(state, tag);
+    public void load(BlockState state, CompoundNBT tag) {
+        super.load(state, tag);
         this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NBTUtil.readBlockState(tag.getCompound("blockState")) : null;
         CompoundNBT faces = tag.getCompound("faces");
-        for (String key : faces.keySet()) {
+        for (String key : faces.getAllKeys()) {
             Paint paint = new Paint(this);
             CapabilityPaintable.readFromNBT(paint, faces.getCompound(key));
             this.facingToPaintMap.put(Direction.byName(key), paint);
@@ -82,7 +82,7 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
         disallowedFaces.clear();
         if (tag.contains("blocked")) {
             CompoundNBT blockedFaces = tag.getCompound("blocked");
-            for (String key : blockedFaces.keySet()) {
+            for (String key : blockedFaces.getAllKeys()) {
                 if (blockedFaces.getBoolean(key))
                     disallowedFaces.add(Direction.byName(key));
             }
@@ -91,19 +91,19 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Override
     public void handleUpdateTag(BlockState state, @Nonnull CompoundNBT tag) {
-        this.read(state, tag);
+        this.load(state, tag);
     }
 
     @Nonnull
     @Override
     public CompoundNBT getUpdateTag() {
-        return this.write(new CompoundNBT());
+        return this.save(new CompoundNBT());
     }
 
     @Nullable
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
-        return new SUpdateTileEntityPacket(this.pos, 0, this.getUpdateTag());
+        return new SUpdateTileEntityPacket(this.worldPosition, 0, this.getUpdateTag());
     }
 
     @Nonnull
@@ -123,8 +123,8 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     public void setInitialData(BlockState state, Set<Direction> disallowedFaces) {
         this.containedState = state;
         this.disallowedFaces.addAll(disallowedFaces);
-        this.markDirty();
-        if (this.world.isRemote)
+        this.setChanged();
+        if (this.level.isClientSide)
             ModelDataManager.requestModelDataRefresh(this);
     }
 
@@ -182,14 +182,14 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
     }
 
     @Override
-    public double getMaxRenderDistanceSquared() { //add 8 so we catch when were are no longer rendered
+    public double getViewDistance() { //add 8 so we catch when were are no longer rendered
         int distOffset = MCPaintConfig.CLIENT.maxPaintRenderDistance.get() + 8;
         return distOffset * distOffset;
     }
 
     @Override
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
-        this.read(null, pkt.getNbtCompound());
+        this.load(null, pkt.getTag());
         unbindBuffers();
     }
 

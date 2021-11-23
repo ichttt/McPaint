@@ -10,6 +10,8 @@ import net.minecraft.util.text.TranslationTextComponent;
 import java.awt.*;
 import java.util.Locale;
 
+import net.minecraft.client.gui.widget.button.Button.IPressable;
+
 public class GuiButtonTextToggle extends Button {
     private final int color;
     public final EnumDrawType type;

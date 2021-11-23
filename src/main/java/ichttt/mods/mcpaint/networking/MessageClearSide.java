@@ -12,7 +12,7 @@ public class MessageClearSide {
     private final Direction facing;
 
     public MessageClearSide(PacketBuffer buffer) {
-        this(buffer.readBlockPos(), Direction.byIndex(buffer.readByte()));
+        this(buffer.readBlockPos(), Direction.from3DDataValue(buffer.readByte()));
     }
 
     public MessageClearSide(BlockPos pos, Direction facing) {
@@ -22,7 +22,7 @@ public class MessageClearSide {
 
     public void encode(PacketBuffer buf) {
         buf.writeBlockPos(pos);
-        buf.writeByte(facing.getIndex());
+        buf.writeByte(facing.get3DDataValue());
     }
 
     public static class ServerHandler {

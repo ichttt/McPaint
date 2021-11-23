@@ -7,7 +7,7 @@ import net.minecraft.util.math.vector.Matrix4f;
 
 public class RenderUtil {
     public static void renderInGui(Matrix4f matrix4f, float leftOffset, float topOffset, byte scaleFactor, BufferBuilder builder, int[][] picture) {
-        int light = LightTexture.packLight(15, 15);
+        int light = LightTexture.pack(15, 15);
         for (int x = 0; x < picture.length; x++) {
             int[] yPos = picture[x];
             for (int y = 0; y < yPos.length; y++) {
@@ -42,10 +42,10 @@ public class RenderUtil {
         int r = (color >> 16 & 255);
         int g = (color >> 8 & 255);
         int b = (color & 255);
-        builder.pos(matrix4f, left, bottom, 0).color(r, g, b, a).lightmap(light).endVertex();
-        builder.pos(matrix4f, right, bottom, 0).color(r, g, b, a).lightmap(light).endVertex();
-        builder.pos(matrix4f, right, top, 0).color(r, g, b, a).lightmap(light).endVertex();
-        builder.pos(matrix4f, left, top, 0).color(r, g, b, a).lightmap(light).endVertex();
+        builder.vertex(matrix4f, left, bottom, 0).color(r, g, b, a).uv2(light).endVertex();
+        builder.vertex(matrix4f, right, bottom, 0).color(r, g, b, a).uv2(light).endVertex();
+        builder.vertex(matrix4f, right, top, 0).color(r, g, b, a).uv2(light).endVertex();
+        builder.vertex(matrix4f, left, top, 0).color(r, g, b, a).uv2(light).endVertex();
         return false;
     }
 }

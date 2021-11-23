@@ -74,14 +74,14 @@ public class MCPaint {
     @SubscribeEvent
     public static void registerBlocks(RegistryEvent.Register<Block> event) {
         event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
-        event.getRegistry().register(new BlockCanvas(Material.ROCK, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
-        event.getRegistry().register(new BlockCanvas(Material.EARTH, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
+        event.getRegistry().register(new BlockCanvas(Material.STONE, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
+        event.getRegistry().register(new BlockCanvas(Material.DIRT, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
     }
 
     @SubscribeEvent
     @SuppressWarnings("ConstantConditions")
     public static void registerTileEntity(RegistryEvent.Register<TileEntityType<?>> event) {
-        TileEntityType<?> type = (TileEntityType.Builder.create(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
+        TileEntityType<?> type = (TileEntityType.Builder.of(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
         event.getRegistry().register(type);
     }
 }

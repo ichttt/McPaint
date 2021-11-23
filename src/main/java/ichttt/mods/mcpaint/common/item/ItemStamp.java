@@ -55,14 +55,14 @@ public class ItemStamp extends ItemBrush {
 
     @Override
     protected ActionResultType processHit(World world, PlayerEntity player, Hand hand, BlockPos pos, BlockState state, Direction facing) {
-        ItemStack held = player == null ? ItemStack.EMPTY : player.getHeldItem(hand);
+        ItemStack held = player == null ? ItemStack.EMPTY : player.getItemInHand(hand);
         IPaintable paint = Objects.requireNonNull(held.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Missing paint on brush!")));
         if (paint.hasPaintData()) {
             return super.processHit(world, player, hand, pos, state, facing);
         } else if (player != null && player.getPose() == Pose.CROUCHING) {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {
-                TileEntity te = world.getTileEntity(pos);
+                TileEntity te = world.getBlockEntity(pos);
                 if (te instanceof TileEntityCanvas) {
                     TileEntityCanvas canvas = (TileEntityCanvas) te;
                     if (canvas.hasPaintFor(facing)) {
@@ -77,7 +77,7 @@ public class ItemStamp extends ItemBrush {
 
     @Override
     protected void startPainting(TileEntityCanvas canvas, World world, ItemStack heldItem, BlockPos pos, Direction facing, BlockState state) {
-        if (world.isRemote) {
+        if (world.isClientSide) {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
             if (MCPaintConfig.CLIENT.directApplyStamp.get()) {
                 canvas.getPaintFor(facing).copyFrom(heldPaint, canvas, facing);
@@ -96,14 +96,14 @@ public class ItemStamp extends ItemBrush {
     @SuppressWarnings("ConstantConditions")
     @OnlyIn(Dist.CLIENT)
     @Override
-    public void addInformation(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
+    public void appendHoverText(ItemStack stack, @Nullable World worldIn, List<ITextComponent> tooltip, ITooltipFlag flagIn) {
         IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
         if (paintable != null && paintable.hasPaintData()) {
             tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.paint"));
         } else {
             tooltip.add(new TranslationTextComponent("mcpaint.tooltip.stamp.nopaint"));
         }
-        super.addInformation(stack, worldIn, tooltip, flagIn);
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
     }
 
     @Override

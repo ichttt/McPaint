@@ -59,8 +59,8 @@ public class SetupCanvasScreen extends Screen {
         });
         addButton(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, new TranslationTextComponent("gui.done"), button -> {
             handled = true;
-            minecraft.displayGuiScreen(null);
-            minecraft.displayGuiScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
+            minecraft.setScreen(null);
+            minecraft.setScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
         }));
         addButton(this.lessSize);
         addButton(this.moreSize);
@@ -69,15 +69,15 @@ public class SetupCanvasScreen extends Screen {
 
     @Override
     public void render(MatrixStack stack, int mouseX, int mouseY, float partialTicks) {
-        minecraft.getTextureManager().bindTexture(BACKGROUND);
+        minecraft.getTextureManager().bind(BACKGROUND);
         blit(stack, this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
-        this.drawCenteredString(stack, minecraft.fontRenderer, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
-        this.drawCenteredString(stack, minecraft.fontRenderer, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
+        this.drawCenteredString(stack, minecraft.font, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
+        this.drawCenteredString(stack, minecraft.font, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
         super.render(stack, mouseX, mouseY, partialTicks);
     }
 
     @Override
-    public void onClose() {
+    public void removed() {
         if (!handled) {
             MCPaint.NETWORKING.sendToServer(new MessageDrawAbort(pos));
         }

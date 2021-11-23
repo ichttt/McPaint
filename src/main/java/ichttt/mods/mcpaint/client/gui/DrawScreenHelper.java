@@ -80,7 +80,7 @@ public class DrawScreenHelper {
         this.pos = pos;
         this.facing = facing;
         this.state = state;
-        this.model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
+        this.model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         this.currentState = new PictureState(canvas);
         for (IPaintable paint : prevImages)
             this.statesForUndo.add(new PictureState(paint));
@@ -91,7 +91,7 @@ public class DrawScreenHelper {
         this.pos = Objects.requireNonNull(pos);
         this.facing = facing;
         this.state = state;
-        this.model = Minecraft.getInstance().getBlockRendererDispatcher().getModelForState(state);
+        this.model = Minecraft.getInstance().getBlockRenderer().getBlockModel(state);
         this.callback = callback;
         int[][] picture = new int[128 / scaleFactor][128 / scaleFactor];
         for (int[] tileArray : picture)
@@ -110,8 +110,8 @@ public class DrawScreenHelper {
         } catch (IOException e) {
             MCPaint.LOGGER.error("Could not save image!", e);
             Minecraft minecraft = Minecraft.getInstance();
-            minecraft.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), true);
-            minecraft.player.sendStatusMessage(new StringTextComponent("Failed to save file!"), false);
+            minecraft.player.displayClientMessage(new StringTextComponent("Failed to save file!"), true);
+            minecraft.player.displayClientMessage(new StringTextComponent("Failed to save file!"), false);
         }
     }
 
@@ -141,11 +141,11 @@ public class DrawScreenHelper {
         Minecraft mc = Minecraft.getInstance();
         if (Arrays.stream(this.currentState.picture).anyMatch(ints -> Arrays.stream(ints).anyMatch(value -> value != DrawScreenHelper.ZERO_ALPHA))) {
             this.noRevert = true;
-            MCPaintUtil.uploadPictureToServer(mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, false);
+            MCPaintUtil.uploadPictureToServer(mc.level.getBlockEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, false);
         } else if (hadPaint) {
-            MCPaintUtil.uploadPictureToServer(mc.world.getTileEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, true);
+            MCPaintUtil.uploadPictureToServer(mc.level.getBlockEntity(this.pos), this.facing, this.currentState.scaleFactor, this.currentState.picture, true);
         }
-        mc.displayGuiScreen(null);
+        mc.setScreen(null);
     }
 
     public void onClose() {
@@ -160,10 +160,10 @@ public class DrawScreenHelper {
         for (BakedQuad quad : quads) {
             TextureAtlasSprite sprite = quad.getSprite();
             RenderSystem.pushMatrix();
-            mc.getTextureManager().bindTexture(PlayerContainer.LOCATION_BLOCKS_TEXTURE);
+            mc.getTextureManager().bind(PlayerContainer.BLOCK_ATLAS);
             //See BlockModelRenderer
-            if (quad.hasTintIndex()) {
-                int color = mc.getBlockColors().getColor(state, mc.world, pos, quad.getTintIndex());
+            if (quad.isTinted()) {
+                int color = mc.getBlockColors().getColor(state, mc.level, pos, quad.getTintIndex());
                 float red = (float) (color >> 16 & 255) / 255.0F;
                 float green = (float) (color >> 8 & 255) / 255.0F;
                 float blue = (float) (color & 255) / 255.0F;
@@ -176,15 +176,15 @@ public class DrawScreenHelper {
 
     public void renderImage(MatrixStack stack, int startLeft, int startTop, int[][] toDraw) {
         Tessellator tessellator = Tessellator.getInstance();
-        BufferBuilder buffer = tessellator.getBuffer();
+        BufferBuilder buffer = tessellator.getBuilder();
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(GL11.GL_QUADS, DefaultVertexFormats.POSITION_COLOR);
-        RenderUtil.renderInGui(stack.getLast().getMatrix(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
+        RenderUtil.renderInGui(stack.last().pose(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
         RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
-        tessellator.draw();
+        tessellator.end();
         RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
@@ -287,8 +287,8 @@ public class DrawScreenHelper {
                 TextureAtlasSprite sprite = quad.getSprite();
                 try (IResource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
                     Image image = ImageIO.read(resource.getInputStream());
-                    if (quad.hasTintIndex()) {
-                        int color = minecraft.getBlockColors().getColor(state, minecraft.world, pos, quad.getTintIndex());
+                    if (quad.isTinted()) {
+                        int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
                         float red = (float) (color >> 16 & 255) / 255.0F;
                         float green = (float) (color >> 8 & 255) / 255.0F;
                         float blue = (float) (color & 255) / 255.0F;
@@ -310,15 +310,15 @@ public class DrawScreenHelper {
         }
         output.getGraphics().drawImage(paint, 0, 0, null);
 
-        File file = new File(minecraft.gameDir, "paintings");
+        File file = new File(minecraft.gameDirectory, "paintings");
         if (!file.exists() && !file.mkdir())
             throw new IOException("Could not create folder");
         final File finalFile = getTimestampedPNGFileForDirectory(file);
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
         IFormattableTextComponent component = new StringTextComponent(finalFile.getName());
-        component = component.mergeStyle(TextFormatting.UNDERLINE).modifyStyle(style -> style.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
-        minecraft.player.sendStatusMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
+        component = component.withStyle(TextFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
+        minecraft.player.displayClientMessage(new TranslationTextComponent("mcpaint.gui.saved", component), false);
     }
 
     //See ScreenShotHelper

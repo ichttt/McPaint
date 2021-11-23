@@ -106,18 +106,18 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
         }
 
         //GL setup
-        matrix.push();
+        matrix.pushPose();
         matrix.translate(translationXOffset + xOffset, translationYOffset + yOffset, translationZOffset + zOffset);
 
         if (angle != 0)
-            matrix.rotate(Vector3f.YP.rotationDegrees((angle)));
+            matrix.mulPose(Vector3f.YP.rotationDegrees((angle)));
         else if (facing.getAxis().isVertical()) {
-            matrix.rotate(Vector3f.XP.rotationDegrees(facing == Direction.DOWN ? -90.0F : 90.0F));
-            matrix.rotate(Vector3f.ZP.rotationDegrees(facing == Direction.UP ? 180.0F : 0.0F));
+            matrix.mulPose(Vector3f.XP.rotationDegrees(facing == Direction.DOWN ? -90.0F : 90.0F));
+            matrix.mulPose(Vector3f.ZP.rotationDegrees(facing == Direction.UP ? 180.0F : 0.0F));
         }
 
         IPaintable paint = te.getPaintFor(facing);
-        Matrix4f matrix4f = matrix.getLast().getMatrix();
+        Matrix4f matrix4f = matrix.last().pose();
         //Render picture
         boolean slow = !MCPaintConfig.CLIENT.optimizePictures.get();
         if (!slow) {
@@ -134,7 +134,7 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
             RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), light);
         }
 
-        matrix.pop();
+        matrix.popPose();
     }
 
     public static int getRes(double playerDistSq) {
@@ -151,14 +151,14 @@ public class TERCanvas extends TileEntityRenderer<TileEntityCanvas> {
 
     @Override
     public void render(TileEntityCanvas te, float v, @Nonnull MatrixStack matrixStack, @Nonnull IRenderTypeBuffer iRenderTypeBuffer, int light, int otherlight) {
-        BlockPos pos = te.getPos();
-        double playerDistSq = Minecraft.getInstance().player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ());
+        BlockPos pos = te.getBlockPos();
+        double playerDistSq = Minecraft.getInstance().player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ());
         int maxDist = MCPaintConfig.CLIENT.maxPaintRenderDistance.get();
         IVertexBuilder builder = iRenderTypeBuffer.getBuffer(RenderTypeHandler.CANVAS);
         if (playerDistSq < (maxDist * maxDist)) {
             for (Direction facing : VALUES) {
                 if (te.hasPaintFor(facing)) {
-                    int lightPacked = WorldRenderer.getPackedLightmapCoords(te.getWorld(), te.getWorld().getBlockState(te.getPos()), te.getPos().offset(facing.getOpposite()));
+                    int lightPacked = WorldRenderer.getLightColor(te.getLevel(), te.getLevel().getBlockState(te.getBlockPos()), te.getBlockPos().relative(facing.getOpposite()));
                     renderFace(matrixStack, builder, te, facing, lightPacked, playerDistSq);
                 }
             }

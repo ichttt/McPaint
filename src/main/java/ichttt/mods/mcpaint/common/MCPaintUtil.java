@@ -23,13 +23,13 @@ import java.util.Objects;
 
 public class MCPaintUtil {
     public static boolean isPosInvalid(ServerPlayerEntity player, BlockPos pos) {
-        if (!player.world.isBlockLoaded(pos)) {
+        if (!player.level.hasChunkAt(pos)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is trying to write to unloaded block");
             player.connection.disconnect(new StringTextComponent("Trying to write to unloaded block"));
             return true;
         }
 
-        if (MathHelper.sqrt(player.getDistanceSq(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
+        if (MathHelper.sqrt(player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }
@@ -55,15 +55,15 @@ public class MCPaintUtil {
     public static void uploadPictureToServer(@Nullable TileEntity te, Direction facing, byte scaleFactor, int[][] picture, boolean clear) {
         if (!(te instanceof TileEntityCanvas)) {
             MCPaint.LOGGER.error("Could not set paint! Found block " + (te == null ? "NONE" : te.getType()));
-            Minecraft.getInstance().player.sendStatusMessage(new StringTextComponent("Could not set paint!"), true);
+            Minecraft.getInstance().player.displayClientMessage(new StringTextComponent("Could not set paint!"), true);
             return;
         }
         TileEntityCanvas canvas = (TileEntityCanvas) te;
         if (clear) {
-            MCPaint.NETWORKING.sendToServer(new MessageClearSide(te.getPos(), facing));
+            MCPaint.NETWORKING.sendToServer(new MessageClearSide(te.getBlockPos(), facing));
             canvas.removePaint(facing);
         } else {
-            MessagePaintData.createAndSend(te.getPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
+            MessagePaintData.createAndSend(te.getBlockPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
             IPaintable paintable = canvas.getPaintFor(facing);
             paintable.setData(scaleFactor, picture, canvas, facing);
         }
