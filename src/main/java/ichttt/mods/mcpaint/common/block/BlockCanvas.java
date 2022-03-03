@@ -163,11 +163,16 @@ public class BlockCanvas extends Block {
 
     @Nonnull
     @Override
+<<<<<<< Updated upstream
     public ItemStack getPickBlock(@Nonnull BlockState state, RayTraceResult target, @Nonnull IBlockReader world, @Nonnull BlockPos pos, PlayerEntity player) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getTileEntity(pos);
+=======
+    public ItemStack getCloneItemStack(@Nonnull BlockState state, HitResult target, @Nonnull BlockGetter world, @Nonnull BlockPos pos, Player player) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
+>>>>>>> Stashed changes
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getPickBlock(canvas.getContainedState(), target, world, pos, player);
+            return state.getBlock().getCloneItemStack(canvas.getContainedState(), target, world, pos, player);
         }
         return ItemStack.EMPTY;
     }

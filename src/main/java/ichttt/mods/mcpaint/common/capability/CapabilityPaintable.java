@@ -4,14 +4,17 @@ import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.INBT;
 import net.minecraft.util.Direction;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.jetbrains.annotations.NotNull;
 
 public class CapabilityPaintable {
 
-    @CapabilityInject(IPaintable.class)
-    public static Capability<IPaintable> PAINTABLE;
 
+<<<<<<< Updated upstream
     public static void register() {
         CapabilityManager.INSTANCE.register(IPaintable.class, new Capability.IStorage<IPaintable>() {
                     @Override
@@ -24,6 +27,19 @@ public class CapabilityPaintable {
                         readFromNBT(instance, (CompoundNBT) nbt);
                     }
                 }, Paint::new);
+=======
+    public static void register(){
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(CapabilityPaintable::onRegisterCapabilities);
+    }
+
+    //@CapabilityInject(IPaintable.class)
+    public static Capability<IPaintable> PAINTABLE = getCapability(new CapabilityToken<>() {
+    });
+
+    private static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
+        event.register(IPaintable.class); //TODO move to event
+>>>>>>> Stashed changes
     }
 
     public static CompoundNBT writeToNBT(IPaintable instance, CompoundNBT compound) {
@@ -58,5 +74,9 @@ public class CapabilityPaintable {
             pictureData[i] = pictureInfo.getIntArray("" + i);
         }
         instance.setData(scaleFactor, pictureData, null, null);
+    }
+    @NotNull
+    protected static <T> Capability<T> getCapability(CapabilityToken<T> type) {
+        return CapabilityManager.get(type);
     }
 }

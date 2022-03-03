@@ -14,8 +14,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraftforge.common.ForgeMod;
+<<<<<<< Updated upstream
 import net.minecraftforge.fml.network.NetworkDirection;
 import net.minecraftforge.fml.network.NetworkEvent;
+=======
+import net.minecraftforge.network.NetworkDirection;
+import net.minecraftforge.network.NetworkEvent;
+>>>>>>> Stashed changes
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;

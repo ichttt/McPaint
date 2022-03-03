@@ -1,9 +1,16 @@
 package ichttt.mods.mcpaint.networking;
 
+<<<<<<< Updated upstream
 import net.minecraft.network.PacketBuffer;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraftforge.fml.network.NetworkEvent;
+=======
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.core.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraftforge.network.NetworkEvent;
+>>>>>>> Stashed changes
 
 import java.util.function.Supplier;
 

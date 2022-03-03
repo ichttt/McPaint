@@ -1,7 +1,6 @@
 package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
@@ -11,6 +10,7 @@ import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
+<<<<<<< Updated upstream
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.nbt.CompoundNBT;
@@ -19,6 +19,17 @@ import net.minecraft.network.NetworkManager;
 import net.minecraft.network.play.server.SUpdateTileEntityPacket;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.Direction;
+=======
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.Connection;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.core.Direction;
+>>>>>>> Stashed changes
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.client.model.ModelDataManager;
@@ -26,7 +37,6 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.common.thread.EffectiveSide;
@@ -51,8 +61,13 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Nonnull
     @Override
+<<<<<<< Updated upstream
     public CompoundNBT write(CompoundNBT tag) {
         tag = super.write(tag);
+=======
+    public void saveAdditional(CompoundTag tag) {
+        //tag = super.save(tag);
+>>>>>>> Stashed changes
         if (this.containedState != null)
             tag.put("blockState", NBTUtil.writeBlockState(this.containedState));
         CompoundNBT faces = new CompoundNBT();
@@ -66,15 +81,23 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
                 blockedFaces.putBoolean(facing.getName2(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
-        return tag;
+
     }
 
     @Override
+<<<<<<< Updated upstream
     public void read(BlockState state, CompoundNBT tag) {
         super.read(state, tag);
         this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NBTUtil.readBlockState(tag.getCompound("blockState")) : null;
         CompoundNBT faces = tag.getCompound("faces");
         for (String key : faces.keySet()) {
+=======
+    public void load(CompoundTag tag) {
+        super.load(tag);
+        this.containedState = tag.contains("blockState", Tag.TAG_COMPOUND) ? NbtUtils.readBlockState(tag.getCompound("blockState")) : null;
+        CompoundTag faces = tag.getCompound("faces");
+        for (String key : faces.getAllKeys()) {
+>>>>>>> Stashed changes
             Paint paint = new Paint(this);
             CapabilityPaintable.readFromNBT(paint, faces.getCompound(key));
             this.facingToPaintMap.put(Direction.byName(key), paint);
@@ -96,14 +119,26 @@ public class TileEntityCanvas extends TileEntity implements IPaintValidator {
 
     @Nonnull
     @Override
+<<<<<<< Updated upstream
     public CompoundNBT getUpdateTag() {
         return this.write(new CompoundNBT());
+=======
+    public CompoundTag getUpdateTag() {
+        CompoundTag tag = new CompoundTag();
+        this.saveAdditional(tag);
+        return tag;
+>>>>>>> Stashed changes
     }
 
     @Nullable
     @Override
+<<<<<<< Updated upstream
     public SUpdateTileEntityPacket getUpdatePacket() {
         return new SUpdateTileEntityPacket(this.pos, 0, this.getUpdateTag());
+=======
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);// new ClientboundBlockEntityDataPacket(this.worldPosition, 0, this.getUpdateTag());
+>>>>>>> Stashed changes
     }
 
     @Nonnull
