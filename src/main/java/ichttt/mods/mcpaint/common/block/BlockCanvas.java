@@ -158,11 +158,11 @@ public class BlockCanvas extends Block implements EntityBlock {
 
     @Nonnull
     @Override
-    public ItemStack getPickBlock(@Nonnull BlockState state, HitResult target, @Nonnull BlockGetter world, @Nonnull BlockPos pos, Player player) {
+    public ItemStack getCloneItemStack(@Nonnull BlockState state, HitResult target, @Nonnull BlockGetter world, @Nonnull BlockPos pos, Player player) {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getPickBlock(canvas.getContainedState(), target, world, pos, player);
+            return state.getBlock().getCloneItemStack(canvas.getContainedState(), target, world, pos, player);
         }
         return ItemStack.EMPTY;
     }
