@@ -45,7 +45,7 @@ public class ItemStamp extends ItemBrush {
     protected InteractionResult processMiss(Level world, Player player, InteractionHand hand, ItemStack stack, @Nullable HitResult result) {
         if ((result == null || result.getType() == HitResult.Type.MISS) && player.getPose() == Pose.CROUCHING) {
             IPaintable paint = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("Paintable cap needs to be present!"));
-            if (paint.getPictureData() == null)
+            if (!paint.hasPaintData())
                 return InteractionResult.PASS;
             paint.clear(null, null);
             return InteractionResult.SUCCESS;
@@ -81,7 +81,7 @@ public class ItemStamp extends ItemBrush {
             IPaintable heldPaint = Objects.requireNonNull(heldItem.getCapability(CapabilityPaintable.PAINTABLE, null).orElseThrow(() -> new RuntimeException("No paint in stamp")));
             if (MCPaintConfig.CLIENT.directApplyStamp.get()) {
                 canvas.getPaintFor(facing).copyFrom(heldPaint, canvas, facing);
-                MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData(), false);
+                MCPaintUtil.uploadPictureToServer(canvas, facing, heldPaint.getScaleFactor(), heldPaint.getPictureData(true), false);
             } else {
                 List<IPaintable> paintList = new LinkedList<>();
                 if (canvas.hasPaintFor(facing)) {

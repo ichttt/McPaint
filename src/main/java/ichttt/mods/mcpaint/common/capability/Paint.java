@@ -59,8 +59,11 @@ public class Paint implements IPaintable {
     }
 
     @Override
-    public int[][] getPictureData() {
-        return this.pictureData;
+    public int[][] getPictureData(boolean immutable) {
+        if (immutable)
+            return this.pictureData;
+        else
+            return MCPaintUtil.copyOf(this.pictureData);
     }
 
     @Override
@@ -80,7 +83,7 @@ public class Paint implements IPaintable {
 
     @Override
     public void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
-        this.setData(paint.getScaleFactor(), MCPaintUtil.copyOf(paint.getPictureData()), canvas, facing);
+        this.setData(paint.getScaleFactor(), paint.getPictureData(true), canvas, facing);
     }
 
     @Override

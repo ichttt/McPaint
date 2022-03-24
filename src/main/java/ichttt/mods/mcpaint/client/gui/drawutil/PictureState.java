@@ -19,7 +19,8 @@ public class PictureState {
     }
 
     public PictureState(IPaintable paint) {
-        this(paint.getPictureData(), paint.getScaleFactor());
+        this.picture = paint.getPictureData(false);
+        this.scaleFactor = paint.getScaleFactor();
     }
 
     public boolean isSame(PictureState other) {

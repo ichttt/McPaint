@@ -41,7 +41,7 @@ public class ISTERStamp extends BlockEntityWithoutLevelRenderer implements ItemP
             if (paint != null && paint.hasPaintData()) {
                 matrixStack.pushPose();
                 VertexConsumer vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
-                RenderUtil.renderInGame(matrixStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), combinedLightIn);
+                RenderUtil.renderInGame(matrixStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(true), combinedLightIn);
                 matrixStack.popPose();
             }
         }

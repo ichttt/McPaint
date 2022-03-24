@@ -12,9 +12,9 @@ public interface IPaintable extends IPaintValidator {
     byte getScaleFactor();
 
     /**
-     * If you mutate the array, call setData again to rehash
+     * If you mutate the array, call setData again to rehash. Also set immutable to false in this case
      */
-    int[][] getPictureData();
+    int[][] getPictureData(boolean immutable);
 
     short getPixelCountX();
 

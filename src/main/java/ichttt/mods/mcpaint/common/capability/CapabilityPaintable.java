@@ -29,7 +29,7 @@ public class CapabilityPaintable {
         if (instance.hasPaintData()) {
             short pixelCountX = instance.getPixelCountX();
             byte scaleFactor = instance.getScaleFactor();
-            int[][] pictureData = instance.getPictureData();
+            int[][] pictureData = instance.getPictureData(true);
 
             compound.putShort("pixelX", pixelCountX);
             compound.putByte("scale", scaleFactor);

@@ -138,7 +138,7 @@ public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
             }
         }
         if (slow) {
-            RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData(), light);
+            RenderUtil.renderInGame(matrix4f, paint.getScaleFactor(), vertexBuilder, paint.getPictureData(true), light);
         }
 
         matrix.popPose();
