@@ -20,10 +20,6 @@ public class PixelInfo {
         return Math.abs(info.x - this.x) == 1 && info.y == this.y;
     }
 
-    public boolean isNeighbourY(PixelInfo info) {
-        return Math.abs(info.y - this.y) == 1 && info.x == this.x;
-    }
-
     @Override
     public int hashCode() {
         int hash = x;
