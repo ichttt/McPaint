@@ -21,6 +21,7 @@ import javax.annotation.Nonnull;
 import java.util.Objects;
 
 public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
+    private static final boolean DEBUG = Boolean.getBoolean("mcpaint.tercanvas.debug");
     private static final Direction[] VALUES = Direction.values();
 
     public TERCanvas(BlockEntityRendererProvider.Context pContext) {}
@@ -126,7 +127,14 @@ public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
                 if (playerDistSq < (maxDistOffset * maxDistOffset))
                     slow = true;
             } else {
-                builder.get(getRes(playerDistSq)).renderPicture(matrix4f, vertexBuilder, light);
+                OptimizedPictureRenderer optimizedPictureRenderer = builder.get(getRes(playerDistSq));
+                if (DEBUG) {
+                    long tick = Minecraft.getInstance().level.getGameTime() / 5;
+                    int idx = Math.toIntExact(tick % optimizedPictureRenderer.getInstructions());
+                    optimizedPictureRenderer.renderShard(matrix4f, vertexBuilder, light, idx);
+                } else {
+                    optimizedPictureRenderer.renderPicture(matrix4f, vertexBuilder, light);
+                }
             }
         }
         if (slow) {

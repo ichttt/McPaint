@@ -17,6 +17,12 @@ public class OptimizedPictureRenderer {
         }
     }
 
+    public void renderShard(Matrix4f matrix4f, VertexConsumer builder, int light, int idx) {
+        OptimizedPictureData data = dataArray[idx];
+        if (RenderUtil.drawToBuffer(matrix4f, data.color, builder, data.left, data.top, data.right, data.bottom, light))
+            throw new RuntimeException("Not filtered out a pixel!");
+    }
+
     public int getInstructions() {
         return dataArray.length;
     }

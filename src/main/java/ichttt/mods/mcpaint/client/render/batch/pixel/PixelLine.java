@@ -38,7 +38,7 @@ public class PixelLine implements Iterable<PixelInfo> {
     public boolean isNeighbour(PixelLine line) {
         if (this.pixelInfos.size() != line.pixelInfos.size())
             return false;
-        if (!line.isNeighbourY(line))
+        if (!this.isNeighbourY(line))
             return false;
         return line.pixelInfos.stream().allMatch(externalPixel -> this.pixelInfos.stream().anyMatch(internalPixel -> internalPixel.x == externalPixel.x));
     }
