@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class CapabilityPaintable {
 
-    public static Capability<IPaintable> PAINTABLE = getCapability(new CapabilityToken<>() {});;
+    public static Capability<IPaintable> PAINTABLE = CapabilityManager.get(new CapabilityToken<>() {});;
 
     public static void register() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
@@ -57,10 +57,5 @@ public class CapabilityPaintable {
             pictureData[i] = pictureInfo.getIntArray("" + i);
         }
         instance.setData(scaleFactor, pictureData, null, null);
-    }
-
-    @NotNull
-    protected static <T> Capability<T> getCapability(CapabilityToken<T> type) {
-        return CapabilityManager.get(type);
     }
 }

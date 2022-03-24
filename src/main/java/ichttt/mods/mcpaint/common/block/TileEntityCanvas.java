@@ -52,7 +52,6 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     @Nonnull
     @Override
     public void saveAdditional(CompoundTag tag) {
-//        tag = super.save(tag);
         if (this.containedState != null)
             tag.put("blockState", NbtUtils.writeBlockState(this.containedState));
         CompoundTag faces = new CompoundTag();
@@ -66,7 +65,6 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
                 blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
-        //return tag;
     }
 
     @Override
@@ -97,9 +95,7 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     @Nonnull
     @Override
     public CompoundTag getUpdateTag() {
-        CompoundTag tag = new CompoundTag();
-        this.saveAdditional(tag);
-        return tag;
+        return this.saveWithoutMetadata();
     }
 
     @Nullable
