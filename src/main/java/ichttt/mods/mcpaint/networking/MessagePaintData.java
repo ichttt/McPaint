@@ -7,6 +7,7 @@ import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import it.unimi.dsi.fastutil.ints.Int2ByteMap;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,13 +35,14 @@ public class MessagePaintData {
     private final byte part;
     private final byte maxParts;
     private final int[][] data;
+    private final int[] palette;
 
-    public static void createAndSend(BlockPos pos, Direction facing, byte scale, int[][] data, Consumer<MessagePaintData> sender) {
+    public static void createAndSend(BlockPos pos, Direction facing, byte scale, int[] palette, int[][] data, Consumer<MessagePaintData> sender) {
         int length = data.length;
         if (length > 0)
             length *= data[0].length;
-        if (length > 8000) { //We need to split
-            int partsAsInt = (length / 8000) + 1;
+        if ((length > 32000) || (palette == null && length > 8000)) { //We need to split
+            int partsAsInt = (length / 32000) + 1;
             while (data.length % partsAsInt != 0) {
                 partsAsInt++;
                 if (partsAsInt > 32) throw new RuntimeException("Hell I'm not sending " + partsAsInt + "+ packets for a single image of length " + length);
@@ -50,19 +52,20 @@ public class MessagePaintData {
                 throw new IllegalArgumentException("Picture too large: " + length);
             byte parts = (byte) partsAsInt;
             for (byte b = 1; b <= parts; b++) {
-                MessagePaintData toSend = new MessagePaintData(pos, facing, scale, data, b, parts);
+                MessagePaintData toSend = new MessagePaintData(pos, facing, scale, palette, data, b, parts);
                 sender.accept(toSend);
             }
         } else {
-            MessagePaintData toSend = new MessagePaintData(pos, facing, scale, data, (byte) 0, (byte) 0);
+            MessagePaintData toSend = new MessagePaintData(pos, facing, scale, palette, data, (byte) 0, (byte) 0);
             sender.accept(toSend);
         }
     }
 
-    public MessagePaintData(BlockPos pos, Direction facing, byte scale, int[][] data, byte part, byte maxParts) {
+    public MessagePaintData(BlockPos pos, Direction facing, byte scale, int[] palette, int[][] data, byte part, byte maxParts) {
         this.pos = pos;
         this.facing = facing;
         this.scale = scale;
+        this.palette = palette;
         this.data = data;
         this.part = part;
         this.maxParts = maxParts;
@@ -77,10 +80,24 @@ public class MessagePaintData {
         short max = buf.readShort();
         short secondMax = buf.readShort();
 
+        byte paletteLength = buf.readByte();
+        if (paletteLength <= 0) {
+            this.palette = null;
+        } else {
+            this.palette = new int[paletteLength];
+            for (int i = 0; i < paletteLength; i++) {
+                this.palette[i] = buf.readInt();
+            }
+        }
+
         this.data = new int[max][secondMax];
         for (int i = 0; i < max; i++) {
             for (int j = 0; j < secondMax; j++) {
-                data[i][j] = buf.readInt();
+                if (palette == null) {
+                    data[i][j] = buf.readInt();
+                } else {
+                    data[i][j] = this.palette[buf.readByte()];
+                }
             }
         }
     }
@@ -95,11 +112,24 @@ public class MessagePaintData {
         buf.writeShort(Shorts.checkedCast(max));
         buf.writeShort(Shorts.checkedCast(data[0].length));
 
+        buf.writeByte(this.palette == null ? 0 : this.palette.length);
+        Int2ByteMap reversePalette = null;
+
+        if (this.palette != null) {
+            for (int i : this.palette) {
+                buf.writeInt(i);
+            }
+            reversePalette = MCPaintUtil.buildReversePalette(this.palette);
+        }
+
         int offset = this.maxParts == 0 ? max : max * this.part;
         for (int i = offset - max; i < offset; i++) {
             int[] subarray = this.data[i];
             for (int value : subarray) {
-                buf.writeInt(value);
+                if (this.palette != null)
+                    buf.writeByte(reversePalette.get(value));
+                else
+                    buf.writeInt(value);
             }
         }
     }
@@ -114,7 +144,7 @@ public class MessagePaintData {
             NetworkEvent.Context ctx = supplier.get();
             ctx.setPacketHandled(true);
             if (message.maxParts == 0) //single message
-                ctx.enqueueWork(() -> handleSide(ctx, message.pos, message.facing, message.scale, message.data));
+                ctx.enqueueWork(() -> handleSide(ctx, message.pos, message.facing, message.scale, message.palette, message.data));
             else {
                 synchronized (partMap) {
                     partMap.put(message.pos, message);
@@ -129,13 +159,13 @@ public class MessagePaintData {
                             }
                         });
                         partMap.removeAll(message.pos);
-                        ctx.enqueueWork(() -> handleSide(ctx, message.pos, message.facing, message.scale, data));
+                        ctx.enqueueWork(() -> handleSide(ctx, message.pos, message.facing, message.scale, message.palette, data));
                     }
                 }
             }
         }
 
-        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[] palette, int[][] data) {
             ServerPlayer player = MCPaintUtil.checkServer(ctx);
             if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
@@ -154,13 +184,13 @@ public class MessagePaintData {
             if (data == null)
                 canvas.removePaint(facing);
             else
-                canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
+                canvas.getPaintFor(facing).setDataWithPalette(scale, data, palette, canvas, facing);
             te.setChanged();
             PacketDistributor.PacketTarget target = PacketDistributor.TRACKING_CHUNK.with(() -> (LevelChunk) Objects.requireNonNull(te.getLevel()).getChunk(te.getBlockPos()));
             if (data == null) {
                 MCPaint.NETWORKING.send(target, new MessageClearSide.ClientMessage(pos, facing));
             } else {
-                MessagePaintData.createAndSend(pos, facing, scale, data, messagePaintData -> MCPaint.NETWORKING.send(target, new MessagePaintData.ClientMessage(messagePaintData)));
+                MessagePaintData.createAndSend(pos, facing, scale, palette, data, messagePaintData -> MCPaint.NETWORKING.send(target, new MessagePaintData.ClientMessage(messagePaintData)));
             }
         }
     }
@@ -170,7 +200,7 @@ public class MessagePaintData {
 
         @OnlyIn(Dist.CLIENT)
         @Override
-        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[][] data) {
+        public void handleSide(NetworkEvent.Context ctx, BlockPos pos, Direction facing, byte scale, int[] palette, int[][] data) {
             MCPaintUtil.checkClient(ctx);
             Level world = Minecraft.getInstance().level;
             if (!world.hasChunkAt(pos)) {
@@ -183,14 +213,14 @@ public class MessagePaintData {
                 return;
             }
             TileEntityCanvas canvas = (TileEntityCanvas) te;
-            canvas.getPaintFor(facing).setData(scale, data, canvas, facing);
+            canvas.getPaintFor(facing).setDataWithPalette(scale, data, palette, canvas, facing);
             te.setChanged();
         }
     }
 
     public static class ClientMessage extends MessagePaintData {
         public ClientMessage(MessagePaintData msg) {
-            super(msg.pos, msg.facing, msg.scale, msg.data, msg.part, msg.maxParts);
+            super(msg.pos, msg.facing, msg.scale, msg.palette, msg.data, msg.part, msg.maxParts);
         }
 
         public ClientMessage(FriendlyByteBuf buf) {

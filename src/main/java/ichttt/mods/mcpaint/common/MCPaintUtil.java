@@ -5,6 +5,8 @@ import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
+import it.unimi.dsi.fastutil.ints.Int2ByteMap;
+import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -62,9 +64,9 @@ public class MCPaintUtil {
             MCPaint.NETWORKING.sendToServer(new MessageClearSide(te.getBlockPos(), facing));
             canvas.removePaint(facing);
         } else {
-            MessagePaintData.createAndSend(te.getBlockPos(), facing, scaleFactor, picture, MCPaint.NETWORKING::sendToServer);
             IPaintable paintable = canvas.getPaintFor(facing);
             paintable.setData(scaleFactor, picture, canvas, facing);
+            MessagePaintData.createAndSend(te.getBlockPos(), facing, scaleFactor, paintable.getPalette(), picture, MCPaint.NETWORKING::sendToServer);
         }
     }
 
@@ -80,5 +82,13 @@ public class MCPaintUtil {
         if (context.getDirection() != NetworkDirection.PLAY_TO_CLIENT)
             throw new IllegalArgumentException("Wrong side for client packet handler: " + context.getDirection());
         context.setPacketHandled(true);
+    }
+
+    public static Int2ByteMap buildReversePalette(int[] palette) {
+        Int2ByteMap map = new Int2ByteOpenHashMap();
+        for (int i = 0; i < palette.length; i++) {
+            map.put(palette[i], (byte) i);
+        }
+        return map;
     }
 }

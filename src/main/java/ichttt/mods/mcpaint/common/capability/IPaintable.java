@@ -20,10 +20,15 @@ public interface IPaintable extends IPaintValidator {
 
     short getPixelCountY();
 
+    @Nullable
+    int[] getPalette();
+
     /**
      * @param canvas The canvas the cache should be cleared for
      */
     void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable Direction facing);
+
+    void setDataWithPalette(byte scaleFactor, int[][] pictureData, int[] palette, @Nullable TileEntityCanvas canvas, @Nullable Direction facing);
 
     void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable Direction facing);
 
@@ -34,6 +39,6 @@ public interface IPaintable extends IPaintValidator {
     boolean equals(Object other);
 
     default void clear(@Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
-        setData((byte) 0, null, canvas, facing);
+        setDataWithPalette((byte) 0, null, null, canvas, facing);
     }
 }

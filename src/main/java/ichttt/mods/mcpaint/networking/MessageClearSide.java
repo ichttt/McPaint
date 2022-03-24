@@ -28,7 +28,7 @@ public class MessageClearSide {
     public static class ServerHandler {
         public static void onMessage(MessageClearSide message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context context = supplier.get();
-            context.enqueueWork(() -> MessagePaintData.ServerHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null));
+            context.enqueueWork(() -> MessagePaintData.ServerHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null, null));
             context.setPacketHandled(true);
         }
     }
@@ -36,7 +36,7 @@ public class MessageClearSide {
     public static class ClientHandler {
         public static void onMessage(MessageClearSide message, Supplier<NetworkEvent.Context> supplier) {
             NetworkEvent.Context context = supplier.get();
-            context.enqueueWork(() -> MessagePaintData.ClientHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null));
+            context.enqueueWork(() -> MessagePaintData.ClientHandler.INSTANCE.handleSide(context, message.pos, message.facing, (byte) 0, null, null));
             context.setPacketHandled(true);
         }
     }

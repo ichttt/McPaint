@@ -4,6 +4,8 @@ import com.google.common.primitives.Shorts;
 import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
+import it.unimi.dsi.fastutil.ints.IntLinkedOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.fml.DistExecutor;
@@ -20,6 +22,7 @@ public class Paint implements IPaintable {
     private short pixelCountY;
     private final IPaintValidator validator;
     private int hashCode = 0;
+    private int[] palette;
 
     public Paint() {
         this(TRUE_VALIDATOR);
@@ -36,6 +39,23 @@ public class Paint implements IPaintable {
 
     @Override
     public void setData(byte scaleFactor, int[][] pictureData, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
+        IntSet set = null;
+        if (pictureData != null) {
+            set = new IntLinkedOpenHashSet();
+            outerLoop: for (int[] pictureDatum : pictureData) {
+                for (int color : pictureDatum) {
+                    if (set.add(color) && set.size() > Byte.MAX_VALUE) {
+                        set = null;
+                        break outerLoop;
+                    }
+                }
+            }
+        }
+        setDataWithPalette(scaleFactor, pictureData, set == null ? null : set.toArray((int[]) null), canvas, facing);
+    }
+
+    @Override
+    public void setDataWithPalette(byte scaleFactor, int[][] pictureData, int[] palette, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
         short pixelCountX = Shorts.checkedCast(pictureData == null ? 0 : (pictureData.length * scaleFactor));
         short pixelCountY = Shorts.checkedCast(pictureData == null ? 0 : (pictureData[0].length * scaleFactor));
         if (!this.isValidPixelCount(pixelCountX, pixelCountY))
@@ -51,6 +71,7 @@ public class Paint implements IPaintable {
         this.scaleFactor = scaleFactor;
         this.pictureData = pictureData;
         this.hashCode = 0;
+        this.palette = palette;
     }
 
     @Override
@@ -76,6 +97,12 @@ public class Paint implements IPaintable {
         return this.pixelCountY;
     }
 
+    @Nullable
+    @Override
+    public int[] getPalette() {
+        return this.palette;
+    }
+
     @Override
     public final boolean isValidPixelCount(short pixelCountX, short pixelCountY) {
         return this.validator.isValidPixelCount(pixelCountX, pixelCountY);
@@ -83,7 +110,7 @@ public class Paint implements IPaintable {
 
     @Override
     public void copyFrom(IPaintable paint, @Nullable TileEntityCanvas canvas, @Nullable Direction facing) {
-        this.setData(paint.getScaleFactor(), paint.getPictureData(true), canvas, facing);
+        this.setDataWithPalette(paint.getScaleFactor(), paint.getPictureData(true), paint.getPalette(), canvas, facing);
     }
 
     @Override

@@ -37,7 +37,7 @@ public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
-    private static final String NETWORKING_VERSION = "4";
+    private static final String NETWORKING_VERSION = "5";
     public static SimpleChannel NETWORKING;
 
     public MCPaint() {
