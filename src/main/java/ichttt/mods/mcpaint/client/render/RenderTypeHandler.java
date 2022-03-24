@@ -24,4 +24,5 @@ public class RenderTypeHandler extends RenderStateShard { //Extend render state 
         super(nameIn, setupTaskIn, clearTaskIn);
         throw new UnsupportedOperationException();
     }
+
 }

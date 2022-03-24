@@ -4,16 +4,25 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.core.Direction;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.CapabilityInject;
 import net.minecraftforge.common.capabilities.CapabilityManager;
+import net.minecraftforge.common.capabilities.CapabilityToken;
+import net.minecraftforge.common.capabilities.RegisterCapabilitiesEvent;
+import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import org.jetbrains.annotations.NotNull;
 
 public class CapabilityPaintable {
 
-    @CapabilityInject(IPaintable.class)
-    public static Capability<IPaintable> PAINTABLE;
+    public static Capability<IPaintable> PAINTABLE = getCapability(new CapabilityToken<>() {});;
 
     public static void register() {
-        CapabilityManager.INSTANCE.register(IPaintable.class); //TODO move to event
+        IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();
+        modBus.addListener(CapabilityPaintable::onRegisterCapabilities);
+    }
+
+    private static void onRegisterCapabilities(RegisterCapabilitiesEvent event) {
+        // Registers the capability classes
+        event.register(Paint.class);
     }
 
     public static CompoundTag writeToNBT(IPaintable instance, CompoundTag compound) {
@@ -48,5 +57,10 @@ public class CapabilityPaintable {
             pictureData[i] = pictureInfo.getIntArray("" + i);
         }
         instance.setData(scaleFactor, pictureData, null, null);
+    }
+
+    @NotNull
+    protected static <T> Capability<T> getCapability(CapabilityToken<T> type) {
+        return CapabilityManager.get(type);
     }
 }

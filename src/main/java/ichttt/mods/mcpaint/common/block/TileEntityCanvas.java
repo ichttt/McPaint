@@ -12,6 +12,7 @@ import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
@@ -26,7 +27,6 @@ import net.minecraftforge.client.model.data.IModelData;
 import net.minecraftforge.client.model.data.ModelDataMap;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.util.Constants;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
@@ -51,8 +51,8 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
 
     @Nonnull
     @Override
-    public CompoundTag save(CompoundTag tag) {
-        tag = super.save(tag);
+    public void saveAdditional(CompoundTag tag) {
+//        tag = super.save(tag);
         if (this.containedState != null)
             tag.put("blockState", NbtUtils.writeBlockState(this.containedState));
         CompoundTag faces = new CompoundTag();
@@ -66,13 +66,13 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
                 blockedFaces.putBoolean(facing.getName(), disallowedFaces.contains(facing));
             tag.put("blocked", blockedFaces);
         }
-        return tag;
+        //return tag;
     }
 
     @Override
     public void load(CompoundTag tag) {
         super.load(tag);
-        this.containedState = tag.contains("blockState", Constants.NBT.TAG_COMPOUND) ? NbtUtils.readBlockState(tag.getCompound("blockState")) : null;
+        this.containedState = tag.contains("blockState", Tag.TAG_COMPOUND) ? NbtUtils.readBlockState(tag.getCompound("blockState")) : null;
         CompoundTag faces = tag.getCompound("faces");
         for (String key : faces.getAllKeys()) {
             Paint paint = new Paint(this);
@@ -97,13 +97,15 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     @Nonnull
     @Override
     public CompoundTag getUpdateTag() {
-        return this.save(new CompoundTag());
+        CompoundTag tag = new CompoundTag();
+        this.saveAdditional(tag);
+        return tag;
     }
 
     @Nullable
     @Override
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
-        return new ClientboundBlockEntityDataPacket(this.worldPosition, 0, this.getUpdateTag());
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Nonnull
