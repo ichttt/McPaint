@@ -22,7 +22,7 @@ apply plugin: 'org.parchmentmc.librarian.forgegradle'
 // Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 apply plugin: 'eclipse'
 
-version = '1.8.0'
+version = '1.9.0'
 group = 'ichttt.mods.mcpaint' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'mcpaint'
 
