@@ -12,6 +12,9 @@ import ichttt.mods.mcpaint.client.render.RenderUtil;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
@@ -22,32 +25,28 @@ import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.server.packs.resources.Resource;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.network.chat.TextComponent;
 import net.minecraft.ChatFormatting;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.network.chat.ClickEvent;
-import net.minecraftforge.client.model.data.EmptyModelData;
-import org.lwjgl.opengl.GL11;
+import net.minecraftforge.client.ChunkRenderTypeSet;
+import net.minecraftforge.client.model.data.ModelData;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 
 public class DrawScreenHelper {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
@@ -110,8 +109,8 @@ public class DrawScreenHelper {
         } catch (IOException e) {
             MCPaint.LOGGER.error("Could not save image!", e);
             Minecraft minecraft = Minecraft.getInstance();
-            minecraft.player.displayClientMessage(new TextComponent("Failed to save file!"), true);
-            minecraft.player.displayClientMessage(new TextComponent("Failed to save file!"), false);
+            minecraft.player.displayClientMessage(Component.literal("Failed to save file!"), true);
+            minecraft.player.displayClientMessage(Component.literal("Failed to save file!"), false);
         }
     }
 
@@ -156,21 +155,25 @@ public class DrawScreenHelper {
 
     public void renderBackgroundBlock(PoseStack stack, int startLeft, int startTop) {
         Minecraft mc = Minecraft.getInstance();
-        List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
-        for (BakedQuad quad : quads) {
-            TextureAtlasSprite sprite = quad.getSprite();
-            stack.pushPose();
-            RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
-            //See BlockModelRenderer
-            if (quad.isTinted()) {
-                int color = mc.getBlockColors().getColor(state, mc.level, pos, quad.getTintIndex());
-                float red = (float) (color >> 16 & 255) / 255.0F;
-                float green = (float) (color >> 8 & 255) / 255.0F;
-                float blue = (float) (color & 255) / 255.0F;
-                RenderSystem.setShaderColor(red, green, blue, 1F);
+        RandomSource randomSource = RandomSource.create();
+        ChunkRenderTypeSet renderTypes = model.getRenderTypes(state, randomSource, ModelData.EMPTY);
+        for (RenderType renderType : renderTypes) {
+            List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), randomSource, ModelData.EMPTY, renderType);
+            for (BakedQuad quad : quads) {
+                TextureAtlasSprite sprite = quad.getSprite();
+                stack.pushPose();
+                RenderSystem.setShaderTexture(0, InventoryMenu.BLOCK_ATLAS);
+                //See BlockModelRenderer
+                if (quad.isTinted()) {
+                    int color = mc.getBlockColors().getColor(state, mc.level, pos, quad.getTintIndex());
+                    float red = (float) (color >> 16 & 255) / 255.0F;
+                    float green = (float) (color >> 8 & 255) / 255.0F;
+                    float blue = (float) (color & 255) / 255.0F;
+                    RenderSystem.setShaderColor(red, green, blue, 1F);
+                }
+                GuiComponent.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
+                stack.popPose();
             }
-            GuiComponent.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
-            stack.popPose();
         }
     }
 
@@ -282,29 +285,33 @@ public class DrawScreenHelper {
         BufferedImage output = new BufferedImage(paint.getWidth(), paint.getHeight(), BufferedImage.TYPE_INT_ARGB);
 
         if (background) {
-            List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), new Random(), EmptyModelData.INSTANCE);
-            for (BakedQuad quad : quads) {
-                TextureAtlasSprite sprite = quad.getSprite();
-                try (Resource resource = minecraft.getResourceManager().getResource(getResourceLocation(sprite))) {
-                    Image image = ImageIO.read(resource.getInputStream());
-                    if (quad.isTinted()) {
-                        int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
-                        float red = (float) (color >> 16 & 255) / 255.0F;
-                        float green = (float) (color >> 8 & 255) / 255.0F;
-                        float blue = (float) (color & 255) / 255.0F;
-                        BufferedImage asBufferedImage = (BufferedImage) image;
-                        for (int x = 0; x < asBufferedImage.getWidth(); x++) {
-                            for (int y = 0; y < asBufferedImage.getHeight(); y++) {
-                                Color originalColor = new Color(asBufferedImage.getRGB(x, y), true);
-                                int newRed = Math.round(originalColor.getRed() * red);
-                                int newGreen = Math.round(originalColor.getGreen() * green);
-                                int newBlue = Math.round(originalColor.getBlue() * blue);
-                                asBufferedImage.setRGB(x, y, new Color(newRed, newGreen, newBlue, originalColor.getAlpha()).getRGB());
+            RandomSource randomSource = RandomSource.create();
+            ChunkRenderTypeSet renderTypes = model.getRenderTypes(state, randomSource, ModelData.EMPTY);
+            for (RenderType renderType : renderTypes) {
+                List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), randomSource, ModelData.EMPTY, renderType);
+                for (BakedQuad quad : quads) {
+                    TextureAtlasSprite sprite = quad.getSprite();
+                    try (InputStream stream = minecraft.getResourceManager().open(getResourceLocation(sprite))) {
+                        Image image = ImageIO.read(stream);
+                        if (quad.isTinted()) {
+                            int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
+                            float red = (float) (color >> 16 & 255) / 255.0F;
+                            float green = (float) (color >> 8 & 255) / 255.0F;
+                            float blue = (float) (color & 255) / 255.0F;
+                            BufferedImage asBufferedImage = (BufferedImage) image;
+                            for (int x = 0; x < asBufferedImage.getWidth(); x++) {
+                                for (int y = 0; y < asBufferedImage.getHeight(); y++) {
+                                    Color originalColor = new Color(asBufferedImage.getRGB(x, y), true);
+                                    int newRed = Math.round(originalColor.getRed() * red);
+                                    int newGreen = Math.round(originalColor.getGreen() * green);
+                                    int newBlue = Math.round(originalColor.getBlue() * blue);
+                                    asBufferedImage.setRGB(x, y, new Color(newRed, newGreen, newBlue, originalColor.getAlpha()).getRGB());
+                                }
                             }
                         }
+                        image = image.getScaledInstance(output.getWidth(), output.getHeight(), Image.SCALE_FAST);
+                        output.getGraphics().drawImage(image, 0, 0, null);
                     }
-                    image = image.getScaledInstance(output.getWidth(), output.getHeight(), Image.SCALE_FAST);
-                    output.getGraphics().drawImage(image, 0, 0, null);
                 }
             }
         }
@@ -316,9 +323,9 @@ public class DrawScreenHelper {
         final File finalFile = getTimestampedPNGFileForDirectory(file);
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
-        MutableComponent component = new TextComponent(finalFile.getName());
+        MutableComponent component = Component.literal(finalFile.getName());
         component = component.withStyle(ChatFormatting.UNDERLINE).withStyle(style -> style.withClickEvent(new ClickEvent(ClickEvent.Action.OPEN_FILE, finalFile.getAbsolutePath())));
-        minecraft.player.displayClientMessage(new TranslatableComponent("mcpaint.gui.saved", component), false);
+        minecraft.player.displayClientMessage(Component.translatable("mcpaint.gui.saved", component), false);
     }
 
     //See ScreenShotHelper

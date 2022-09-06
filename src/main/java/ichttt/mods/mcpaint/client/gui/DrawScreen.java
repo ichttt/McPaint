@@ -12,24 +12,22 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.gui.components.Widget;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.Button;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraftforge.client.gui.widget.Slider;
+import net.minecraftforge.client.gui.widget.ForgeSlider;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallback {
+public class DrawScreen extends Screen implements IDrawGuiCallback {
     private static final int PICTURE_START_LEFT = 6;
     private static final int PICTURE_START_TOP = 9;
     public static final ResourceLocation BACKGROUND = new ResourceLocation(MCPaint.MODID, "textures/gui/setup.png");
@@ -46,16 +44,15 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
     private Button undo, redo;
     private Button lessSize, moreSize;
     private final List<GuiButtonTextToggle> textToggleList = new ArrayList<>();
-    private Slider redSlider, blueSlider, greenSlider, alphaSlider;
-    private boolean updating;
+    private ForgeSlider redSlider, blueSlider, greenSlider, alphaSlider;
 
     public DrawScreen(IPaintable canvas, List<IPaintable> prevImages, BlockPos pos, Direction facing, BlockState state) {
-        super(new TranslatableComponent("mcpaint.drawgui"));
+        super(Component.translatable("mcpaint.drawgui"));
         this.helper = new DrawScreenHelper(canvas, prevImages, pos, facing, state, this);
     }
 
     public DrawScreen(byte scaleFactor, BlockPos pos, Direction facing, BlockState state) {
-        super(new TranslatableComponent("mcpaint.drawgui"));
+        super(Component.translatable("mcpaint.drawgui"));
         this.helper = new DrawScreenHelper(scaleFactor, pos, facing, state, this);
     }
 
@@ -65,30 +62,30 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, new TranslatableComponent("mcpaint.gui.export"), button -> {
+        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, Component.translatable("mcpaint.gui.export"), button -> {
             DrawScreen.this.helper.saveImage();
         });
-        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, new TranslatableComponent("mcpaint.gui.rright"), button -> {
+        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.rright"), button -> {
             DrawScreen.this.helper.rotateRight();
         });
-        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, new TranslatableComponent("mcpaint.gui.rleft"), button -> {
+        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.rleft"), button -> {
             DrawScreen.this.helper.rotateLeft();
         });
-        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, new TranslatableComponent("mcpaint.gui.redo"), button -> helper.redo());
-        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, new TranslatableComponent("mcpaint.gui.undo"), button -> helper.undo());
+        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.redo"), button -> helper.redo());
+        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.undo"), button -> helper.undo());
         Button pickColor = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR, DrawScreen.this::handleToolButton);
         Button erase = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER, DrawScreen.this::handleToolButton);
         Button fill = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL, DrawScreen.this::handleToolButton);
         Button pencil = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL, DrawScreen.this::handleToolButton);
-        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, new TextComponent(">"), button -> {
+        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, Component.literal(">"), button -> {
                 DrawScreen.this.helper.toolSize++;
                 handleSizeChanged();
         });
-        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, new TextComponent("<"), button -> {
+        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, Component.literal("<"), button -> {
                 DrawScreen.this.helper.toolSize--;
                 handleSizeChanged();
         });
-        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, new TranslatableComponent("gui.done"), button -> {
+        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, Component.translatable("gui.done"), button -> {
             DrawScreen.this.helper.saveAndClose();
         });
 
@@ -137,6 +134,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         addRenderableWidget(this.greenSlider);
         addRenderableWidget(this.blueSlider);
         addRenderableWidget(this.alphaSlider);
+
         //trigger defaults
         pencil.onClick(0, 0);
         this.lessSize.onClick(0, 0);
@@ -250,8 +248,13 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         helper.onClose();
     }
 
-    private Slider makeSlider(int xPos, int yPos, String key) {
-        return new Slider(xPos, yPos, 74, 20, new TranslatableComponent(key), TextComponent.EMPTY, 0, 255, 0,false, true, null, this);
+    private ForgeSlider makeSlider(int xPos, int yPos, String key) {
+        return new ForgeSlider(xPos, yPos, 74, 20, Component.translatable(key), Component.empty(), 0, 255, 0, false) {
+            @Override
+            protected void applyValue() {
+                DrawScreen.this.onChangeSliderValue();
+            }
+        };
     }
 
 
@@ -270,9 +273,7 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         }
     }
 
-    @Override
-    public void onChangeSliderValue(Slider slider) {
-        if (updating) return;
+    public void onChangeSliderValue() {
         this.helper.color = new Color(this.redSlider.getValueInt(),
                 this.greenSlider.getValueInt(),
                 this.blueSlider.getValueInt(),
@@ -286,12 +287,6 @@ public class DrawScreen extends Screen implements Slider.ISlider, IDrawGuiCallba
         this.blueSlider.setValue(color.getBlue());
         this.greenSlider.setValue(color.getGreen());
         this.alphaSlider.setValue(color.getAlpha());
-        this.updating = true;
-        this.redSlider.updateSlider();
-        this.blueSlider.updateSlider();
-        this.greenSlider.updateSlider();
-        this.alphaSlider.updateSlider();
-        this.updating = false;
     }
 
     @Override

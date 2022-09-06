@@ -3,6 +3,7 @@ package ichttt.mods.mcpaint.common.item;
 import ichttt.mods.mcpaint.client.ClientHooks;
 import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.RegistryObjects;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -21,13 +22,15 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.IItemRenderProperties;
+import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.DistExecutor;
+import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,23 +42,17 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class ItemBrush extends Item {
-    public static Item.Properties getProperties() {
-        Item.Properties properties = new Item.Properties();
-        properties.tab(CreativeModeTab.TAB_DECORATIONS).stacksTo(1).defaultDurability(32);
-        return properties;
-    }
 
-    public ItemBrush(ResourceLocation registryName) {
-        super(getProperties());
-        setRegistryName(registryName);
+    public ItemBrush() {
+        super(new Item.Properties().tab(CreativeModeTab.TAB_DECORATIONS).stacksTo(1).defaultDurability(32));
     }
 
     @Override
-    public void initializeClient(Consumer<IItemRenderProperties> consumer) {
+    public void initializeClient(Consumer<IClientItemExtensions> consumer) {
         super.initializeClient(consumer);
-        consumer.accept(new IItemRenderProperties() {
+        consumer.accept(new IClientItemExtensions() {
             @Override
-            public BlockEntityWithoutLevelRenderer getItemStackRenderer() {
+            public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 return ISTERStamp.INSTANCE;
             }
         });
@@ -97,12 +94,21 @@ public class ItemBrush extends Item {
                 if (!Block.canSupportCenter(world, pos, testFacing))
                     disallowedFaces.add(testFacing);
             }
-            if (state.getMaterial().isFlammable())
-                world.setBlockAndUpdate(pos, EventHandler.CANVAS_WOOD.getStateFrom(world, pos, state));
-            else if (!state.requiresCorrectToolForDrops())
-                world.setBlockAndUpdate(pos, EventHandler.CANVAS_GROUND.getStateFrom(world, pos, state));
-            else
-                world.setBlockAndUpdate(pos, EventHandler.CANVAS_ROCK.getStateFrom(world, pos, state));
+            Block block = null;
+            RegistryObject<Block> blockRegistryObject = RegistryObjects.CANVAS_BLOCKS.get(state.getMaterial());
+            if (blockRegistryObject != null) {
+                block = blockRegistryObject.get();
+            }
+            if (block == null) {
+                if (state.getMaterial().isFlammable())
+                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.WOOD).get();
+                else if (!state.requiresCorrectToolForDrops())
+                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.DIRT).get();
+                else
+                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.STONE).get();
+            }
+
+            world.setBlockAndUpdate(pos, ((BlockCanvas) block).getStateFrom(world, pos, state));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getBlockEntity(pos));
             canvas.setInitialData(state, disallowedFaces);
             canvas.setChanged();

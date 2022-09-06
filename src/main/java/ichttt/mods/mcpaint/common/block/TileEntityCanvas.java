@@ -7,6 +7,7 @@ import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.client.render.batch.SimpleCallback;
 import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.common.RegistryObjects;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
@@ -22,9 +23,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.core.Direction;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.ModelDataManager;
-import net.minecraftforge.client.model.data.IModelData;
-import net.minecraftforge.client.model.data.ModelDataMap;
+import net.minecraftforge.client.model.data.ModelDataManager;
+import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
@@ -46,7 +46,7 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     private final Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
 
     public TileEntityCanvas(BlockPos pos, BlockState state) {
-        super(EventHandler.CANVAS_TE, pos, state);
+        super(RegistryObjects.CANVAS_BE.get(), pos, state);
     }
 
     @Nonnull
@@ -123,7 +123,7 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
         this.disallowedFaces.addAll(disallowedFaces);
         this.setChanged();
         if (this.level.isClientSide)
-            ModelDataManager.requestModelDataRefresh(this);
+            requestModelDataUpdate();
     }
 
     public BlockState getContainedState() {
@@ -206,8 +206,8 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
 
     @Nonnull
     @Override
-    public IModelData getModelData() {
-        return new ModelDataMap.Builder().withInitial(BLOCK_STATE_PROPERTY, this.containedState).build();
+    public ModelData getModelData() {
+        return ModelData.builder().with(BLOCK_STATE_PROPERTY, this.containedState).build();
     }
 
     public boolean isSideBlockedForPaint(Direction facing) {

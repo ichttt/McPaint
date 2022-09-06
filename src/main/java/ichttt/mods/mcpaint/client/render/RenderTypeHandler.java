@@ -1,10 +1,9 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import org.lwjgl.opengl.GL11;
 
 public class RenderTypeHandler extends RenderStateShard { //Extend render state to have access to static protected fields
     public static final RenderType CANVAS = RenderType.create("mcpaint_canvas",

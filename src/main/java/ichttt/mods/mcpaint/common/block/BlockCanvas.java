@@ -31,9 +31,8 @@ public class BlockCanvas extends Block implements EntityBlock {
     public static final BooleanProperty NORMAL_CUBE = BooleanProperty.create("normal_cube");
 
     //TODO register a block for each common material
-    public BlockCanvas(Material material, ResourceLocation regNam) {
+    public BlockCanvas(Material material) {
         super(Block.Properties.of(material).strength(1F, 4F).isRedstoneConductor((state, world, pos) -> state.getValue(NORMAL_CUBE)));
-        setRegistryName(regNam);
         registerDefaultState(stateDefinition.any().setValue(SOLID, true).setValue(NORMAL_CUBE, true));
     }
 

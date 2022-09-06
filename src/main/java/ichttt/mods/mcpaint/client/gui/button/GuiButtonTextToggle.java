@@ -4,12 +4,10 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 
 import java.awt.*;
 import java.util.Locale;
-
-import net.minecraft.client.gui.components.Button.OnPress;
 
 public class GuiButtonTextToggle extends Button {
     private final int color;
@@ -17,7 +15,7 @@ public class GuiButtonTextToggle extends Button {
     public boolean toggled = true;
 
     public GuiButtonTextToggle(int x, int y, int widthIn, int heightIn, EnumDrawType type, OnPress pressable) {
-        super(x, y, widthIn, heightIn, new TranslatableComponent(MCPaint.MODID + ".gui." + type.toString().toLowerCase(Locale.ENGLISH)), pressable);
+        super(x, y, widthIn, heightIn, Component.translatable(MCPaint.MODID + ".gui." + type.toString().toLowerCase(Locale.ENGLISH)), pressable);
         this.color = Color.GREEN.getRGB();
         this.type = type;
     }

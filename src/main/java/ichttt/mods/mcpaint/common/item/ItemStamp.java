@@ -23,7 +23,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.level.Level;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -36,10 +35,7 @@ import java.util.Objects;
 
 public class ItemStamp extends ItemBrush {
 
-    public ItemStamp(ResourceLocation registryName) {
-        super(registryName);
-//        DistExecutor.runWhenOn(Dist.CLIENT, () -> () -> addPropertyOverride(new ResourceLocation(MCPaint.MODID, "shift"), ISTERStamp.INSTANCE)); TODO validate
-    }
+    public ItemStamp() {}
 
     @Override
     protected InteractionResult processMiss(Level world, Player player, InteractionHand hand, ItemStack stack, @Nullable HitResult result) {
@@ -99,9 +95,9 @@ public class ItemStamp extends ItemBrush {
     public void appendHoverText(ItemStack stack, @Nullable Level worldIn, List<Component> tooltip, TooltipFlag flagIn) {
         IPaintable paintable = stack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
         if (paintable != null && paintable.hasPaintData()) {
-            tooltip.add(new TranslatableComponent("mcpaint.tooltip.stamp.paint"));
+            tooltip.add(Component.translatable("mcpaint.tooltip.stamp.paint"));
         } else {
-            tooltip.add(new TranslatableComponent("mcpaint.tooltip.stamp.nopaint"));
+            tooltip.add(Component.translatable("mcpaint.tooltip.stamp.nopaint"));
         }
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
     }
