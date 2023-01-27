@@ -15,7 +15,7 @@ public class GuiButtonTextToggle extends Button {
     public boolean toggled = true;
 
     public GuiButtonTextToggle(int x, int y, int widthIn, int heightIn, EnumDrawType type, OnPress pressable) {
-        super(x, y, widthIn, heightIn, Component.translatable(MCPaint.MODID + ".gui." + type.toString().toLowerCase(Locale.ENGLISH)), pressable);
+        super(x, y, widthIn, heightIn, Component.translatable(MCPaint.MODID + ".gui." + type.toString().toLowerCase(Locale.ENGLISH)), pressable, DEFAULT_NARRATION);
         this.color = Color.GREEN.getRGB();
         this.type = type;
     }
@@ -25,10 +25,12 @@ public class GuiButtonTextToggle extends Button {
         if (this.visible) {
             //GuiHollowButton
             if (toggled) {
-                this.vLine(stack, this.x - 1, this.y - 1, this.y + this.height, this.color);
-                this.vLine(stack, this.x + this.width, this.y - 1, this.y + this.height, this.color);
-                this.hLine(stack, this.x - 1, this.x + this.width, this.y - 1, this.color);
-                this.hLine(stack, this.x - 1, this.x + this.width, this.y + this.height, this.color);
+                int x = this.getX();
+                int y = this.getY();
+                this.vLine(stack, x - 1, y - 1, y + this.height, this.color);
+                this.vLine(stack, x + this.width, y - 1, y + this.height, this.color);
+                this.hLine(stack, x - 1, x + this.width, y - 1, this.color);
+                this.hLine(stack, x - 1, x + this.width, y + this.height, this.color);
             }
             super.render(stack, mouseX, mouseY, partialTicks);
         }

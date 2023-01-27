@@ -1,5 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
@@ -9,21 +10,20 @@ import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import net.minecraft.client.gui.components.Widget;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.narration.NarratableEntry;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.components.Button;
-import com.mojang.blaze3d.platform.InputConstants;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.gui.widget.ForgeSlider;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.Color;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,32 +62,37 @@ public class DrawScreen extends Screen implements IDrawGuiCallback {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
 
-        Button saveImage = new Button(this.guiLeft + xSize, this.guiTop + 96, 80, 20, Component.translatable("mcpaint.gui.export"), button -> {
-            DrawScreen.this.helper.saveImage();
-        });
-        Button rotateRight = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.rright"), button -> {
-            DrawScreen.this.helper.rotateRight();
-        });
-        Button rotateLeft = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.rleft"), button -> {
-            DrawScreen.this.helper.rotateLeft();
-        });
-        this.redo = new Button(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.redo"), button -> helper.redo());
-        this.undo = new Button(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20, Component.translatable("mcpaint.gui.undo"), button -> helper.undo());
+        Button saveImage = Button.builder(Component.translatable("mcpaint.gui.export"), button -> DrawScreen.this.helper.saveImage())
+                .bounds(this.guiLeft + xSize, this.guiTop + 96, 80, 20)
+                .build();
+        Button rotateRight = Button.builder(Component.translatable("mcpaint.gui.rright"), button -> DrawScreen.this.helper.rotateRight())
+                .bounds(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22 + 22, 36, 20)
+                .build();
+        Button rotateLeft = Button.builder(Component.translatable("mcpaint.gui.rleft"), button -> DrawScreen.this.helper.rotateLeft())
+                .bounds(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22 + 22, 36, 20)
+                .build();
+        this.redo = Button.builder(Component.translatable("mcpaint.gui.redo"), button -> helper.redo())
+                .bounds(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22 + 22, 36, 20)
+                .build();
+        this.undo = Button.builder(Component.translatable("mcpaint.gui.undo"), button -> helper.undo())
+                .bounds(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22 + 22, 36, 20)
+                .build();
         Button pickColor = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5 + 22, 36, 20, EnumDrawType.PICK_COLOR, DrawScreen.this::handleToolButton);
         Button erase = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5 + 22, 36, 20, EnumDrawType.ERASER, DrawScreen.this::handleToolButton);
         Button fill = new GuiButtonTextToggle(this.guiLeft - toolXSize + 2 + 39, this.guiTop + 5, 36, 20, EnumDrawType.FILL, DrawScreen.this::handleToolButton);
         Button pencil = new GuiButtonTextToggle(this.guiLeft - toolXSize + 3, this.guiTop + 5, 36, 20,  EnumDrawType.PENCIL, DrawScreen.this::handleToolButton);
-        this.moreSize = new Button(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20, Component.literal(">"), button -> {
-                DrawScreen.this.helper.toolSize++;
-                handleSizeChanged();
-        });
-        this.lessSize = new Button(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20, Component.literal("<"), button -> {
-                DrawScreen.this.helper.toolSize--;
-                handleSizeChanged();
-        });
-        Button done = new Button(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20, Component.translatable("gui.done"), button -> {
-            DrawScreen.this.helper.saveAndClose();
-        });
+        this.moreSize = Button.builder(Component.literal(">"), button -> {
+            DrawScreen.this.helper.toolSize++;
+            handleSizeChanged();
+        }).bounds(this.guiLeft - toolXSize + 3 + 55, this.guiTop + toolYSize + 5, 20, 20).build();
+        this.lessSize = Button.builder(Component.literal("<"), button -> {
+            DrawScreen.this.helper.toolSize--;
+            handleSizeChanged();
+        }).bounds(this.guiLeft - toolXSize + 3, this.guiTop + toolYSize + 5, 20, 20).build();
+
+        Button done = Button.builder(Component.translatable("gui.done"), button -> DrawScreen.this.helper.saveAndClose())
+                .bounds(this.guiLeft + (xSize / 2) - (200 / 2), this.guiTop + ySize + 20, 200, 20)
+                .build();
 
         GuiColorButton black = new GuiColorButton(0, this.guiLeft + 137, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
         GuiColorButton white = new GuiColorButton(1, this.guiLeft + 137 + 18, this.guiTop + 9, 16, 16, Color.BLUE.getRGB(), this::handleColorChange);
@@ -143,7 +148,7 @@ public class DrawScreen extends Screen implements IDrawGuiCallback {
     }
 
     @Override
-    protected <T extends GuiEventListener & Widget & NarratableEntry> T addRenderableWidget(T pWidget) {
+    protected <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T pWidget) {
         T t = super.addRenderableWidget(pWidget);
         if (pWidget instanceof GuiButtonTextToggle) {
             this.textToggleList.add((GuiButtonTextToggle) pWidget);
@@ -249,7 +254,7 @@ public class DrawScreen extends Screen implements IDrawGuiCallback {
     }
 
     private ForgeSlider makeSlider(int xPos, int yPos, String key) {
-        return new ForgeSlider(xPos, yPos, 74, 20, Component.translatable(key), Component.empty(), 0, 255, 0, false) {
+        return new ForgeSlider(xPos, yPos, 74, 20, Component.translatable(key), Component.empty(), 0, 255, 0, true) {
             @Override
             protected void applyValue() {
                 DrawScreen.this.onChangeSliderValue();

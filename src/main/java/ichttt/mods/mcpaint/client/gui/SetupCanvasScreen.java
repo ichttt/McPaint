@@ -4,13 +4,13 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.Button;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.block.state.BlockState;
 
 import java.awt.*;
 
@@ -48,19 +48,22 @@ public class SetupCanvasScreen extends Screen {
     public void init() {
         this.guiLeft = (this.width - xSize) / 2;
         this.guiTop = (this.height - ySize) / 2;
-        this.lessSize = new Button(this.guiLeft + 5, this.guiTop + 26, 20, 20, Component.literal("<"), button -> {
-                currentMulti /= 2;
-                handleSizeChanged();
-        });
-        this.moreSize = new Button(this.guiLeft + 83, this.guiTop + 26, 20, 20, Component.literal(">"), button -> {
-                SetupCanvasScreen.this.currentMulti *= 2;
-                handleSizeChanged();
-        });
-        addRenderableWidget(new Button(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20, Component.translatable("gui.done"), button -> {
+        this.lessSize = Button.builder(Component.literal("<"), button -> {
+            currentMulti /= 2;
+            handleSizeChanged();
+        }).bounds(this.guiLeft + 5, this.guiTop + 26, 20, 20).build();
+        this.moreSize = Button.builder(Component.literal(">"), button -> {
+            SetupCanvasScreen.this.currentMulti *= 2;
+            handleSizeChanged();
+        }).bounds(this.guiLeft + 83, this.guiTop + 26, 20, 20).build();
+
+        Button doneBtn = Button.builder(Component.translatable("gui.done"), button -> {
             handled = true;
             minecraft.setScreen(null);
             minecraft.setScreen(new DrawScreen((byte) (16 / SetupCanvasScreen.this.currentMulti), pos, facing, state));
-        }));
+        }).bounds(this.guiLeft + 5, this.guiTop + 56, xSize - 8, 20).build();
+
+        addRenderableWidget(doneBtn);
         addRenderableWidget(this.lessSize);
         addRenderableWidget(this.moreSize);
         handleSizeChanged();

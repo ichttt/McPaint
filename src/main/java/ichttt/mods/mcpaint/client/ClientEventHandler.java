@@ -7,20 +7,15 @@ import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.client.render.RenderTypeHandler;
 import ichttt.mods.mcpaint.client.render.TERCanvas;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
-import ichttt.mods.mcpaint.common.EventHandler;
 import ichttt.mods.mcpaint.common.RegistryObjects;
-import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
-import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
-import net.minecraftforge.client.event.ModelEvent.BakingCompleted;
+import net.minecraftforge.client.event.ModelEvent;
 import net.minecraftforge.client.event.ModelEvent.RegisterGeometryLoaders;
 import net.minecraftforge.client.event.RegisterColorHandlersEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -28,10 +23,8 @@ import net.minecraftforge.event.level.LevelEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.event.lifecycle.FMLLoadCompleteEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
@@ -78,7 +71,7 @@ public class ClientEventHandler {
         ClientHooks.onConfigReload();
     }
 
-    public static void onModelBake(BakingCompleted event) {
+    public static void onModelBake(ModelEvent.ModifyBakingResult event) {
         ResourceLocation[] toReplace = RegistryObjects.CANVAS_BLOCKS.values().stream().map(RegistryObject::getId).toArray(ResourceLocation[]::new);
         String[] variants = new String[] {"normal_cube=false,solid=false", "normal_cube=true,solid=false", "normal_cube=false,solid=true", "normal_cube=true,solid=true"};
         for (ResourceLocation rl : toReplace) {

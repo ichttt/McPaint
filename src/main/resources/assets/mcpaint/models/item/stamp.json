@@ -1,7 +1,7 @@
 {
   "parent": "item/generated",
   "textures": {
-    "layer0": "mcpaint:items/stamp"
+    "layer0": "mcpaint:item/stamp"
   },
   "overrides": [
     {

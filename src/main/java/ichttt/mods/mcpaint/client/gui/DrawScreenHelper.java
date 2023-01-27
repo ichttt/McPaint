@@ -1,10 +1,9 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
-import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.VertexFormat;
+import com.mojang.blaze3d.vertex.*;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
@@ -12,25 +11,22 @@ import ichttt.mods.mcpaint.client.render.RenderUtil;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.network.chat.Component;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.Tesselator;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.core.Direction;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.ChatFormatting;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.ClickEvent;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.inventory.InventoryMenu;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.data.ModelData;
 
@@ -42,11 +38,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class DrawScreenHelper {
     private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd_HH.mm.ss");
@@ -270,7 +263,7 @@ public class DrawScreenHelper {
 
 
     private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_) {
-        ResourceLocation resourcelocation = p_184396_1_.getName();
+        ResourceLocation resourcelocation = p_184396_1_.atlasLocation();
         return new ResourceLocation(resourcelocation.getNamespace(), String.format("textures/%s%s", resourcelocation.getPath(), ".png"));
     }
 

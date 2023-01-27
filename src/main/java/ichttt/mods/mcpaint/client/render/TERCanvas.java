@@ -1,24 +1,22 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Axis;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.*;
+import net.minecraft.client.renderer.LevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
-import net.minecraft.client.renderer.blockentity.BlockEntityRenderDispatcher;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
-import com.mojang.math.Matrix4f;
-import com.mojang.math.Vector3f;
+import net.minecraft.core.Direction;
+import org.joml.Matrix4f;
 
 import javax.annotation.Nonnull;
-import java.util.Objects;
 
 public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
     private static final boolean DEBUG = Boolean.getBoolean("mcpaint.tercanvas.debug");
@@ -110,10 +108,10 @@ public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
         matrix.translate(translationXOffset + xOffset, translationYOffset + yOffset, translationZOffset + zOffset);
 
         if (angle != 0)
-            matrix.mulPose(Vector3f.YP.rotationDegrees((angle)));
+            matrix.mulPose(Axis.YP.rotationDegrees((angle)));
         else if (facing.getAxis().isVertical()) {
-            matrix.mulPose(Vector3f.XP.rotationDegrees(facing == Direction.DOWN ? -90.0F : 90.0F));
-            matrix.mulPose(Vector3f.ZP.rotationDegrees(facing == Direction.UP ? 180.0F : 0.0F));
+            matrix.mulPose(Axis.XP.rotationDegrees(facing == Direction.DOWN ? -90.0F : 90.0F));
+            matrix.mulPose(Axis.ZP.rotationDegrees(facing == Direction.UP ? 180.0F : 0.0F));
         }
 
         IPaintable paint = te.getPaintFor(facing);

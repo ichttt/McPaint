@@ -1,22 +1,24 @@
 package ichttt.mods.mcpaint.common.block;
 
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.*;
-import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
-import net.minecraft.world.level.block.RenderShape;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.block.SoundType;
-import net.minecraft.world.level.material.Material;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
-import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Explosion;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.Material;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
@@ -147,7 +149,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getCloneItemStack(canvas.getContainedState(), target, world, pos, player);
+            return state.getCloneItemStack(target, world, pos, player);
         }
         return ItemStack.EMPTY;
     }
@@ -157,7 +159,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().propagatesSkylightDown(canvas.getContainedState(), world, pos);
+            return state.propagatesSkylightDown(world, pos);
         }
         return super.propagatesSkylightDown(state, world, pos);
     }
@@ -167,7 +169,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            state.getBlock().animateTick(canvas.getContainedState(), world, pos, random);
+            state.getBlock().animateTick(state, world, pos, random);
             return;
         }
         super.animateTick(state, world, pos, random);
@@ -178,7 +180,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getLightEmission(canvas.getContainedState(), world, pos);
+            return state.getLightEmission(world, pos);
         }
         return super.getLightEmission(state, world, pos);
     }
@@ -199,7 +201,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().isCollisionShapeFullBlock(canvas.getContainedState(), world, pos);
+            return state.isCollisionShapeFullBlock(world, pos);
         }
         return super.isCollisionShapeFullBlock(state, world, pos);
     }
@@ -209,7 +211,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getBlockSupportShape(canvas.getContainedState(), world, pos);
+            return state.getBlockSupportShape(world, pos);
         }
         return super.getBlockSupportShape(state, world, pos);
     }
@@ -219,7 +221,7 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().isOcclusionShapeFullBlock(canvas.getContainedState(), world, pos);
+            return state.getBlock().isOcclusionShapeFullBlock(state, world, pos);
         }
         return super.isOcclusionShapeFullBlock(state, world, pos);
     }
@@ -229,11 +231,22 @@ public class BlockCanvas extends Block implements EntityBlock {
         TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
         if (canvas != null && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
-            return state.getBlock().getInteractionShape(canvas.getContainedState(), world, pos);
+            return state.getInteractionShape(world, pos);
         }
         return super.getInteractionShape(state, world, pos);
     }
 
+
+
+    @Override
+    public boolean hidesNeighborFace(BlockGetter world, BlockPos pos, BlockState state, BlockState neighborState, Direction dir) {
+        TileEntityCanvas canvas = (TileEntityCanvas) world.getExistingBlockEntity(pos);
+        if (canvas != null && canvas.getContainedState() != null) {
+            state = canvas.getContainedState();
+            return state.getBlock().hidesNeighborFace(world, pos, state, neighborState, dir);
+        }
+        return super.hidesNeighborFace(world, pos, state, neighborState, dir);
+    }
 
 
     public BlockState getStateFrom(BlockGetter world, BlockPos pos, BlockState state) {

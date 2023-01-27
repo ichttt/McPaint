@@ -1,35 +1,37 @@
 package ichttt.mods.mcpaint.common.block;
 
 import ichttt.mods.mcpaint.MCPaint;
-import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.client.render.batch.IOptimisationCallback;
 import ichttt.mods.mcpaint.client.render.batch.RenderCache;
 import ichttt.mods.mcpaint.client.render.batch.SimpleCallback;
-import ichttt.mods.mcpaint.common.EventHandler;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.RegistryObjects;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintValidator;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.common.capability.Paint;
 import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.Tag;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderGetter;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.Connection;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import net.minecraftforge.client.model.data.ModelDataManager;
 import net.minecraftforge.client.model.data.ModelData;
 import net.minecraftforge.client.model.data.ModelProperty;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fml.LogicalSide;
 import net.minecraftforge.fml.util.thread.EffectiveSide;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -49,9 +51,8 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
         super(RegistryObjects.CANVAS_BE.get(), pos, state);
     }
 
-    @Nonnull
     @Override
-    public void saveAdditional(CompoundTag tag) {
+    public void saveAdditional(@NotNull CompoundTag tag) {
         if (this.containedState != null)
             tag.put("blockState", NbtUtils.writeBlockState(this.containedState));
         CompoundTag faces = new CompoundTag();
@@ -68,9 +69,10 @@ public class TileEntityCanvas extends BlockEntity implements IPaintValidator {
     }
 
     @Override
-    public void load(CompoundTag tag) {
+    public void load(@NotNull CompoundTag tag) {
         super.load(tag);
-        this.containedState = tag.contains("blockState", Tag.TAG_COMPOUND) ? NbtUtils.readBlockState(tag.getCompound("blockState")) : null;
+        HolderGetter<Block> holdergetter = this.level != null ? this.level.holderLookup(Registries.BLOCK) : BuiltInRegistries.BLOCK.asLookup();
+        this.containedState = tag.contains("blockState", Tag.TAG_COMPOUND) ? NbtUtils.readBlockState(holdergetter, tag.getCompound("blockState")) : null;
         CompoundTag faces = tag.getCompound("faces");
         for (String key : faces.getAllKeys()) {
             Paint paint = new Paint(this);

@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client.render;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.math.Matrix4f;
+import org.joml.Matrix4f;
 
 public class OptimizedPictureRenderer {
     private final OptimizedPictureData[] dataArray;

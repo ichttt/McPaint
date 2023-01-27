@@ -8,8 +8,10 @@ import ichttt.mods.mcpaint.networking.MessageClearSide;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import ichttt.mods.mcpaint.networking.MessagePaintData;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.CreativeModeTabEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -28,7 +30,7 @@ public class MCPaint {
     public static final String MODID = "mcpaint";
     public static final Logger LOGGER = LogManager.getLogger(MODID);
 
-    private static final String NETWORKING_VERSION = "5";
+    private static final String NETWORKING_VERSION = "6";
     public static SimpleChannel NETWORKING;
 
     public MCPaint() {
@@ -60,25 +62,12 @@ public class MCPaint {
         CapabilityPaintable.register();
     }
 
-    // TOOD deferred
-//    @SubscribeEvent
-//    public static void registerItems(RegistryEvent.Register<Item> event) {
-//        IForgeRegistry<Item> registry = event.getRegistry();
-//        registry.register(new ItemBrush(new ResourceLocation(MCPaint.MODID, "brush")));
-//        registry.register(new ItemStamp(new ResourceLocation(MCPaint.MODID, "stamp")));
-//    }
-//
-//    @SubscribeEvent
-//    public static void registerBlocks(RegistryEvent.Register<Block> event) {
-//        event.getRegistry().register(new BlockCanvas(Material.WOOD, new ResourceLocation(MCPaint.MODID, "canvas_wood")));
-//        event.getRegistry().register(new BlockCanvas(Material.STONE, new ResourceLocation(MCPaint.MODID, "canvas_rock")));
-//        event.getRegistry().register(new BlockCanvas(Material.DIRT, new ResourceLocation(MCPaint.MODID, "canvas_ground")));
-//    }
-//
-//    @SubscribeEvent
-//    @SuppressWarnings("ConstantConditions")
-//    public static void registerTileEntity(RegistryEvent.Register<BlockEntityType<?>> event) {
-//        BlockEntityType<?> type = (BlockEntityType.Builder.of(TileEntityCanvas::new, EventHandler.CANVAS_GROUND, EventHandler.CANVAS_ROCK, EventHandler.CANVAS_WOOD).build(null).setRegistryName(MCPaint.MODID, "canvas_te"));
-//        event.getRegistry().register(type);
-//    }
+    @SubscribeEvent
+    public static void buildContents(CreativeModeTabEvent.BuildContents event) {
+        // Add to ingredients tab
+        if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+            event.accept(RegistryObjects.BRUSH);
+            event.accept(RegistryObjects.STAMP);
+        }
+    }
 }

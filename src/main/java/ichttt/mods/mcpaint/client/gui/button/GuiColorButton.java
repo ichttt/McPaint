@@ -23,22 +23,24 @@ public class GuiColorButton extends AbstractButton {
     @Override
     public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
-        this.isHovered = mouseX >= this.x && mouseY >= this.y && mouseX < this.x + this.width && mouseY < this.y + this.height;
+        int x = this.getX();
+        int y = this.getY();
+        this.isHovered = mouseX >= x && mouseY >= y && mouseX < x + this.width && mouseY < y + this.height;
         if (this.isHovered) {
-            this.vLine(stack, this.x - 1, this.y - 1, this.y + this.height, this.borderColor);
-            this.vLine(stack, this.x + this.width, this.y - 1, this.y + this.height, this.borderColor);
-            this.hLine(stack, this.x - 1, this.x + this.width, this.y - 1, this.borderColor);
-            this.hLine(stack, this.x - 1, this.x + this.width, this.y + this.height, this.borderColor);
+            this.vLine(stack, x - 1, y - 1, y + this.height, this.borderColor);
+            this.vLine(stack, x + this.width, y - 1, y + this.height, this.borderColor);
+            this.hLine(stack, x - 1, x + this.width, y - 1, this.borderColor);
+            this.hLine(stack, x - 1, x + this.width, y + this.height, this.borderColor);
         }
+    }
+
+    @Override
+    protected void updateWidgetNarration(NarrationElementOutput pNarrationElementOutput) {
+        this.defaultButtonNarrationText(pNarrationElementOutput);
     }
 
     @Override
     public void onPress() {
         consumer.accept(color);
-    }
-
-    @Override
-    public void updateNarration(NarrationElementOutput pNarrationElementOutput) {
-        this.defaultButtonNarrationText(pNarrationElementOutput);
     }
 }

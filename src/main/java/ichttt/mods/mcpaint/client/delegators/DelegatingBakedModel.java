@@ -1,15 +1,15 @@
 package ichttt.mods.mcpaint.client.delegators;
 
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.client.renderer.RenderType;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelManager;
-import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.client.ChunkRenderTypeSet;
 import net.minecraftforge.client.model.BakedModelWrapper;
 import net.minecraftforge.client.model.data.ModelData;
@@ -30,6 +30,21 @@ public class DelegatingBakedModel extends BakedModelWrapper<BakedModel> {
             return shapes.getMissingModel();
         else
             return shapes.getBlockModelShaper().getBlockModel(newState);
+    }
+
+    @Override
+    public boolean useAmbientOcclusion() {
+        return true;
+    }
+
+    @Override
+    public boolean useAmbientOcclusion(BlockState state) {
+        return true;
+    }
+
+    @Override
+    public boolean useAmbientOcclusion(BlockState state, RenderType renderType) {
+        return true;
     }
 
     @Override

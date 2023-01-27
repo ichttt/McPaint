@@ -1,6 +1,8 @@
 {
     "pack": {
-        "description": "mcpaint",
-        "pack_format": 5
+        "description": "firstaid resources",
+        "pack_format": 12,
+        "forge:resource_pack_format": 12,
+        "forge:data_pack_format": 10
     }
 }
