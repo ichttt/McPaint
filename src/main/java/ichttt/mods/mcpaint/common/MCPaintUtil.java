@@ -29,7 +29,7 @@ public class MCPaintUtil {
             return true;
         }
 
-        if (Math.sqrt(player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.REACH_DISTANCE.get()).getValue()) + 5)) {
+        if (Math.sqrt(player.distanceToSqr(pos.getX(), pos.getY(), pos.getZ())) > (Math.round(player.getAttribute(ForgeMod.BLOCK_REACH.get()).getValue()) + 5)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is writing to out of reach block!");
             return true;
         }

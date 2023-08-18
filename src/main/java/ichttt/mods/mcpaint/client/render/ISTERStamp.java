@@ -1,19 +1,19 @@
 package ichttt.mods.mcpaint.client.render;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.MultiBufferSource;
-import net.minecraft.client.renderer.block.model.ItemTransforms;
-import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
-import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.BlockEntityWithoutLevelRenderer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.item.ItemPropertyFunction;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.client.renderer.item.ItemPropertyFunction;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
@@ -35,14 +35,14 @@ public class ISTERStamp extends BlockEntityWithoutLevelRenderer implements ItemP
     public void onResourceManagerReload(ResourceManager pResourceManager) {}
 
     @Override
-    public void renderByItem(ItemStack itemStack, ItemTransforms.TransformType transformType, PoseStack matrixStack, MultiBufferSource buffer, int combinedLightIn, int combinedOverlayIn) { //render
+    public void renderByItem(ItemStack itemStack, ItemDisplayContext displayContext, PoseStack poseStack, MultiBufferSource buffer, int packedLight, int packedOverlay) {
         if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), GLFW.GLFW_KEY_LEFT_SHIFT)) {
             IPaintable paint = itemStack.getCapability(CapabilityPaintable.PAINTABLE, null).orElse(null);
             if (paint != null && paint.hasPaintData()) {
-                matrixStack.pushPose();
+                poseStack.pushPose();
                 VertexConsumer vertexBuilder = buffer.getBuffer(RenderTypeHandler.CANVAS);
-                RenderUtil.renderInGame(matrixStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(true), combinedLightIn);
-                matrixStack.popPose();
+                RenderUtil.renderInGame(poseStack.last().pose(), paint.getScaleFactor(), vertexBuilder, paint.getPictureData(true), packedLight);
+                poseStack.popPose();
             }
         }
     }

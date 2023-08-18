@@ -177,11 +177,9 @@ public class DrawScreenHelper {
         //we batch everything together to increase the performance
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
         RenderUtil.renderInGui(stack.last().pose(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
-        RenderSystem.disableTexture();
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         tessellator.end();
-        RenderSystem.enableTexture();
         RenderSystem.disableBlend();
     }
 

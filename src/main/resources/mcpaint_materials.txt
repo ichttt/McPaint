@@ -1,4 +1,4 @@
-1.19.3
+1.19.4
 f_76296_,air
 f_164531_,amethyst
 f_76271_,bamboo
@@ -10,6 +10,7 @@ f_76277_,cactus
 f_76287_,cake
 f_76313_,clay
 f_76299_,cloth_decoration
+f_271196_,decorated_pot
 f_76310_,decoration
 f_76286_,egg
 f_76273_,explosive
