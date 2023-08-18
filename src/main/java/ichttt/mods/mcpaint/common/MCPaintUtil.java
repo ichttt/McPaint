@@ -8,11 +8,11 @@ import ichttt.mods.mcpaint.networking.MessagePaintData;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
 import it.unimi.dsi.fastutil.ints.Int2ByteOpenHashMap;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
-import net.minecraft.core.BlockPos;
 import net.minecraftforge.common.ForgeMod;
 import net.minecraftforge.network.NetworkDirection;
 import net.minecraftforge.network.NetworkEvent;
@@ -53,12 +53,11 @@ public class MCPaintUtil {
     }
 
     public static void uploadPictureToServer(@Nullable BlockEntity te, Direction facing, byte scaleFactor, int[][] picture, boolean clear) {
-        if (!(te instanceof TileEntityCanvas)) {
+        if (!(te instanceof TileEntityCanvas canvas)) {
             MCPaint.LOGGER.error("Could not set paint! Found block " + (te == null ? "NONE" : te.getType()));
             Minecraft.getInstance().player.displayClientMessage(Component.literal("Could not set paint!"), true);
             return;
         }
-        TileEntityCanvas canvas = (TileEntityCanvas) te;
         if (clear) {
             MCPaint.NETWORKING.sendToServer(new MessageClearSide(te.getBlockPos(), facing));
             canvas.removePaint(facing);

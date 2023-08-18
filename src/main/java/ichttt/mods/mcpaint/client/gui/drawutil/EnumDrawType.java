@@ -1,6 +1,5 @@
 package ichttt.mods.mcpaint.client.gui.drawutil;
 
-import ichttt.mods.mcpaint.client.gui.DrawScreen;
 import ichttt.mods.mcpaint.client.gui.DrawScreenHelper;
 
 import javax.annotation.Nonnull;

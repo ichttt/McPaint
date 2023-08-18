@@ -1,29 +1,26 @@
 package ichttt.mods.mcpaint.common.item;
 
-import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.MCPaintConfig;
 import ichttt.mods.mcpaint.client.ClientHooks;
-import ichttt.mods.mcpaint.client.render.ISTERStamp;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import ichttt.mods.mcpaint.common.capability.CapabilityPaintable;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Pose;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.core.Direction;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.phys.HitResult;
-import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.fml.DistExecutor;
@@ -59,8 +56,7 @@ public class ItemStamp extends ItemBrush {
             facing = facing.getOpposite();
             if (state.getBlock() instanceof BlockCanvas) {
                 BlockEntity te = world.getBlockEntity(pos);
-                if (te instanceof TileEntityCanvas) {
-                    TileEntityCanvas canvas = (TileEntityCanvas) te;
+                if (te instanceof TileEntityCanvas canvas) {
                     if (canvas.hasPaintFor(facing)) {
                         paint.copyFrom(canvas.getPaintFor(facing), canvas, facing);
                         return InteractionResult.SUCCESS;

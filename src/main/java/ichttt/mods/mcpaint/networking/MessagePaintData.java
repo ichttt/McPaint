@@ -8,14 +8,14 @@ import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.BlockCanvas;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
-import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.client.Minecraft;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
@@ -137,7 +137,6 @@ public class MessagePaintData {
     public static class ServerHandler {
         public static final ServerHandler INSTANCE = new ServerHandler();
 
-        @SuppressWarnings("UnstableApiUsage")
         private final Multimap<BlockPos, MessagePaintData> partMap = MultimapBuilder.hashKeys().hashSetValues().build();
 
         public void onMessage(MessagePaintData message, Supplier<NetworkEvent.Context> supplier) {
@@ -176,11 +175,10 @@ public class MessagePaintData {
             }
 
             BlockEntity te = player.level.getBlockEntity(pos);
-            if (!(te instanceof TileEntityCanvas)) {
+            if (!(te instanceof TileEntityCanvas canvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - TE invalid");
                 return;
             }
-            TileEntityCanvas canvas = (TileEntityCanvas) te;
             if (data == null)
                 canvas.removePaint(facing);
             else
@@ -208,11 +206,10 @@ public class MessagePaintData {
             }
 
             BlockEntity te = world.getBlockEntity(pos);
-            if (!(te instanceof TileEntityCanvas)) {
+            if (!(te instanceof TileEntityCanvas canvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " when updating data - TE invalid");
                 return;
             }
-            TileEntityCanvas canvas = (TileEntityCanvas) te;
             canvas.getPaintFor(facing).setDataWithPalette(scale, data, palette, canvas, facing);
             te.setChanged();
         }

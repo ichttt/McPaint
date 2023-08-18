@@ -79,7 +79,7 @@ public class PixelRect implements Iterable<PixelLine> {
         return aDiff + rDiff + gDiff + bDiff;
     }
 
-    private int diff(int a, int b) {
+    private static int diff(int a, int b) {
         return Math.abs(a - b);
     }
 }

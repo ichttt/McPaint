@@ -2,11 +2,7 @@ package ichttt.mods.mcpaint.common.capability;
 
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import it.unimi.dsi.fastutil.ints.Int2ByteMap;
-import net.minecraft.nbt.ByteArrayTag;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.IntArrayTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import net.minecraft.nbt.*;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.CapabilityManager;
 import net.minecraftforge.common.capabilities.CapabilityToken;
@@ -16,7 +12,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 public class CapabilityPaintable {
 
-    public static Capability<IPaintable> PAINTABLE = CapabilityManager.get(new CapabilityToken<>() {});;
+    public static final Capability<IPaintable> PAINTABLE = CapabilityManager.get(new CapabilityToken<>() {});
 
     public static void register() {
         IEventBus modBus = FMLJavaModLoadingContext.get().getModEventBus();

@@ -35,36 +35,36 @@ public class TERCanvas implements BlockEntityRenderer<TileEntityCanvas> {
         double translationYOffset = 0D;
         double translationZOffset = 0D;
         switch (facing) {
-            case NORTH:
+            case NORTH -> {
                 angle = 0;
                 zOffset = 1;
                 translationZOffset = 0.0015D;
-                break;
-            case EAST:
+            }
+            case EAST -> {
                 angle = 270;
                 translationXOffset = -0.0015D;
-                break;
-            case SOUTH:
+            }
+            case SOUTH -> {
                 angle = 180;
                 xOffset = 1;
                 translationZOffset = -0.0015D;
-                break;
-            case WEST:
+            }
+            case WEST -> {
                 angle = 90;
                 xOffset = 1;
                 zOffset = 1;
                 translationXOffset = 0.0015D;
-                break;
-            case UP:
+            }
+            case UP -> {
                 xOffset = 1;
                 zOffset = 1;
                 translationYOffset = -0.0015D;
-                break;
-            case DOWN:
+            }
+            case DOWN -> {
                 yOffset = 1;
                 zOffset = 1;
                 translationYOffset = 0.0015D;
-                break;
+            }
         }
         if (playerDistSq < 16D) { //4
             translationXOffset /= 2D;

@@ -1,10 +1,9 @@
 package ichttt.mods.mcpaint.client.render.batch;
 
 import ichttt.mods.mcpaint.MCPaintConfig;
-import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
-import ichttt.mods.mcpaint.client.render.TERCanvas;
 import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
-import ichttt.mods.mcpaint.common.MCPaintUtil;
+import ichttt.mods.mcpaint.client.render.TERCanvas;
+import ichttt.mods.mcpaint.client.render.buffer.BufferManager;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
 
 public class PictureOptimizationJob implements Runnable {

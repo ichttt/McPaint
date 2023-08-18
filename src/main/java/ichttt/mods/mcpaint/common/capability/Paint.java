@@ -124,8 +124,7 @@ public class Paint implements IPaintable {
     public boolean equals(Object obj) {
         if (obj == this)
             return true;
-        if (obj instanceof Paint) {
-            Paint paint = (Paint) obj;
+        if (obj instanceof Paint paint) {
             return Arrays.deepEquals(paint.pictureData, this.pictureData);
         }
         return false;

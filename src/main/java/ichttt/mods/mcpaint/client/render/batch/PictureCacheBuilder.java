@@ -2,11 +2,11 @@ package ichttt.mods.mcpaint.client.render.batch;
 
 import com.google.common.base.Stopwatch;
 import ichttt.mods.mcpaint.MCPaint;
+import ichttt.mods.mcpaint.client.render.OptimizedPictureData;
+import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelInfo;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelLine;
 import ichttt.mods.mcpaint.client.render.batch.pixel.PixelRect;
-import ichttt.mods.mcpaint.client.render.OptimizedPictureData;
-import ichttt.mods.mcpaint.client.render.OptimizedPictureRenderer;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class PictureCacheBuilder {
 
@@ -101,7 +100,7 @@ public class PictureCacheBuilder {
         MCPaint.LOGGER.debug("Merged {} pixels in picture to {} rectangles in {} ms", pixelsToDraw, allRects.size(), stopwatch.elapsed(TimeUnit.MILLISECONDS));
         allRects = LossyCompression.colorCompress(maxTotalVar, maxSingleVar, allRects);
         if (shouldDiscard.apply(allRects.size())) return null;
-        List<List<PixelInfo>> mergedDrawList = allRects.stream().map(PixelRect::getMergedLines).collect(Collectors.toList());
+        List<List<PixelInfo>> mergedDrawList = allRects.stream().map(PixelRect::getMergedLines).toList();
         stopwatch.reset();
         stopwatch.start();
         //Create the data
@@ -126,8 +125,6 @@ public class PictureCacheBuilder {
             float bottomDraw = 1 - (((bottom + 1) * scaleFactor) / 128F);
             OptimizedPictureData data = new OptimizedPictureData(color, leftDraw, topDraw, rightDraw, bottomDraw);
             dataArray[i] = data;
-//            if (PictureRenderer.drawToBuffer(Matrix4f.makeTranslate(0,0,0), color, cachedBufferBuilder, leftDraw, topDraw, rightDraw, bottomDraw))
-//                MCPaint.LOGGER.warn("Region left={} right={} top={} bottom={} color{} has not been filtered out from batched picture!", left, right, top, bottom, color);
         }
         stopwatch.stop();
         MCPaint.LOGGER.debug("Build {} instructions in {} us", dataArray.length, stopwatch.elapsed(TimeUnit.MICROSECONDS));

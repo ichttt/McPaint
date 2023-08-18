@@ -32,8 +32,7 @@ public class PixelInfo {
     public boolean equals(Object obj) {
         if (obj == this)
             return true;
-        if (obj instanceof PixelInfo) {
-            PixelInfo other = (PixelInfo) obj;
+        if (obj instanceof PixelInfo other) {
             return this.color == other.color && this.x == other.x && this.y == other.y;
         }
         return false;

@@ -80,8 +80,7 @@ public class BlockCanvas extends Block implements EntityBlock {
 
     @Override
     public void playerDestroy(@Nonnull Level world, Player player, @Nonnull BlockPos pos, @Nonnull BlockState state, @Nullable BlockEntity te, ItemStack stack) {
-        if (te instanceof TileEntityCanvas && ((TileEntityCanvas) te).getContainedState() != null) {
-            TileEntityCanvas canvas = (TileEntityCanvas) te;
+        if (te instanceof TileEntityCanvas canvas && ((TileEntityCanvas) te).getContainedState() != null) {
             state = canvas.getContainedState();
             state.getBlock().playerDestroy(world, player, pos, state, te, stack);
             return;
@@ -129,8 +128,7 @@ public class BlockCanvas extends Block implements EntityBlock {
     @Override
     public VoxelShape getVisualShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
         BlockEntity te = world.getBlockEntity(pos);
-        if (te instanceof TileEntityCanvas) { // Got some crashes because decocraft seems to wrap tileentites
-            TileEntityCanvas canvas = (TileEntityCanvas) te;
+        if (te instanceof TileEntityCanvas canvas) { // Got some crashes because decocraft seems to wrap tileentites
             if (canvas.getContainedState() != null) {
                 return canvas.getContainedState().getVisualShape(world, pos, context);
             }

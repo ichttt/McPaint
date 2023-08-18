@@ -2,11 +2,11 @@ package ichttt.mods.mcpaint.networking;
 
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.block.TileEntityCanvas;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.core.Direction;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraftforge.network.NetworkEvent;
 
 import java.util.function.Supplier;
@@ -36,8 +36,7 @@ public class MessageDrawAbort {
                 if (MCPaintUtil.isPosInvalid(player, message.pos)) return;
 
                 BlockEntity te = player.level.getBlockEntity(message.pos);
-                if (te instanceof TileEntityCanvas) {
-                    TileEntityCanvas canvas = (TileEntityCanvas) te;
+                if (te instanceof TileEntityCanvas canvas) {
                     boolean hasData = false;
                     for (Direction facing : Direction.values()) {
                         if (canvas.hasPaintFor(facing)) {
