@@ -175,8 +175,8 @@ public class BlockCanvas extends Block implements EntityBlock {
 
     @Override
     public int getLightEmission(BlockState state, BlockGetter world, BlockPos pos) {
-        TileEntityCanvas canvas = (TileEntityCanvas) world.getBlockEntity(pos);
-        if (canvas != null && canvas.getContainedState() != null) {
+        BlockEntity te = world.getBlockEntity(pos);
+        if (te instanceof TileEntityCanvas canvas && canvas.getContainedState() != null) {
             state = canvas.getContainedState();
             return state.getLightEmission(world, pos);
         }
