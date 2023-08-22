@@ -1,7 +1,7 @@
 package ichttt.mods.mcpaint.client.gui.button;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumPaintColor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 
@@ -21,16 +21,16 @@ public class GuiColorButton extends AbstractButton {
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (!this.visible) return;
         int x = this.getX();
         int y = this.getY();
         this.isHovered = mouseX >= x && mouseY >= y && mouseX < x + this.width && mouseY < y + this.height;
         if (this.isHovered) {
-            this.vLine(stack, x - 1, y - 1, y + this.height, this.borderColor);
-            this.vLine(stack, x + this.width, y - 1, y + this.height, this.borderColor);
-            this.hLine(stack, x - 1, x + this.width, y - 1, this.borderColor);
-            this.hLine(stack, x - 1, x + this.width, y + this.height, this.borderColor);
+            guiGraphics.vLine(x - 1, y - 1, y + this.height, this.borderColor);
+            guiGraphics.vLine(x + this.width, y - 1, y + this.height, this.borderColor);
+            guiGraphics.hLine(x - 1, x + this.width, y - 1, this.borderColor);
+            guiGraphics.hLine(x - 1, x + this.width, y + this.height, this.borderColor);
         }
     }
 

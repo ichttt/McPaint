@@ -23,7 +23,7 @@ import java.util.Objects;
 
 public class MCPaintUtil {
     public static boolean isPosInvalid(ServerPlayer player, BlockPos pos) {
-        if (!player.level.hasChunkAt(pos)) {
+        if (!player.level().hasChunkAt(pos)) {
             MCPaint.LOGGER.warn("Player" + player.getName() + " is trying to write to unloaded block");
             player.connection.disconnect(Component.literal("Trying to write to unloaded block"));
             return true;

@@ -21,13 +21,12 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.PushReaction;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.extensions.common.IClientItemExtensions;
 import net.minecraftforge.fml.DistExecutor;
-import net.minecraftforge.registries.RegistryObject;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -80,28 +79,19 @@ public class ItemBrush extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        if (Block.canSupportCenter(world, pos, facing) && state.getMaterial().isSolidBlocking() /*&& state.isFullBlock() == state.isFullCube()*/ &&
-                /*state.isFullCube() == state.isBlockNormalCube() &&*/ state.getRenderShape() == RenderShape.MODEL && !(state.getBlock() instanceof EntityBlock)) {
+        if (Block.canSupportCenter(world, pos, facing) &&
+                state.shouldSpawnParticlesOnBreak() &&
+                state.getPistonPushReaction() == PushReaction.NORMAL &&
+                state.getRenderShape() == RenderShape.MODEL &&
+                !(state.getBlock() instanceof EntityBlock)) {
             Set<Direction> disallowedFaces = EnumSet.noneOf(Direction.class);
             for (Direction testFacing : Direction.values()) {
                 if (!Block.canSupportCenter(world, pos, testFacing))
                     disallowedFaces.add(testFacing);
             }
-            Block block = null;
-            RegistryObject<Block> blockRegistryObject = RegistryObjects.CANVAS_BLOCKS.get(state.getMaterial());
-            if (blockRegistryObject != null) {
-                block = blockRegistryObject.get();
-            }
-            if (block == null) {
-                if (state.getMaterial().isFlammable())
-                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.WOOD).get();
-                else if (!state.requiresCorrectToolForDrops())
-                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.DIRT).get();
-                else
-                    block = RegistryObjects.CANVAS_BLOCKS.get(Material.STONE).get();
-            }
+            BlockCanvas canvasBlock = RegistryObjects.CANVAS_BLOCK.get();
 
-            world.setBlockAndUpdate(pos, ((BlockCanvas) block).getStateFrom(world, pos, state));
+            world.setBlockAndUpdate(pos, canvasBlock.getStateFrom(world, pos, state));
             TileEntityCanvas canvas = (TileEntityCanvas) Objects.requireNonNull(world.getBlockEntity(pos));
             canvas.setInitialData(state, disallowedFaces);
             canvas.setChanged();

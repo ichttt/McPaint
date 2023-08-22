@@ -11,7 +11,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.event.CreativeModeTabEvent;
+import net.minecraftforge.event.BuildCreativeModeTabContentsEvent;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.DistExecutor;
@@ -63,9 +63,9 @@ public class MCPaint {
     }
 
     @SubscribeEvent
-    public static void buildContents(CreativeModeTabEvent.BuildContents event) {
+    public static void buildContents(BuildCreativeModeTabContentsEvent event) {
         // Add to ingredients tab
-        if (event.getTab() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
+        if (event.getTabKey() == CreativeModeTabs.TOOLS_AND_UTILITIES) {
             event.accept(RegistryObjects.BRUSH);
             event.accept(RegistryObjects.STAMP);
         }

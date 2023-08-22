@@ -1,8 +1,0 @@
-{
-  "variants": {
-    "solid=false,normal_cube=false": {"model": "builtin/generated"},
-    "solid=false,normal_cube=true": {"model": "builtin/generated"},
-    "solid=true,normal_cube=false": {"model": "builtin/generated"},
-    "solid=true,normal_cube=true": {"model": "builtin/generated"}
-  }
-}

@@ -168,13 +168,13 @@ public class MessagePaintData {
             ServerPlayer player = MCPaintUtil.checkServer(ctx);
             if (MCPaintUtil.isPosInvalid(player, pos)) return;
 
-            BlockState state = player.level.getBlockState(pos);
+            BlockState state = player.level().getBlockState(pos);
             if (!(state.getBlock() instanceof BlockCanvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - Block invalid");
                 return;
             }
 
-            BlockEntity te = player.level.getBlockEntity(pos);
+            BlockEntity te = player.level().getBlockEntity(pos);
             if (!(te instanceof TileEntityCanvas canvas)) {
                 MCPaint.LOGGER.warn("Invalid block at pos " + pos + " has been selected by player " + player.getName() + " - TE invalid");
                 return;

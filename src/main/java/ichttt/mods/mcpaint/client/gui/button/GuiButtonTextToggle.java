@@ -1,8 +1,8 @@
 package ichttt.mods.mcpaint.client.gui.button;
 
-import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.network.chat.Component;
 
@@ -21,18 +21,18 @@ public class GuiButtonTextToggle extends Button {
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         if (this.visible) {
             //GuiHollowButton
             if (toggled) {
                 int x = this.getX();
                 int y = this.getY();
-                this.vLine(stack, x - 1, y - 1, y + this.height, this.color);
-                this.vLine(stack, x + this.width, y - 1, y + this.height, this.color);
-                this.hLine(stack, x - 1, x + this.width, y - 1, this.color);
-                this.hLine(stack, x - 1, x + this.width, y + this.height, this.color);
+                guiGraphics.vLine(x - 1, y - 1, y + this.height, this.color);
+                guiGraphics.vLine(x + this.width, y - 1, y + this.height, this.color);
+                guiGraphics.hLine(x - 1, x + this.width, y - 1, this.color);
+                guiGraphics.hLine(x - 1, x + this.width, y + this.height, this.color);
             }
-            super.render(stack, mouseX, mouseY, partialTicks);
+            super.render(guiGraphics, mouseX, mouseY, partialTicks);
         }
     }
 }

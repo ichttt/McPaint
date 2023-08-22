@@ -13,7 +13,7 @@ import ichttt.mods.mcpaint.common.capability.IPaintable;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiComponent;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
@@ -146,10 +146,11 @@ public class DrawScreenHelper {
         }
     }
 
-    public void renderBackgroundBlock(PoseStack stack, int startLeft, int startTop) {
+    public void renderBackgroundBlock(GuiGraphics guiGraphics, int startLeft, int startTop) {
         Minecraft mc = Minecraft.getInstance();
         RandomSource randomSource = RandomSource.create();
         ChunkRenderTypeSet renderTypes = model.getRenderTypes(state, randomSource, ModelData.EMPTY);
+        PoseStack stack = guiGraphics.pose();
         for (RenderType renderType : renderTypes) {
             List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), randomSource, ModelData.EMPTY, renderType);
             for (BakedQuad quad : quads) {
@@ -164,19 +165,19 @@ public class DrawScreenHelper {
                     float blue = (float) (color & 255) / 255.0F;
                     RenderSystem.setShaderColor(red, green, blue, 1F);
                 }
-                GuiComponent.blit(stack, startLeft, startTop, -1, 128, 128, sprite);
+                guiGraphics.blit(startLeft, startTop, -1, 128, 128, sprite);
                 stack.popPose();
             }
         }
     }
 
-    public void renderImage(PoseStack stack, int startLeft, int startTop, int[][] toDraw) {
+    public void renderImage(GuiGraphics graphics, int startLeft, int startTop, int[][] toDraw) {
         Tesselator tessellator = Tesselator.getInstance();
         BufferBuilder buffer = tessellator.getBuilder();
         //draw picture
         //we batch everything together to increase the performance
         buffer.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
-        RenderUtil.renderInGui(stack.last().pose(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
+        RenderUtil.renderInGui(graphics.pose().last().pose(), startLeft, startTop, this.currentState.scaleFactor, buffer, toDraw);
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA, GlStateManager.SourceFactor.ONE, GlStateManager.DestFactor.ZERO);
         tessellator.end();

@@ -8,7 +8,7 @@ authors="ichttt"
 license="GPL Version 3"
 [[mods]]
     modId="mcpaint"
-    version="${file.jarVersion}"
+    version="${mod_version}"
     displayName="Mc Paint"
     description='''Paint your blocks the way you want them to be!
 The mod adds two items, a brush and a stamp. The brush can be crafted like a pickaxe but with wool instead of your pickaxe material at the top.
@@ -17,7 +17,7 @@ The resolution can be changed from 8x8 up to 128x128 for a single block.'''
 [[dependencies.mcpaint]]
     modId="minecraft"
     mandatory=true
-    versionRange="[1.19.3,1.20)"
+    versionRange="[1.20.1,1.21)"
     ordering="NONE"
     side="BOTH"
 #[[dependencies.mcpaint]]

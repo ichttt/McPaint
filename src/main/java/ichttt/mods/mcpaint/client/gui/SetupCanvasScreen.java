@@ -1,9 +1,8 @@
 package ichttt.mods.mcpaint.client.gui;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.networking.MessageDrawAbort;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.BlockPos;
@@ -70,12 +69,11 @@ public class SetupCanvasScreen extends Screen {
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShaderTexture(0, BACKGROUND);
-        blit(stack, this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
-        this.drawCenteredString(stack, minecraft.font, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
-        this.drawCenteredString(stack, minecraft.font, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
-        super.render(stack, mouseX, mouseY, partialTicks);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        guiGraphics.blit(BACKGROUND, this.guiLeft, this.guiTop, 0, yOffset, xSize, ySize);
+        guiGraphics.drawCenteredString(minecraft.font, "Resolution:", this.guiLeft + (xSize / 2) + 1, this.guiTop + 8, Color.WHITE.getRGB());
+        guiGraphics.drawCenteredString(minecraft.font, this.baseX * this.currentMulti + "x" + this.baseY * this.currentMulti, this.guiLeft + (xSize / 2) + 1, this.guiTop + 32, Color.WHITE.getRGB());
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
 
     @Override

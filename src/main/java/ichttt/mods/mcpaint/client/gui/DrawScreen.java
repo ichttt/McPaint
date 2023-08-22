@@ -1,8 +1,6 @@
 package ichttt.mods.mcpaint.client.gui;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
 import ichttt.mods.mcpaint.MCPaint;
 import ichttt.mods.mcpaint.client.gui.button.GuiButtonTextToggle;
 import ichttt.mods.mcpaint.client.gui.button.GuiColorButton;
@@ -10,6 +8,7 @@ import ichttt.mods.mcpaint.client.gui.drawutil.EnumDrawType;
 import ichttt.mods.mcpaint.client.gui.drawutil.PictureState;
 import ichttt.mods.mcpaint.common.MCPaintUtil;
 import ichttt.mods.mcpaint.common.capability.IPaintable;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Renderable;
 import net.minecraft.client.gui.components.events.GuiEventListener;
@@ -157,26 +156,25 @@ public class DrawScreen extends Screen implements IDrawGuiCallback {
     }
 
     @Override
-    public void render(PoseStack stack, int mouseX, int mouseY, float partialTicks) {
-        RenderSystem.setShaderTexture(0, BACKGROUND);
+    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
         //main
-        this.blit(stack, this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
+        guiGraphics.blit(BACKGROUND, this.guiLeft, this.guiTop, 0, 0, xSize, ySize);
         //color
-        this.blit(stack, this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        guiGraphics.blit(BACKGROUND, this.guiLeft + xSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //tools
-        this.blit(stack, this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
+        guiGraphics.blit(BACKGROUND, this.guiLeft - toolXSize, this.guiTop, xSize, 0, toolXSize, toolYSize);
         //size
         if (this.helper.hasSizeWindow()) {
-            this.blit(stack, this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
-            drawCenteredString(stack, this.font, helper.toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
+            guiGraphics.blit(BACKGROUND, this.guiLeft - toolXSize, this.guiTop + toolYSize + 1, xSize, toolYSize + 1, sizeXSize, sizeYSize);
+            guiGraphics.drawCenteredString(this.font, helper.toolSize + "", this.guiLeft - toolXSize + 40, this.guiTop + toolYSize + 11, Color.WHITE.getRGB());
         }
 
         //Background block
-        helper.renderBackgroundBlock(stack, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP);
+        helper.renderBackgroundBlock(guiGraphics, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP);
 
-        super.render(stack, mouseX, mouseY, partialTicks);
+        super.render(guiGraphics, mouseX, mouseY, partialTicks);
 
-        fill(stack, this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.helper.color.getRGB());
+        guiGraphics.fill(this.guiLeft + 138, this.guiTop + 125, this.guiLeft + 138 + 32, this.guiTop + 125 + 32, this.helper.color.getRGB());
 
         int offsetMouseX = offsetMouseX(mouseX) ;
         int offsetMouseY = offsetMouseY(mouseY);
@@ -191,7 +189,7 @@ public class DrawScreen extends Screen implements IDrawGuiCallback {
 
         //draw picture
         //we batch everything together to increase the performance
-        helper.renderImage(stack, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, toDraw);
+        helper.renderImage(guiGraphics, this.guiLeft + PICTURE_START_LEFT, this.guiTop + PICTURE_START_TOP, toDraw);
     }
 
     @Override

@@ -12,7 +12,6 @@ import net.minecraft.client.renderer.item.ItemProperties;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.ModelEvent;
@@ -27,10 +26,8 @@ import net.minecraftforge.fml.event.config.ModConfigEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.ForgeRegistries;
-import net.minecraftforge.registries.RegistryObject;
 
 import java.util.Objects;
-import java.util.function.Supplier;
 
 public class ClientEventHandler {
 
@@ -72,16 +69,14 @@ public class ClientEventHandler {
     }
 
     public static void onModelBake(ModelEvent.ModifyBakingResult event) {
-        ResourceLocation[] toReplace = RegistryObjects.CANVAS_BLOCKS.values().stream().map(RegistryObject::getId).toArray(ResourceLocation[]::new);
+        ResourceLocation toReplace = RegistryObjects.CANVAS_BLOCK.getId();
         String[] variants = new String[] {"normal_cube=false,solid=false", "normal_cube=true,solid=false", "normal_cube=false,solid=true", "normal_cube=true,solid=true"};
-        for (ResourceLocation rl : toReplace) {
-            for (String variant : variants) {
-                ModelResourceLocation mrl = new ModelResourceLocation(rl, variant);
-                BakedModel model = event.getModels().get(mrl);
-                if (model == null) throw new NullPointerException("Model for " + mrl);
-                model = new DelegatingBakedModel(model);
-                event.getModels().put(mrl, model);
-            }
+        for (String variant : variants) {
+            ModelResourceLocation mrl = new ModelResourceLocation(toReplace, variant);
+            BakedModel model = event.getModels().get(mrl);
+            if (model == null) throw new NullPointerException("Model for " + mrl);
+            model = new DelegatingBakedModel(model);
+            event.getModels().put(mrl, model);
         }
     }
 
@@ -90,6 +85,6 @@ public class ClientEventHandler {
     }
 
     public static void onRegisterColorHandlers(RegisterColorHandlersEvent.Block event) {
-        event.register(new BlockColorDelegator(), RegistryObjects.CANVAS_BLOCKS.values().stream().map(Supplier::get).toArray(Block[]::new));
+        event.register(new BlockColorDelegator(), RegistryObjects.CANVAS_BLOCK.get());
     }
 }
