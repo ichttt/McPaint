@@ -2,6 +2,7 @@ package ichttt.mods.mcpaint.client.gui;
 
 import com.google.common.base.Preconditions;
 import com.mojang.blaze3d.platform.GlStateManager;
+import com.mojang.blaze3d.platform.NativeImage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import ichttt.mods.mcpaint.MCPaint;
@@ -23,7 +24,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.FastColor;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,7 +36,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -99,6 +99,7 @@ public class DrawScreenHelper {
     public void saveImage() {
         try {
             saveImage(true);
+            saveImage(false);
         } catch (IOException e) {
             MCPaint.LOGGER.error("Could not save image!", e);
             Minecraft minecraft = Minecraft.getInstance();
@@ -260,12 +261,6 @@ public class DrawScreenHelper {
         return false;
     }
 
-
-    private ResourceLocation getResourceLocation(TextureAtlasSprite p_184396_1_) {
-        ResourceLocation resourcelocation = p_184396_1_.atlasLocation();
-        return new ResourceLocation(resourcelocation.getNamespace(), String.format("textures/%s%s", resourcelocation.getPath(), ".png"));
-    }
-
     private void saveImage(boolean background) throws IOException {
         Minecraft minecraft = Minecraft.getInstance();
         BufferedImage paint = new BufferedImage(128 / this.currentState.scaleFactor, 128 / this.currentState.scaleFactor, BufferedImage.TYPE_INT_ARGB);
@@ -283,27 +278,40 @@ public class DrawScreenHelper {
                 List<BakedQuad> quads = model.getQuads(state, facing.getOpposite(), randomSource, ModelData.EMPTY, renderType);
                 for (BakedQuad quad : quads) {
                     TextureAtlasSprite sprite = quad.getSprite();
-                    try (InputStream stream = minecraft.getResourceManager().open(getResourceLocation(sprite))) {
-                        Image image = ImageIO.read(stream);
-                        if (quad.isTinted()) {
-                            int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
-                            float red = (float) (color >> 16 & 255) / 255.0F;
-                            float green = (float) (color >> 8 & 255) / 255.0F;
-                            float blue = (float) (color & 255) / 255.0F;
-                            BufferedImage asBufferedImage = (BufferedImage) image;
-                            for (int x = 0; x < asBufferedImage.getWidth(); x++) {
-                                for (int y = 0; y < asBufferedImage.getHeight(); y++) {
-                                    Color originalColor = new Color(asBufferedImage.getRGB(x, y), true);
-                                    int newRed = Math.round(originalColor.getRed() * red);
-                                    int newGreen = Math.round(originalColor.getGreen() * green);
-                                    int newBlue = Math.round(originalColor.getBlue() * blue);
-                                    asBufferedImage.setRGB(x, y, new Color(newRed, newGreen, newBlue, originalColor.getAlpha()).getRGB());
-                                }
+                    NativeImage originalImage = sprite.contents().getOriginalImage();
+                    BufferedImage image = new BufferedImage(originalImage.getWidth(), originalImage.getHeight(), BufferedImage.TYPE_INT_ARGB);
+                    if (quad.isTinted()) {
+                        int color = minecraft.getBlockColors().getColor(state, minecraft.level, pos, quad.getTintIndex());
+                        float red = (float) (color >> 16 & 255) / 255.0F;
+                        float green = (float) (color >> 8 & 255) / 255.0F;
+                        float blue = (float) (color & 255) / 255.0F;
+                        for (int x = 0; x < image.getWidth(); x++) {
+                            for (int y = 0; y < image.getHeight(); y++) {
+                                int pixelRGBA = originalImage.getPixelRGBA(x, y);
+                                int origAlpha = FastColor.ABGR32.alpha(pixelRGBA);
+                                int origBlue = FastColor.ABGR32.blue(pixelRGBA);
+                                int origGreen = FastColor.ABGR32.green(pixelRGBA);
+                                int origRed = FastColor.ABGR32.red(pixelRGBA);
+                                int newRed = Math.round(origRed * red);
+                                int newGreen = Math.round(origGreen * green);
+                                int newBlue = Math.round(origBlue * blue);
+                                image.setRGB(x, y, new Color(newRed, newGreen, newBlue, origAlpha).getRGB());
                             }
                         }
-                        image = image.getScaledInstance(output.getWidth(), output.getHeight(), Image.SCALE_FAST);
-                        output.getGraphics().drawImage(image, 0, 0, null);
+                    } else {
+                        for (int x = 0; x < image.getWidth(); x++) {
+                            for (int y = 0; y < image.getHeight(); y++) {
+                                int pixelRGBA = originalImage.getPixelRGBA(x, y);
+                                int origAlpha = FastColor.ABGR32.alpha(pixelRGBA);
+                                int origBlue = FastColor.ABGR32.blue(pixelRGBA);
+                                int origGreen = FastColor.ABGR32.green(pixelRGBA);
+                                int origRed = FastColor.ABGR32.red(pixelRGBA);
+                                image.setRGB(x, y, new Color(origRed, origGreen, origBlue, origAlpha).getRGB());
+                            }
+                        }
                     }
+                    Image scaledImage = image.getScaledInstance(output.getWidth(), output.getHeight(), Image.SCALE_FAST);
+                    output.getGraphics().drawImage(scaledImage, 0, 0, null);
                 }
             }
         }
@@ -312,7 +320,7 @@ public class DrawScreenHelper {
         File file = new File(minecraft.gameDirectory, "paintings");
         if (!file.exists() && !file.mkdir())
             throw new IOException("Could not create folder");
-        final File finalFile = getTimestampedPNGFileForDirectory(file);
+        final File finalFile = getTimestampedPNGFileForDirectory(file, background);
         if (!ImageIO.write(output, "png", finalFile))
             throw new IOException("Could not encode image as png!");
         MutableComponent component = Component.literal(finalFile.getName());
@@ -321,12 +329,12 @@ public class DrawScreenHelper {
     }
 
     //See ScreenShotHelper
-    private static File getTimestampedPNGFileForDirectory(File gameDirectory) {
+    private static File getTimestampedPNGFileForDirectory(File gameDirectory, boolean background) {
         String s = DATE_FORMAT.format(new Date());
         int i = 1;
 
         while(true) {
-            File file1 = new File(gameDirectory, s + (i == 1 ? "" : "_" + i) + ".png");
+            File file1 = new File(gameDirectory, s + (i == 1 ? "" : "_" + i) + (background ? "_with_background" : "") + ".png");
             if (!file1.exists()) {
                 return file1;
             }
